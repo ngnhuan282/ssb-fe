@@ -1,10 +1,11 @@
-import { Header, MapComponent } from "./components";
+import React from "react";
+import MapComponent from "./components/Map.jsx";
 import "./App.css";
 
 function App() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header userRole="admin" userName="Nguyễn Văn A" />
+    <div className="App">
+      {}
       <MapComponent />
     </div>
   );
