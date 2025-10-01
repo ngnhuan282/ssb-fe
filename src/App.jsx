@@ -1,6 +1,7 @@
 import React from "react";
 import MapComponent from "./components/Map.jsx";
 import "./App.css";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 function App() {
   return (
