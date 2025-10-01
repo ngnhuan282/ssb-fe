@@ -53,7 +53,6 @@ const center = {
 const MapComponent = () => {
   const [map, setMap] = useState(null);
   const [buses, setBuses] = useState(mockBusData);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const { isLoaded, loadError } = useJsApiLoader({
     id: "google-map-script",
@@ -81,8 +80,6 @@ const MapComponent = () => {
     setMap(null);
   }, []);
 
-  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
-
   const createBusIcon = (status) => {
     const iconBaseUrl = window.location.origin;
     return {
@@ -97,21 +94,10 @@ const MapComponent = () => {
   return (
     <div className="map-page-container">
       {}
-      <Header onMenuClick={toggleMenu} />
+      <Header />
 
       {}
-      <div className={`app-sidebar-menu ${isMenuOpen ? "open" : ""}`}>
-        <div className="menu-header">
-          {}
-          <div className="menu-title">
-            <span className="title-text">SSB 1.0</span>
-            <span className="subtitle-text">Smart School Bus</span>
-          </div>
-          <div className="close-icon" onClick={toggleMenu}>
-            &times;
-          </div>
-        </div>
-
+      <div className="app-sidebar-menu-fixed">
         <ul className="menu-list">
           <li>
             <a href="#">Tổng quan</a>
@@ -132,7 +118,6 @@ const MapComponent = () => {
           <p>Admin</p>
         </div>
       </div>
-      {isMenuOpen && <div className="menu-overlay" onClick={toggleMenu}></div>}
 
       {}
       <div className="main-content-wrapper">

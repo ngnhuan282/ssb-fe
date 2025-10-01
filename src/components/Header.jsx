@@ -1,12 +1,11 @@
 import React from "react";
 import "./Header.css";
-import { FaBell, FaBars } from "react-icons/fa";
+import { FaBell } from "react-icons/fa";
 
-const Header = ({ onMenuClick }) => {
+const Header = () => {
   return (
     <header className="header-container">
       <div className="header-left">
-        {}
         <img
           src="/assets/bus-icon.svg"
           alt="SSB Icon"
@@ -19,10 +18,6 @@ const Header = ({ onMenuClick }) => {
         <div className="notification-icon">
           <FaBell size={20} />
           <span className="notification-badge">3</span>
-        </div>
-        {}
-        <div className="menu-icon" onClick={onMenuClick}>
-          <FaBars size={20} />
         </div>
       </div>
     </header>
