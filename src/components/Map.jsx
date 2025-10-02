@@ -1,10 +1,32 @@
 import React, { useState, useCallback } from "react";
 import { GoogleMap, useJsApiLoader, Marker } from "@react-google-maps/api";
-import "./Map.css";
+import {
+  Box,
+  Drawer,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemText,
+  Typography,
+  Card,
+  CardContent,
+  Chip,
+  Paper,
+  Toolbar,
+  Divider,
+  useTheme,
+  useMediaQuery,
+} from "@mui/material";
+import {
+  Dashboard as DashboardIcon,
+  DirectionsBus as BusIcon,
+  Schedule as ScheduleIcon,
+  Assessment as ReportIcon,
+  Person as PersonIcon,
+} from "@mui/icons-material";
 import Header from "./Header.jsx";
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-
 const libraries = ["places", "geometry"];
 
 const mockBusData = [
@@ -40,6 +62,9 @@ const mockBusData = [
   },
 ];
 
+const drawerWidth = 250;
+const sidebarWidth = 350;
+
 const containerStyle = {
   width: "100%",
   height: "100%",
@@ -50,9 +75,18 @@ const center = {
   lng: 106.660172,
 };
 
+const menuItems = [
+  { text: "Tổng quan", icon: <DashboardIcon /> },
+  { text: "Quản lý xe", icon: <BusIcon /> },
+  { text: "Lịch trình", icon: <ScheduleIcon /> },
+  { text: "Báo cáo", icon: <ReportIcon /> },
+];
+
 const MapComponent = () => {
   const [map, setMap] = useState(null);
-  const [buses, setBuses] = useState(mockBusData);
+  const [buses] = useState(mockBusData);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   const { isLoaded, loadError } = useJsApiLoader({
     id: "google-map-script",
@@ -76,7 +110,7 @@ const MapComponent = () => {
     [buses]
   );
 
-  const onUnmount = useCallback((_mapInstance) => {
+  const onUnmount = useCallback(() => {
     setMap(null);
   }, []);
 
@@ -92,76 +126,166 @@ const MapComponent = () => {
     return <div>Lỗi khi tải bản đồ. Vui lòng kiểm tra API Key.</div>;
 
   return (
-    <div className="map-page-container">
-      {}
+    <Box sx={{ display: "flex", height: "100vh", overflow: "hidden" }}>
       <Header />
 
-      {}
-      <div className="app-sidebar-menu-fixed">
-        <ul className="menu-list">
-          <li>
-            <a href="#">Tổng quan</a>
-          </li>
-          <li>
-            <a href="#">Quản lý xe</a>
-          </li>
-          <li>
-            <a href="#">Lịch trình</a>
-          </li>
-          <li>
-            <a href="#">Báo cáo</a>
-          </li>
-        </ul>
+      {/* Left Sidebar - Menu */}
+      <Drawer
+        variant="permanent"
+        sx={{
+          width: drawerWidth,
+          flexShrink: 0,
+          "& .MuiDrawer-paper": {
+            width: drawerWidth,
+            boxSizing: "border-box",
+            top: "60px",
+            height: "calc(100vh - 60px)",
+            borderRight: "1px solid #ddd",
+          },
+        }}
+      >
+        <List sx={{ flexGrow: 1 }}>
+          {menuItems.map((item, index) => (
+            <ListItem key={index} disablePadding>
+              <ListItemButton
+                sx={{
+                  py: 2,
+                  "&:hover": {
+                    backgroundColor: "#f0f0f0",
+                    color: "#007bff",
+                  },
+                }}
+              >
+                <Box sx={{ mr: 2, color: "inherit" }}>{item.icon}</Box>
+                <ListItemText
+                  primary={item.text}
+                  primaryTypographyProps={{
+                    fontWeight: 500,
+                  }}
+                />
+              </ListItemButton>
+            </ListItem>
+          ))}
+        </List>
 
-        <div className="menu-footer">
-          <h4>Nguyễn Văn A</h4>
-          <p>Admin</p>
-        </div>
-      </div>
+        <Divider />
 
-      {}
-      <div className="main-content-wrapper">
-        <div className="bus-list-sidebar">
-          <div className="sidebar-header">
-            <h2>Danh sách xe buýt</h2>
-            <p>
+        <Box sx={{ p: 2.5, borderTop: "1px solid #ddd" }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
+            <PersonIcon sx={{ fontSize: 20, color: "#666" }} />
+            <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+              Nguyễn Văn A
+            </Typography>
+          </Box>
+          <Typography variant="caption" color="text.secondary">
+            Admin
+          </Typography>
+        </Box>
+      </Drawer>
+
+      {/* Main Content */}
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          display: "flex",
+          mt: "60px",
+          height: "calc(100vh - 60px)",
+          overflow: "hidden",
+        }}
+      >
+        {/* Bus List Sidebar */}
+        <Paper
+          elevation={1}
+          sx={{
+            width: sidebarWidth,
+            height: "100%",
+            overflowY: "auto",
+            backgroundColor: "#f8f9fa",
+            borderRight: "1px solid #ddd",
+          }}
+        >
+          <Box sx={{ p: 2.5 }}>
+            <Typography
+              variant="h6"
+              sx={{ color: "#007bff", fontWeight: 600, mb: 0.5 }}
+            >
+              Danh sách xe buýt
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
               {buses.filter((bus) => bus.status === "running").length}/
               {buses.length} xe đang hoạt động đồng thời
-            </p>
-          </div>
-          <div className="bus-items-container">
+            </Typography>
+          </Box>
+
+          <Box sx={{ px: 2, pb: 2 }}>
             {buses.map((bus) => (
-              <div
+              <Card
                 key={bus.id}
-                className={`bus-item ${
-                  bus.status === "running"
-                    ? "bus-item-running"
-                    : "bus-item-stopped"
-                }`}
+                sx={{
+                  mb: 1.5,
+                  cursor: "pointer",
+                  borderLeft: `5px solid ${
+                    bus.status === "running" ? "#28a745" : "#ffc107"
+                  }`,
+                  transition: "all 0.2s",
+                  "&:hover": {
+                    transform: "translateY(-2px)",
+                    boxShadow: 3,
+                  },
+                }}
               >
-                <div className="bus-status-indicator"></div>
-                <div className="bus-info">
-                  <h3>
-                    {bus.name} - {bus.plate}
-                  </h3>
-                  <p>👤 Tài xế: {bus.driver}</p>
-                  <p>🛣️ Tuyến: {bus.route}</p>
-                  <p>🧑‍🎓 Học sinh: {bus.students}</p>
-                </div>
-                <div
-                  className="bus-status-badge"
-                  style={{
-                    backgroundColor:
-                      bus.status === "running" ? "#28a745" : "#ffc107",
-                  }}
-                >
-                  {bus.status === "running" ? "Đang chạy" : "Đang dừng"}
-                </div>
-              </div>
+                <CardContent sx={{ p: 2, "&:last-child": { pb: 2 } }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "flex-start",
+                      mb: 1,
+                    }}
+                  >
+                    <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                      {bus.name} - {bus.plate}
+                    </Typography>
+                    <Chip
+                      label={
+                        bus.status === "running" ? "Đang chạy" : "Đang dừng"
+                      }
+                      size="small"
+                      sx={{
+                        backgroundColor:
+                          bus.status === "running" ? "#28a745" : "#ffc107",
+                        color: "#fff",
+                        fontWeight: 600,
+                        fontSize: "11px",
+                      }}
+                    />
+                  </Box>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mb: 0.5 }}
+                  >
+                    👤 Tài xế: {bus.driver}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mb: 0.5 }}
+                  >
+                    🛣️ Tuyến: {bus.route}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    🧑‍🎓 Học sinh: {bus.students}
+                  </Typography>
+                </CardContent>
+              </Card>
             ))}
-          </div>
-        </div>
-        <div className="map-view-container">
+          </Box>
+        </Paper>
+
+        {/* Map Container */}
+        <Box sx={{ flexGrow: 1, position: "relative", height: "100%" }}>
           {isLoaded ? (
             <GoogleMap
               mapContainerStyle={containerStyle}
@@ -189,20 +313,60 @@ const MapComponent = () => {
               ))}
             </GoogleMap>
           ) : (
-            <div>Đang tải bản đồ...</div>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                height: "100%",
+              }}
+            >
+              <Typography>Đang tải bản đồ...</Typography>
+            </Box>
           )}
-          <div className="map-legend">
-            <h3>Chú thích</h3>
-            <div className="legend-item">
-              <span className="legend-color-box running"></span> Đang chạy
-            </div>
-            <div className="legend-item">
-              <span className="legend-color-box stopped"></span> Đang dừng
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+
+          {/* Map Legend */}
+          <Paper
+            elevation={2}
+            sx={{
+              position: "absolute",
+              bottom: 20,
+              left: 20,
+              p: 2,
+              zIndex: 10,
+            }}
+          >
+            <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+              Chú thích
+            </Typography>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 0.5 }}>
+              <Box
+                sx={{
+                  width: 15,
+                  height: 15,
+                  borderRadius: 1,
+                  backgroundColor: "#28a745",
+                  mr: 1.5,
+                }}
+              />
+              <Typography variant="body2">Đang chạy</Typography>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center" }}>
+              <Box
+                sx={{
+                  width: 15,
+                  height: 15,
+                  borderRadius: 1,
+                  backgroundColor: "#ffc107",
+                  mr: 1.5,
+                }}
+              />
+              <Typography variant="body2">Đang dừng</Typography>
+            </Box>
+          </Paper>
+        </Box>
+      </Box>
+    </Box>
   );
 };
 
