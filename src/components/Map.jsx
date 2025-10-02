@@ -16,6 +16,8 @@ import {
   Divider,
   useTheme,
   useMediaQuery,
+  IconButton,
+
 } from "@mui/material";
 import {
   Dashboard as DashboardIcon,
@@ -23,6 +25,8 @@ import {
   Schedule as ScheduleIcon,
   Assessment as ReportIcon,
   Person as PersonIcon,
+  Login as LoginIcon,
+  MenuOpen as MenuOpenIcon,
 } from "@mui/icons-material";
 import Header from "./Header.jsx";
 
@@ -64,6 +68,8 @@ const mockBusData = [
 
 const drawerWidth = 250;
 const sidebarWidth = 350;
+const drawerWidthOpen = 350;
+const drawerWidthClosed = 90;
 
 const containerStyle = {
   width: "100%",
@@ -77,7 +83,9 @@ const center = {
 
 const menuItems = [
   { text: "Tổng quan", icon: <DashboardIcon /> },
+  { text: "Đăng nhập", icon: <LoginIcon /> },
   { text: "Quản lý xe", icon: <BusIcon /> },
+  { text: "Quản lý người dùng", icon: <PersonIcon /> },
   { text: "Lịch trình", icon: <ScheduleIcon /> },
   { text: "Báo cáo", icon: <ReportIcon /> },
 ];
@@ -85,6 +93,7 @@ const menuItems = [
 const MapComponent = () => {
   const [map, setMap] = useState(null);
   const [buses] = useState(mockBusData);
+  const [open, setOpen] = useState(false);//che do cua sidebar
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
@@ -133,36 +142,63 @@ const MapComponent = () => {
       <Drawer
         variant="permanent"
         sx={{
-          width: drawerWidth,
+          width: open ? drawerWidthOpen : drawerWidthClosed,
           flexShrink: 0,
           "& .MuiDrawer-paper": {
-            width: drawerWidth,
+            width: open ? drawerWidthOpen : drawerWidthClosed,
             boxSizing: "border-box",
             top: "60px",
             height: "calc(100vh - 60px)",
             borderRight: "1px solid #ddd",
+            transition: "width 0.3s ease",
+            overflowX: "hidden",
           },
         }}
       >
+        <Toolbar
+          sx={{
+            display: "flex",
+            justifyContent: open ? "flex-end" : "center",
+            px: 1,
+            minHeight: "60px",
+            color: "#007bff",
+          }}
+        >
+          <IconButton onClick={() => setOpen(!open)}>
+            <MenuOpenIcon
+              sx={{
+                transform: open ? "rotate(180deg)" : "rotate(0deg)",
+                transition: "transform 0.3s",
+              }}
+            />
+          </IconButton>
+        </Toolbar>
+
+        <Divider />
+
         <List sx={{ flexGrow: 1 }}>
           {menuItems.map((item, index) => (
-            <ListItem key={index} disablePadding>
+            <ListItem key={index} disablePadding sx={{ display: "block" }}>
               <ListItemButton
                 sx={{
                   py: 2,
+                  px: open ? 2 : 1,
+                  justifyContent: open ? "initial" : "center",
                   "&:hover": {
                     backgroundColor: "#f0f0f0",
                     color: "#007bff",
                   },
                 }}
               >
-                <Box sx={{ mr: 2, color: "inherit" }}>{item.icon}</Box>
-                <ListItemText
-                  primary={item.text}
-                  primaryTypographyProps={{
-                    fontWeight: 500,
-                  }}
-                />
+                <Box sx={{ mr: open ? 2 : 0, color: "inherit" }}>{item.icon}</Box>
+                {open && (
+                  <ListItemText
+                    primary={item.text}
+                    primaryTypographyProps={{
+                      fontWeight: 500,
+                    }}
+                  />
+                )}
               </ListItemButton>
             </ListItem>
           ))}
