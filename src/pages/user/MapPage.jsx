@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { Box } from "@mui/material";
-import Header from "../components/layout/Header";
-import SidebarMenu from "../components/layout/Sidebar";
-import BusList from "../components/bus/BusList";
-import MapContainer from "../components/map/MapContainer";
-import MapLegend from "../components/map/MapLegend";
-import mockBusData from "../data/mockBusData";
+
+import Header from "../../components/user/layout/Header";
+import SidebarMenu from "../../components/user/layout/Sidebar"; // Sửa từ SidebarMenu thành Sidebar
+import BusList from "../../components/user/bus/BusList";
+import MapContainer from "../../components/user/map/MapContainer";
+import MapLegend from "../../components/user/map/MapLegend";
+
+import mockBusData from "../../data/mockBusData";
 
 const MapPage = () => {
   const [buses] = useState(mockBusData);

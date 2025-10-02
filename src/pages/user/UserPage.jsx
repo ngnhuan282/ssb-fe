@@ -1,6 +1,6 @@
 import React from "react";
-import Header from "../components/Header.jsx";
-import MapComponent from "../components/Map.jsx";
+import Header from "../../components/user/layout/Header";
+import MapComponent from "./MapPage";
 import { Box } from "@mui/material";
 
 const UserPage = () => {
