@@ -3,3 +3,5 @@ const LoginPage = () => {
         <div>Đây là trang Đăng nhập</div>
     );
 }
+
+export default LoginPage;
