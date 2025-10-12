@@ -1,5 +1,5 @@
 // src/App.jsx
-import React, { useState } from "react";
+import React from "react";
 import { Outlet } from "react-router-dom";
 import { Box } from "@mui/material";
 import Header from "./components/user/layout/Header";
@@ -14,21 +14,19 @@ const App = () => {
         bgcolor: "#f5f7fa",
       }}
     >
-      {/* Header */}
       <Header />
-      
-      {/* Sidebar */}
       <Sidebar />
 
-      {/* Main Content - Outlet */}
       <Box
         component="main"
         sx={{
           flexGrow: 1,
-          mt: "70px", // Khoảng cách cho Header
-          p: 3, // Padding cho content
+          mt: "70px", // Header height
+          p: 3, // Padding đều cho tất cả các page
           minHeight: "calc(100vh - 70px)",
-          width: 0, // Trick để flexbox hoạt động đúng
+          width: 0, // Flexbox trick
+          overflowY: "auto", 
+          overflowX: "hidden", 
         }}
       >
         <Outlet />
