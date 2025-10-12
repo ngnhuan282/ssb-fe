@@ -8,18 +8,18 @@ import BusPage from "../pages/user/BusPage";
 import DriverPage from "../pages/user/DriverPage";
 import LoginPage from "../pages/user/LoginPage";
 import RegisterPage from "../pages/user/RegisterPage";
+import ErrorPage from "../pages/user/ErrorPage";
+import { LoginPageStyle1, LoginPageStyle2, LoginPageStyle3 } from "../pages/user/LoginPageStyle";
 
 // ADMIN pages
 import AdminDashboard from "../pages/admin/AdminDashboard";
 
-// Trang 404
-const NotFound = () => <div style={{ padding: 24 }}>404 - Không tìm thấy trang</div>;
 
 export const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
-    errorElement: <NotFound />,
+    errorElement: <ErrorPage />,
     children: [
       { index: true, element: <UserDashboardPage /> },
       { path: "map", element: <MapPage /> },
@@ -28,6 +28,9 @@ export const router = createBrowserRouter([
     ],
   },
   { path: "/login", element: <LoginPage /> },
+  { path: "/login1", element: <LoginPageStyle1 /> },
+  { path: "/login2", element: <LoginPageStyle2 /> },
+  { path: "/login3", element: <LoginPageStyle3 /> },
   { path: "/register", element: <RegisterPage /> },
   { path: "/admin", element: <AdminDashboard /> },
 ]);
