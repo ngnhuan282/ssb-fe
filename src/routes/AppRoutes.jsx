@@ -7,6 +7,7 @@ import MapPage from "../pages/user/MapPage";
 import BusPage from "../pages/user/BusPage";
 import DriverPage from "../pages/user/DriverPage";
 import LoginPage from "../pages/user/LoginPage";
+import RegisterPage from "../pages/user/RegisterPage";
 
 // ADMIN pages
 import AdminDashboard from "../pages/admin/AdminDashboard";
@@ -27,5 +28,6 @@ export const router = createBrowserRouter([
     ],
   },
   { path: "/login", element: <LoginPage /> },
+  { path: "/register", element: <RegisterPage /> },
   { path: "/admin", element: <AdminDashboard /> },
 ]);
