@@ -57,7 +57,7 @@ const DriverPage = () => {
   const routePolyline = [busPosition, ...students.map((s) => s.position)];
 
   return (
-    <Box p={3} position="relative">
+    <Box>
       {/* Nút đóng */}
       <IconButton
         sx={{ position: "absolute", top: 8, right: 8 }}
@@ -138,7 +138,7 @@ const DriverPage = () => {
           <Card sx={{ height: "100%" }}>
             <CardContent sx={{ height: "100%" }}>
               <Typography variant="h6">🗺️ Bản đồ tuyến đường</Typography>
-              <Box sx={{ mt: 2, height: 1000 }}>
+              <Box sx={{ mt: 2, height: "600px" }}>
                 <MapContainer
                   center={busPosition}
                   zoom={14}

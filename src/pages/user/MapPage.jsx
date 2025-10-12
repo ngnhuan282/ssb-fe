@@ -11,13 +11,26 @@ const MapPage = () => {
   const [buses] = useState(mockBusData);
 
   return (
-    <Box sx={{ display: "flex", height: "100vh", overflow: "hidden" }}>
-      <Box component="main" sx={{ flexGrow: 1, display: "flex", mt: "60px" }}>
-        <BusList buses={buses} />
-        <Box sx={{ flexGrow: 1, position: "relative" }}>
-          <MapContainer buses={buses} />
-          <MapLegend />
-        </Box>
+    <Box 
+      sx={{ 
+        display: "flex",
+        height: "calc(100vh - 70px - 48px)", 
+        width: "100%",
+        gap: 2,
+      }}
+    >
+      <BusList buses={buses} />
+      <Box 
+        sx={{ 
+          flexGrow: 1, 
+          position: "relative", 
+          borderRadius: 3, 
+          overflow: "hidden",
+          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
+        }}
+      >
+        <MapContainer buses={buses} />
+        <MapLegend />
       </Box>
     </Box>
   );

@@ -6,17 +6,11 @@ import Header from "./components/user/layout/Header";
 import Sidebar from "./components/user/layout/Sidebar";
 
 const App = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(true); // Trạng thái mở/đóng sidebar
-
-  const handleSidebarToggle = (isOpen) => {
-    setSidebarOpen(isOpen);
-  };
-
   return (
     <Box
       sx={{
-        minHeight: "100vh",
         display: "flex",
+        minHeight: "100vh",
         bgcolor: "#f5f7fa",
       }}
     >
@@ -24,7 +18,7 @@ const App = () => {
       <Header />
       
       {/* Sidebar */}
-      <Sidebar onToggle={handleSidebarToggle} />
+      <Sidebar />
 
       {/* Main Content - Outlet */}
       <Box
@@ -32,9 +26,9 @@ const App = () => {
         sx={{
           flexGrow: 1,
           mt: "70px", // Khoảng cách cho Header
-          ml: sidebarOpen ? "280px" : "80px", // Điều chỉnh margin-left dựa trên trạng thái sidebar
-          transition: "margin 0.3s ease",
+          p: 3, // Padding cho content
           minHeight: "calc(100vh - 70px)",
+          width: 0, // Trick để flexbox hoạt động đúng
         }}
       >
         <Outlet />
