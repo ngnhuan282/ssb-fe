@@ -6,61 +6,188 @@ import {
   Typography,
   IconButton,
   Badge,
+  Avatar,
+  Chip,
 } from "@mui/material";
-import { Notifications as BellIcon } from "@mui/icons-material";
+import {
+  Notifications,
+  Search,
+  Menu as MenuIcon,
+} from "@mui/icons-material";
 import DirectionsBusIcon from "@mui/icons-material/DirectionsBus";
 
-const Header = () => {
+const Header = ({ onMenuClick }) => {
   return (
     <AppBar
       position="fixed"
       sx={{
-        backgroundColor: "#fff",
-        boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
+        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        boxShadow: "0 4px 12px rgba(102, 126, 234, 0.15)",
         zIndex: (theme) => theme.zIndex.drawer + 1,
-        borderBottom: "1px solid #ddd",
       }}
     >
       <Toolbar
-        sx={{ justifyContent: "space-between", minHeight: "60px !important" }}
+        sx={{
+          justifyContent: "space-between",
+          minHeight: "70px !important",
+          px: { xs: 2, sm: 3 },
+        }}
       >
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-          <DirectionsBusIcon
+        {/* Left Side - Logo & Title */}
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          <IconButton
             sx={{
-              fontSize: 30,
-              color: "#007bff",
+              display: { xs: "flex", md: "none" },
+              color: "#fff",
             }}
-          />
-          <Box>
-            <Typography
-              variant="h6"
-              component="h1"
+            onClick={onMenuClick}
+          >
+            <MenuIcon />
+          </IconButton>
+
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1.5,
+              background: "rgba(255, 255, 255, 0.15)",
+              backdropFilter: "blur(10px)",
+              px: 2,
+              py: 1,
+              borderRadius: 3,
+            }}
+          >
+            <Box
               sx={{
-                fontWeight: 700,
-                color: "#007bff",
-                lineHeight: 1.2,
+                background: "#fff",
+                borderRadius: "50%",
+                width: 40,
+                height: 40,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
-              SSB 1.0
-            </Typography>
-            <Typography
-              variant="caption"
-              sx={{
-                color: "#6c757d",
-                fontSize: "14px",
-              }}
-            >
-              Smart School Bus
-            </Typography>
+              <DirectionsBusIcon
+                sx={{
+                  fontSize: 24,
+                  color: "#667eea",
+                }}
+              />
+            </Box>
+            <Box>
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: 700,
+                  color: "#fff",
+                  lineHeight: 1.2,
+                  fontSize: { xs: "1rem", sm: "1.25rem" },
+                }}
+              >
+                SSB 1.0
+              </Typography>
+              <Typography
+                variant="caption"
+                sx={{
+                  color: "rgba(255, 255, 255, 0.9)",
+                  fontSize: "11px",
+                  display: { xs: "none", sm: "block" },
+                }}
+              >
+                Smart School Bus
+              </Typography>
+            </Box>
           </Box>
         </Box>
 
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-          <IconButton sx={{ color: "#333" }} aria-label="notifications">
-            <Badge badgeContent={3} color="error">
-              <BellIcon />
+        {/* Right Side - Actions */}
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          {/* Search Button */}
+          <IconButton
+            sx={{
+              color: "#fff",
+              background: "rgba(255, 255, 255, 0.1)",
+              "&:hover": {
+                background: "rgba(255, 255, 255, 0.2)",
+              },
+            }}
+          >
+            <Search />
+          </IconButton>
+
+          {/* Notifications */}
+          <IconButton
+            sx={{
+              color: "#fff",
+              background: "rgba(255, 255, 255, 0.1)",
+              "&:hover": {
+                background: "rgba(255, 255, 255, 0.2)",
+              },
+            }}
+          >
+            <Badge
+              badgeContent={3}
+              sx={{
+                "& .MuiBadge-badge": {
+                  background: "#ff5252",
+                  color: "#fff",
+                },
+              }}
+            >
+              <Notifications />
             </Badge>
           </IconButton>
+
+          {/* User Avatar */}
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              background: "rgba(255, 255, 255, 0.15)",
+              backdropFilter: "blur(10px)",
+              px: 1.5,
+              py: 0.5,
+              borderRadius: 3,
+              cursor: "pointer",
+              "&:hover": {
+                background: "rgba(255, 255, 255, 0.25)",
+              },
+            }}
+          >
+            <Avatar
+              sx={{
+                width: 35,
+                height: 35,
+                background: "#fff",
+                color: "#667eea",
+                fontSize: "14px",
+                fontWeight: 600,
+              }}
+            >
+              A
+            </Avatar>
+            <Box sx={{ display: { xs: "none", sm: "block" } }}>
+              <Typography
+                variant="body2"
+                sx={{ color: "#fff", fontWeight: 600, lineHeight: 1.2 }}
+              >
+                Nguyễn Văn A
+              </Typography>
+              <Chip
+                label="Admin"
+                size="small"
+                sx={{
+                  height: 18,
+                  fontSize: "10px",
+                  background: "rgba(255, 255, 255, 0.3)",
+                  color: "#fff",
+                  fontWeight: 500,
+                }}
+              />
+            </Box>
+          </Box>
         </Box>
       </Toolbar>
     </AppBar>
