@@ -5,6 +5,7 @@ import App from "../App";
 import UserDashboardPage from "../pages/user/UserDashboardPage";
 import MapPage from "../pages/user/MapPage";
 import BusPage from "../pages/user/BusPage";
+import DriverPage from "../pages/user/DriverPage";
 import LoginPage from "../pages/user/LoginPage";
 
 // ADMIN pages
@@ -22,6 +23,7 @@ export const router = createBrowserRouter([
       { index: true, element: <UserDashboardPage /> },
       { path: "map", element: <MapPage /> },
       { path: "bus", element: <BusPage /> },
+      { path: "driver", element: <DriverPage /> },
     ],
   },
   { path: "/login", element: <LoginPage /> },

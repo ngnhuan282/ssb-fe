@@ -1,4 +1,6 @@
+// src/components/user/layout/Sidebar.jsx
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Drawer,
   List,
@@ -27,22 +29,31 @@ import {
 } from "@mui/icons-material";
 
 const menuItems = [
-  { text: "Tổng quan", icon: <Dashboard />, color: "#667eea" },
-  { text: "Quản lý xe", icon: <DirectionsBus />, color: "#f093fb" },
-  { text: "Quản lý tài xế", icon: <Person />, color: "#4facfe" },
-  { text: "Lộ trình", icon: <Route />, color: "#43e97b" },
-  { text: "Lịch trình", icon: <Schedule />, color: "#fa709a" },
-  { text: "Báo cáo", icon: <Assessment />, color: "#feca57" },
-  { text: "Thông báo", icon: <Notifications />, color: "#ff6b6b" },
-  { text: "Cài đặt", icon: <Settings />, color: "#95afc0" },
+  { text: "Tổng quan", icon: <Dashboard />, color: "#667eea", path: "/" },
+  { text: "Xe bus đang hoạt động", icon: <DirectionsBus />, color: "#f093fb", path: "/bus"},
+  { text: "Danh sách tài xế", icon: <Person />, color: "#4facfe" , path: "/driver"},
+  { text: "Bản đồ", icon: <Route />, color: "#43e97b", path: "/map" },
+  { text: "Lịch trình", icon: <Schedule />, color: "#fa709a", path: "/schedule" },
+  { text: "Báo cáo", icon: <Assessment />, color: "#feca57", path: "/report" },
+  { text: "Thông báo", icon: <Notifications />, color: "#ff6b6b", path: "/notification" },
+  { text: "Cài đặt", icon: <Settings />, color: "#95afc0", path: "/settings" },
 ];
 
 const drawerWidthOpen = 280;
 const drawerWidthClosed = 80;
 
-const Sidebar = () => {
+const Sidebar = ({ onToggle }) => { // Nhận prop onToggle
   const [open, setOpen] = useState(true);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const navigate = useNavigate();
+
+  const handleToggle = () => {
+    const newState = !open;
+    setOpen(newState);
+    if (onToggle) {
+      onToggle(newState); // Gọi callback để thông báo cho App.jsx
+    }
+  };
 
   return (
     <Drawer
@@ -71,7 +82,7 @@ const Sidebar = () => {
         }}
       >
         <IconButton
-          onClick={() => setOpen(!open)}
+          onClick={handleToggle} // Sử dụng handleToggle mới
           sx={{
             background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
             color: "#fff",
@@ -92,7 +103,10 @@ const Sidebar = () => {
           <ListItem key={index} disablePadding sx={{ mb: 0.5 }}>
             <ListItemButton
               selected={selectedIndex === index}
-              onClick={() => setSelectedIndex(index)}
+              onClick={() => {
+                setSelectedIndex(index);
+                navigate(item.path); 
+              }}
               sx={{
                 borderRadius: 2,
                 py: 1.5,

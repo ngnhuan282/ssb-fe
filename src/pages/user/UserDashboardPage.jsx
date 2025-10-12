@@ -1,13 +1,9 @@
 import React from "react";
 import { Box, Typography, Paper } from "@mui/material";
-import Header from "../../components/user/layout/Header";
-import SidebarMenu from "../../components/user/layout/Sidebar";
 
 const UserDashboardPage = () => {
   return (
     <Box sx={{ display: "flex", height: "100vh", overflow: "hidden" }}>
-      <Header />
-      <SidebarMenu />
       <Box
         component="main"
         sx={{
