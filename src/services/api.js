@@ -1,4 +1,4 @@
-import axiosInstance from "./axiosConfig";
+import axiosInstance from "./axiosCustomize";
 
 export const busAPI = {
   getAll: () => axiosInstance.get("/buses"),
