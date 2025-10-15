@@ -8,12 +8,13 @@ import {
   IconButton,
 } from "@mui/material";
 import { Visibility, VisibilityOff, Email, Lock } from "@mui/icons-material";
+import { Navigate, useNavigate } from "react-router-dom";
 
 const LoginForm = ({ onSubmit }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
+  const navigate = useNavigate();
   const handleSubmit = (e) => {
     e.preventDefault();
     if (onSubmit) {
@@ -137,6 +138,7 @@ const LoginForm = ({ onSubmit }) => {
         Bạn chưa có tài khoản?{" "}
         <Typography
           component="span"
+          onClick={() => navigate("/register")}
           sx={{
             background: "linear-gradient(135deg, #64b5f6 0%, #ab47bc 100%)",
             WebkitBackgroundClip: "text",

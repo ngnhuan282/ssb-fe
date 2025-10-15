@@ -10,10 +10,6 @@ import {
   ListItemText,
   Box,
   IconButton,
-  Typography,
-  Avatar,
-  Divider,
-  Chip,
 } from "@mui/material";
 import {
   Dashboard,
@@ -42,7 +38,7 @@ const menuItems = [
 const drawerWidthOpen = 280;
 const drawerWidthClosed = 80;
 
-const Sidebar = ({ onToggle }) => { // Nhận prop onToggle
+const Sidebar = ({ onToggle }) => {
   const [open, setOpen] = useState(true);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const navigate = useNavigate();
@@ -51,7 +47,7 @@ const Sidebar = ({ onToggle }) => { // Nhận prop onToggle
     const newState = !open;
     setOpen(newState);
     if (onToggle) {
-      onToggle(newState); // Gọi callback để thông báo cho App.jsx
+      onToggle(newState);
     }
   };
 
@@ -82,7 +78,7 @@ const Sidebar = ({ onToggle }) => { // Nhận prop onToggle
         }}
       >
         <IconButton
-          onClick={handleToggle} // Sử dụng handleToggle mới
+          onClick={handleToggle}
           sx={{
             background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
             color: "#fff",
@@ -148,79 +144,6 @@ const Sidebar = ({ onToggle }) => { // Nhận prop onToggle
           </ListItem>
         ))}
       </List>
-
-      {/* User Info at Bottom */}
-      {open && (
-        <Box
-          sx={{
-            mt: "auto",
-            p: 2.5,
-            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-            borderRadius: 3,
-            mx: 1.5,
-            mb: 2,
-            color: "#fff",
-          }}
-        >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
-            <Avatar
-              sx={{
-                width: 45,
-                height: 45,
-                background: "#fff",
-                color: "#667eea",
-                fontWeight: 700,
-              }}
-            >
-              A
-            </Avatar>
-            <Box sx={{ flex: 1 }}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                Nguyễn Văn A
-              </Typography>
-              <Chip
-                label="Admin"
-                size="small"
-                sx={{
-                  height: 20,
-                  fontSize: "11px",
-                  background: "rgba(255, 255, 255, 0.25)",
-                  color: "#fff",
-                  fontWeight: 500,
-                }}
-              />
-            </Box>
-          </Box>
-          <Divider sx={{ my: 1, borderColor: "rgba(255, 255, 255, 0.2)" }} />
-          <Typography variant="caption" sx={{ opacity: 0.9 }}>
-            📍 Trường Đại học Sài Gòn - TP.HCM
-          </Typography>
-        </Box>
-      )}
-
-      {/* Collapsed User Avatar */}
-      {!open && (
-        <Box
-          sx={{
-            mt: "auto",
-            display: "flex",
-            justifyContent: "center",
-            mb: 2,
-          }}
-        >
-          <Avatar
-            sx={{
-              width: 45,
-              height: 45,
-              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-              color: "#fff",
-              fontWeight: 700,
-            }}
-          >
-            A
-          </Avatar>
-        </Box>
-      )}
     </Drawer>
   );
 };

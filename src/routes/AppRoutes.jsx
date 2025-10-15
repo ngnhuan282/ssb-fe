@@ -7,18 +7,18 @@ import MapPage from "../pages/user/MapPage";
 import BusPage from "../pages/user/BusPage";
 import DriverPage from "../pages/user/DriverPage";
 import LoginPage from "../pages/user/LoginPage";
+import RegisterPage from "../pages/user/RegisterPage";
+import ErrorPage from "../pages/user/ErrorPage";
 
 // ADMIN pages
 import AdminDashboard from "../pages/admin/AdminDashboard";
 
-// Trang 404
-const NotFound = () => <div style={{ padding: 24 }}>404 - Không tìm thấy trang</div>;
 
 export const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
-    errorElement: <NotFound />,
+    errorElement: <ErrorPage />,
     children: [
       { index: true, element: <UserDashboardPage /> },
       { path: "map", element: <MapPage /> },
@@ -27,5 +27,6 @@ export const router = createBrowserRouter([
     ],
   },
   { path: "/login", element: <LoginPage /> },
+  { path: "/register", element: <RegisterPage /> },
   { path: "/admin", element: <AdminDashboard /> },
 ]);
