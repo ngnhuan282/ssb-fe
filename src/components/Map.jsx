@@ -1,5 +1,7 @@
-import React, { useState, useCallback } from "react";
-import { GoogleMap, useJsApiLoader, Marker } from "@react-google-maps/api";
+import React, { useState, useEffect } from "react";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 import {
   Box,
   Drawer,
@@ -14,10 +16,9 @@ import {
   Paper,
   Toolbar,
   Divider,
-  useTheme,
-  useMediaQuery,
   IconButton,
-
+  CircularProgress,
+  Alert,
 } from "@mui/material";
 import {
   Dashboard as DashboardIcon,
@@ -28,53 +29,13 @@ import {
   Login as LoginIcon,
   MenuOpen as MenuOpenIcon,
 } from "@mui/icons-material";
-import Header from "./Header.jsx";
+import Header from "../layout/Header.jsx";
+import { busAPI, locationAPI } from "../../../services/api";
+import useFetch from "../../../hooks/useFetch";
 
-const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-const libraries = ["places", "geometry"];
-
-const mockBusData = [
-  {
-    id: "01",
-    name: "Xe 01",
-    plate: "29A-12345",
-    driver: "Trần Văn Bảo",
-    route: "Tuyến 1: Quận 1 - Quận 3",
-    students: 25,
-    status: "running",
-    position: { lat: 10.762622, lng: 106.660172 },
-  },
-  {
-    id: "02",
-    name: "Xe 02",
-    plate: "29B-67890",
-    driver: "Lê Thị Cún",
-    route: "Tuyến 2: Quận 2 - Bình Thạnh",
-    students: 25,
-    status: "running",
-    position: { lat: 10.794155, lng: 106.7 },
-  },
-  {
-    id: "03",
-    name: "Xe 03",
-    plate: "29C-11111",
-    driver: "Phạm Văn Danh",
-    route: "Tuyến 3: Quận 10 - Tân Bình",
-    students: 25,
-    status: "stopped",
-    position: { lat: 10.77, lng: 106.68 },
-  },
-];
-
-const drawerWidth = 250;
-const sidebarWidth = 350;
 const drawerWidthOpen = 350;
 const drawerWidthClosed = 90;
-
-const containerStyle = {
-  width: "100%",
-  height: "100%",
-};
+const sidebarWidth = 350;
 
 const center = {
   lat: 10.775843,
@@ -90,49 +51,85 @@ const menuItems = [
   { text: "Báo cáo", icon: <ReportIcon /> },
 ];
 
-const MapComponent = () => {
-  const [map, setMap] = useState(null);
-  const [buses] = useState(mockBusData);
-  const [open, setOpen] = useState(false);//che do cua sidebar
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+const createBusIcon = (status) => {
+  const color = status === "running" ? "#28a745" : "#ffc107";
 
-  const { isLoaded, loadError } = useJsApiLoader({
-    id: "google-map-script",
-    googleMapsApiKey: GOOGLE_MAPS_API_KEY,
-    libraries: libraries,
+  return L.divIcon({
+    html: `
+      <div style="
+        background-color: ${color};
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: 3px solid white;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      ">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+          <path d="M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z"/>
+        </svg>
+      </div>
+    `,
+    className: "custom-bus-icon",
+    iconSize: [32, 32],
+    iconAnchor: [16, 16],
+    popupAnchor: [0, -16],
+  });
+};
+
+const MapComponent = () => {
+  const [open, setOpen] = useState(false);
+  const [mapKey, setMapKey] = useState(0);
+
+  // Gọi API để lấy danh sách xe bus
+  const {
+    data: busesData,
+    loading: busesLoading,
+    error: busesError,
+    refetch: refetchBuses,
+  } = useFetch(() => busAPI.getAll());
+
+  // Gọi API để lấy vị trí các xe
+  const {
+    data: locationsData,
+    loading: locationsLoading,
+    error: locationsError,
+  } = useFetch(() => locationAPI.getAll());
+
+  // Lấy data từ API response
+  const buses = busesData?.data || [];
+  const locations = locationsData?.data || [];
+
+  // Kết hợp data xe bus với vị trí GPS
+  const busesWithLocations = buses.map((bus) => {
+    const location = locations.find((loc) => loc.busId === bus._id);
+    return {
+      id: bus._id,
+      name: bus.name || `Xe ${bus.licensePlate}`,
+      plate: bus.licensePlate,
+      driver: bus.driverId?.name || "Chưa phân công",
+      route: bus.routeId?.name || "Chưa có tuyến",
+      students: bus.students?.length || 0,
+      status: bus.status === "active" ? "running" : "stopped",
+      position: location
+        ? {
+            lat: location.latitude,
+            lng: location.longitude,
+          }
+        : center,
+    };
   });
 
-  const onLoad = useCallback(
-    (mapInstance) => {
-      if (window.google?.maps?.LatLngBounds) {
-        const bounds = new window.google.maps.LatLngBounds();
-        buses.forEach((bus) => {
-          bounds.extend(
-            new window.google.maps.LatLng(bus.position.lat, bus.position.lng)
-          );
-        });
-        mapInstance.fitBounds(bounds);
-      }
-      setMap(mapInstance);
-    },
-    [buses]
-  );
-
-  const onUnmount = useCallback(() => {
-    setMap(null);
+  // Tự động refresh data mỗi 30 giây
+  useEffect(() => {
+    const interval = setInterval(() => {
+      refetchBuses();
+      setMapKey((prev) => prev + 1); // Force re-render map
+    }, 30000);
+    return () => clearInterval(interval);
   }, []);
-
-  const createBusIcon = (status) => {
-    const iconBaseUrl = window.location.origin;
-    return {
-      url: `${iconBaseUrl}/assets/bus-${status}.png`,
-      scaledSize: new window.google.maps.Size(32, 32),
-    };
-  };
-
-  if (loadError)
-    return <div>Lỗi khi tải bản đồ. Vui lòng kiểm tra API Key.</div>;
 
   return (
     <Box sx={{ display: "flex", height: "100vh", overflow: "hidden" }}>
@@ -190,7 +187,9 @@ const MapComponent = () => {
                   },
                 }}
               >
-                <Box sx={{ mr: open ? 2 : 0, color: "inherit" }}>{item.icon}</Box>
+                <Box sx={{ mr: open ? 2 : 0, color: "inherit" }}>
+                  {item.icon}
+                </Box>
                 {open && (
                   <ListItemText
                     primary={item.text}
@@ -249,39 +248,133 @@ const MapComponent = () => {
               Danh sách xe buýt
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {buses.filter((bus) => bus.status === "running").length}/
-              {buses.length} xe đang hoạt động đồng thời
+              {
+                busesWithLocations.filter((bus) => bus.status === "running")
+                  .length
+              }
+              /{busesWithLocations.length} xe đang hoạt động
             </Typography>
           </Box>
 
           <Box sx={{ px: 2, pb: 2 }}>
-            {buses.map((bus) => (
-              <Card
+            {busesLoading ? (
+              <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+                <CircularProgress />
+              </Box>
+            ) : busesError ? (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                Lỗi API: {busesError}
+                <Typography variant="caption" display="block" sx={{ mt: 1 }}>
+                  Kiểm tra Backend: http://localhost:5000/api/buses
+                </Typography>
+              </Alert>
+            ) : busesWithLocations.length === 0 ? (
+              <Alert severity="info">Không có xe nào trong hệ thống</Alert>
+            ) : (
+              busesWithLocations.map((bus) => (
+                <Card
+                  key={bus.id}
+                  sx={{
+                    mb: 1.5,
+                    cursor: "pointer",
+                    borderLeft: `5px solid ${
+                      bus.status === "running" ? "#28a745" : "#ffc107"
+                    }`,
+                    transition: "all 0.2s",
+                    "&:hover": {
+                      transform: "translateY(-2px)",
+                      boxShadow: 3,
+                    },
+                  }}
+                >
+                  <CardContent sx={{ p: 2, "&:last-child": { pb: 2 } }}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "flex-start",
+                        mb: 1,
+                      }}
+                    >
+                      <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                        {bus.name} - {bus.plate}
+                      </Typography>
+                      <Chip
+                        label={
+                          bus.status === "running" ? "Đang chạy" : "Đang dừng"
+                        }
+                        size="small"
+                        sx={{
+                          backgroundColor:
+                            bus.status === "running" ? "#28a745" : "#ffc107",
+                          color: "#fff",
+                          fontWeight: 600,
+                          fontSize: "11px",
+                        }}
+                      />
+                    </Box>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ mb: 0.5 }}
+                    >
+                      👤 Tài xế: {bus.driver}
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ mb: 0.5 }}
+                    >
+                      🛣️ Tuyến: {bus.route}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      🧑‍🎓 Học sinh: {bus.students}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </Box>
+        </Paper>
+
+        {/* Map Container */}
+        <Box sx={{ flexGrow: 1, position: "relative", height: "100%" }}>
+          <MapContainer
+            key={mapKey}
+            center={[center.lat, center.lng]}
+            zoom={13}
+            style={{ width: "100%", height: "100%" }}
+            zoomControl={true}
+          >
+            {/* Tile Layer - Sử dụng OpenStreetMap (miễn phí) */}
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+
+            {/* Hiển thị marker cho mỗi xe bus */}
+            {busesWithLocations.map((bus) => (
+              <Marker
                 key={bus.id}
-                sx={{
-                  mb: 1.5,
-                  cursor: "pointer",
-                  borderLeft: `5px solid ${
-                    bus.status === "running" ? "#28a745" : "#ffc107"
-                  }`,
-                  transition: "all 0.2s",
-                  "&:hover": {
-                    transform: "translateY(-2px)",
-                    boxShadow: 3,
-                  },
-                }}
+                position={[bus.position.lat, bus.position.lng]}
+                icon={createBusIcon(bus.status)}
               >
-                <CardContent sx={{ p: 2, "&:last-child": { pb: 2 } }}>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "flex-start",
-                      mb: 1,
-                    }}
-                  >
-                    <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                <Popup>
+                  <Box sx={{ minWidth: 200 }}>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ fontWeight: 600, mb: 1 }}
+                    >
                       {bus.name} - {bus.plate}
+                    </Typography>
+                    <Typography variant="body2" sx={{ mb: 0.5 }}>
+                      👤 Tài xế: {bus.driver}
+                    </Typography>
+                    <Typography variant="body2" sx={{ mb: 0.5 }}>
+                      🛣️ Tuyến: {bus.route}
+                    </Typography>
+                    <Typography variant="body2" sx={{ mb: 0.5 }}>
+                      🧑‍🎓 Học sinh: {bus.students}
                     </Typography>
                     <Chip
                       label={
@@ -289,77 +382,18 @@ const MapComponent = () => {
                       }
                       size="small"
                       sx={{
+                        mt: 1,
                         backgroundColor:
                           bus.status === "running" ? "#28a745" : "#ffc107",
                         color: "#fff",
                         fontWeight: 600,
-                        fontSize: "11px",
                       }}
                     />
                   </Box>
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{ mb: 0.5 }}
-                  >
-                    👤 Tài xế: {bus.driver}
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{ mb: 0.5 }}
-                  >
-                    🛣️ Tuyến: {bus.route}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    🧑‍🎓 Học sinh: {bus.students}
-                  </Typography>
-                </CardContent>
-              </Card>
+                </Popup>
+              </Marker>
             ))}
-          </Box>
-        </Paper>
-
-        {/* Map Container */}
-        <Box sx={{ flexGrow: 1, position: "relative", height: "100%" }}>
-          {isLoaded ? (
-            <GoogleMap
-              mapContainerStyle={containerStyle}
-              center={center}
-              zoom={12}
-              onLoad={onLoad}
-              onUnmount={onUnmount}
-              options={{
-                disableDefaultUI: true,
-                zoomControl: true,
-                streetViewControl: false,
-                mapTypeControl: false,
-                fullscreenControl: false,
-              }}
-            >
-              {buses.map((bus) => (
-                <Marker
-                  key={bus.id}
-                  position={bus.position}
-                  icon={createBusIcon(bus.status)}
-                  title={`${bus.name} - ${bus.plate} (${
-                    bus.status === "running" ? "Đang chạy" : "Đang dừng"
-                  })`}
-                />
-              ))}
-            </GoogleMap>
-          ) : (
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                height: "100%",
-              }}
-            >
-              <Typography>Đang tải bản đồ...</Typography>
-            </Box>
-          )}
+          </MapContainer>
 
           {/* Map Legend */}
           <Paper
@@ -369,7 +403,8 @@ const MapComponent = () => {
               bottom: 20,
               left: 20,
               p: 2,
-              zIndex: 10,
+              zIndex: 1000,
+              backgroundColor: "rgba(255, 255, 255, 0.95)",
             }}
           >
             <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
@@ -380,7 +415,7 @@ const MapComponent = () => {
                 sx={{
                   width: 15,
                   height: 15,
-                  borderRadius: 1,
+                  borderRadius: "50%",
                   backgroundColor: "#28a745",
                   mr: 1.5,
                 }}
@@ -392,7 +427,7 @@ const MapComponent = () => {
                 sx={{
                   width: 15,
                   height: 15,
-                  borderRadius: 1,
+                  borderRadius: "50%",
                   backgroundColor: "#ffc107",
                   mr: 1.5,
                 }}
