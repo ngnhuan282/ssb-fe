@@ -1,4 +1,5 @@
-import React from "react";
+// src/components/user/layout/Header.jsx
+import React, { useState } from "react";
 import {
   AppBar,
   Toolbar,
@@ -8,15 +9,37 @@ import {
   Badge,
   Avatar,
   Chip,
+  Menu,
+  MenuItem,
 } from "@mui/material";
 import {
   Notifications,
   Search,
   Menu as MenuIcon,
+  Logout as LogoutIcon,
 } from "@mui/icons-material";
 import DirectionsBusIcon from "@mui/icons-material/DirectionsBus";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../../context/AuthContext";
 
 const Header = ({ onMenuClick }) => {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const [anchorEl, setAnchorEl] = useState(null);
+
+  const handleMenu = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/login");
+  };
+
   return (
     <AppBar
       position="fixed"
@@ -155,6 +178,7 @@ const Header = ({ onMenuClick }) => {
                 background: "rgba(255, 255, 255, 0.25)",
               },
             }}
+            onClick={handleMenu}
           >
             <Avatar
               sx={{
@@ -166,17 +190,17 @@ const Header = ({ onMenuClick }) => {
                 fontWeight: 600,
               }}
             >
-              A
+              {user?.username?.[0]?.toUpperCase() || 'A'}
             </Avatar>
             <Box sx={{ display: { xs: "none", sm: "block" } }}>
               <Typography
                 variant="body2"
                 sx={{ color: "#fff", fontWeight: 600, lineHeight: 1.2 }}
               >
-                Nguyễn Văn A
+                {user?.username || 'Nguyễn Văn A'}
               </Typography>
               <Chip
-                label="Admin"
+                label={user?.role?.toUpperCase() || 'ADMIN'}
                 size="small"
                 sx={{
                   height: 18,
@@ -188,6 +212,26 @@ const Header = ({ onMenuClick }) => {
               />
             </Box>
           </Box>
+
+          <Menu
+            id="menu-appbar"
+            anchorEl={anchorEl}
+            anchorOrigin={{
+              vertical: 'top',
+              horizontal: 'right',
+            }}
+            keepMounted
+            transformOrigin={{
+              vertical: 'top',
+              horizontal: 'right',
+            }}
+            open={Boolean(anchorEl)}
+            onClose={handleClose}
+          >
+            <MenuItem onClick={handleLogout}>
+              <LogoutIcon sx={{ mr: 1 }} /> Đăng xuất
+            </MenuItem>
+          </Menu>
         </Box>
       </Toolbar>
     </AppBar>

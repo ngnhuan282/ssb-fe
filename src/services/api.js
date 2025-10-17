@@ -71,3 +71,21 @@ export const userAPI = {
   update: (id, data) => axiosInstance.put(`/users/${id}`, data),
   delete: (id) => axiosInstance.delete(`/users/${id}`),
 };
+
+export const authAPI = {
+  // Đăng nhập
+  login: (credentials) => 
+    axiosInstance.post("/auth/login", credentials),
+  
+  // Đăng xuất
+  logout: () => 
+    axiosInstance.post("/auth/logout"),
+  
+  // Refresh token
+  refreshToken: () => 
+    axiosInstance.post("/auth/refresh-token"),
+  
+  // Lấy thông tin user hiện tại
+  getCurrentUser: () => 
+    axiosInstance.get("/auth/me"),
+}

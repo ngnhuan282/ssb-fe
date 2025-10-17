@@ -1,5 +1,8 @@
 import { createBrowserRouter } from "react-router-dom";
 import App from "../App";
+import ProtectedRoute from "./ProtectedRoute";
+import PublicRoute from "./PublicRoute";
+
 
 // USER pages
 import UserDashboardPage from "../pages/user/UserDashboardPage";
@@ -20,13 +23,55 @@ export const router = createBrowserRouter([
     element: <App />,
     errorElement: <ErrorPage />,
     children: [
-      { index: true, element: <UserDashboardPage /> },
-      { path: "map", element: <MapPage /> },
-      { path: "bus", element: <BusPage /> },
-      { path: "driver", element: <DriverPage /> },
+      { 
+        index: true, 
+        element: (
+          <ProtectedRoute allowedRoles={['parent', 'driver']}>
+            <UserDashboardPage />
+          </ProtectedRoute>
+        ),
+      },
+      { 
+        path: "map", 
+        element: (
+          <ProtectedRoute allowedRoles={['parent', 'driver']}>
+            <MapPage />
+          </ProtectedRoute>
+        ),
+      },
+      { 
+        path: "bus", 
+        element: (
+          <ProtectedRoute allowedRoles={['parent', 'driver']}>
+            <BusPage />
+          </ProtectedRoute>
+        ),
+      },
+      { 
+        path: "driver", 
+        element: (
+          <ProtectedRoute allowedRoles={['parent', 'driver']}>
+            <DriverPage />
+          </ProtectedRoute>
+        ),
+      },
     ],
   },
-  { path: "/login", element: <LoginPage /> },
-  { path: "/register", element: <RegisterPage /> },
+  {
+    path: "/login",
+    element: (
+      <PublicRoute>
+        <LoginPage />
+      </PublicRoute>
+    ),
+  },
+  {
+    path: "/register",
+    element: (
+      <PublicRoute>
+        <RegisterPage />
+      </PublicRoute>
+    ),
+  },
   { path: "/admin", element: <AdminDashboard /> },
 ]);
