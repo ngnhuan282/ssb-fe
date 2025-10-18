@@ -12,6 +12,8 @@ import DriverPage from "../pages/user/DriverPage";
 import LoginPage from "../pages/user/LoginPage";
 import RegisterPage from "../pages/user/RegisterPage";
 import ErrorPage from "../pages/user/ErrorPage";
+import ParentPage from "../pages/user/ParentPage";
+
 
 // ADMIN pages
 import AdminDashboard from "../pages/admin/AdminDashboard";
@@ -55,6 +57,7 @@ export const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
+      { path: "parent", element: <ParentPage /> },
     ],
   },
   {
