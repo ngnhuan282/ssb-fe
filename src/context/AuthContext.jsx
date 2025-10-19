@@ -75,7 +75,7 @@ export const AuthProvider = ({ children }) => {
       
       // XÓA KHỎI LOCALSTORAGE
       localStorage.removeItem('user');
-      console.log('✅ User removed from localStorage');
+      console.log('User removed from localStorage');
     }
   };
 
@@ -84,7 +84,7 @@ export const AuthProvider = ({ children }) => {
     const newUserData = { ...user, ...updatedData };
     setUser(newUserData);
     localStorage.setItem('user', JSON.stringify(newUserData));
-    console.log('✅ User updated in localStorage');
+    console.log('User updated in localStorage');
   };
 
   return (
