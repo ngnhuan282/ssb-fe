@@ -1,12 +1,11 @@
-// src/routes/PublicRoute.jsx
 import { Navigate } from "react-router-dom";
 import { Box, CircularProgress } from "@mui/material";
 import { useAuth } from "../context/AuthContext";
 
 const PublicRoute = ({ children }) => {
-  const { user, loading } = useAuth();
+  const { user, loading, isAuthenticated } = useAuth();
 
-  // Hiển thị loading spinner khi đang xác thực
+  // Nếu đang load auth, hiển thị spinner
   if (loading) {
     return (
       <Box
@@ -15,6 +14,7 @@ const PublicRoute = ({ children }) => {
           alignItems: "center",
           justifyContent: "center",
           minHeight: "100vh",
+          bgcolor: "#f5f7fa",
         }}
       >
         <CircularProgress size={50} />
@@ -22,13 +22,15 @@ const PublicRoute = ({ children }) => {
     );
   }
 
-  // Nếu đã đăng nhập thì chặn truy cập vào /login hoặc /register
-  if (user) {
-    const defaultRoute = user.role === "admin" ? "/admin" : "/";
+  // ⚠️ Kiểm tra nếu đã authenticated, redirect ngay
+  // Không cần kiểm tra user, chỉ cần isAuthenticated
+  if (isAuthenticated) {
+    // Redirect về home hoặc admin tùy theo role
+    const defaultRoute = user?.role === "admin" ? "/admin" : "/";
     return <Navigate to={defaultRoute} replace />;
   }
 
-  // Nếu chưa đăng nhập thì cho phép hiển thị nội dung (trang login/register)
+  // Chỉ render login/register khi chưa login
   return children;
 };
 

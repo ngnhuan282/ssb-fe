@@ -3,7 +3,6 @@ import App from "../App";
 import ProtectedRoute from "./ProtectedRoute";
 import PublicRoute from "./PublicRoute";
 
-
 // USER pages
 import UserDashboardPage from "../pages/user/UserDashboardPage";
 import MapPage from "../pages/user/MapPage";
@@ -14,11 +13,9 @@ import RegisterPage from "../pages/user/RegisterPage";
 import ErrorPage from "../pages/user/ErrorPage";
 import ParentPage from "../pages/user/ParentPage";
 
-
 // ADMIN pages
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import AdminSchedule from "../pages/admin/AdminSchedule";
-
 
 export const router = createBrowserRouter([
   {
@@ -77,6 +74,20 @@ export const router = createBrowserRouter([
       </PublicRoute>
     ),
   },
-  { path: "/admin", element: <AdminDashboard /> },
-  { path: "/adminSchedule", element: <AdminSchedule /> },
+  { 
+    path: "/admin", 
+    element: (
+      // <ProtectedRoute allowedRoles={['admin']}>
+        <AdminDashboard />
+      // </ProtectedRoute>
+    ) 
+  },
+  { 
+    path: "/admin/schedule", 
+    element: (
+      // <ProtectedRoute allowedRoles={['admin']}>
+        <AdminSchedule />
+      // </ProtectedRoute>
+    ) 
+  },
 ]);

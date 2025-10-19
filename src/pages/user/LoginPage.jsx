@@ -1,3 +1,4 @@
+// src/pages/user/LoginPage.jsx
 import React, { useEffect, useState } from 'react';
 import { Box, Paper, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
@@ -7,11 +8,11 @@ import { useAuth } from '../../context/AuthContext';
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const { login, isAuthenticated, user, isLoading } = useAuth();
+  const { login, isAuthenticated, user, loading } = useAuth();
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!isLoading && isAuthenticated && user) {
+    if (!loading && isAuthenticated && user) {
       const roleRoutes = {
         admin: '/admin',
         driver: '/',
@@ -19,7 +20,7 @@ const LoginPage = () => {
       };
       navigate(roleRoutes[user.role] || '/');
     }
-  }, [isAuthenticated, user, isLoading, navigate]);
+  }, [isAuthenticated, user, loading, navigate]);
 
   const handleLogin = async (credentials) => {
     setError(null);
@@ -29,7 +30,7 @@ const LoginPage = () => {
     }
   };
 
-  if (isLoading) {
+  if (loading) {
     return <Box>Đang tải...</Box>;
   }
 
