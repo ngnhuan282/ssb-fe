@@ -1,85 +1,79 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Box,
   Typography,
   Card,
   CardContent,
   Button,
-  IconButton,
   Dialog,
   DialogTitle,
   DialogActions,
+  IconButton,
   Grid,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
 import AdminHeader from "../../components/admin/layout/AdminHeader";
 import AdminSidebar from "../../components/admin/layout/AdminSidebar";
-import {studentAPI} from "../../services/api";
-import {parentAPI} from "../../services/api";
+import {busAPI} from "../../services/api"
+import {driverAPI} from "../../services/api";
 import {routeAPI} from "../../services/api";
-import StudentTable from "../../components/admin/students/StudentTable";
-import StudentForm from "../../components/admin/students/StudentForm";
-import StudentDeleteDialog from "../../components/admin/students/StudentDeleteDialog";
+import BusTable from "../../components/admin/buses/BusTable";
+import BusForm from "../../components/admin/buses/BusForm";
+import BusDeleteDialog from "../../components/admin/buses/BusDeleteDialog";
 
-export default function StudentsPage() {
-  const [students, setStudents] = useState([]);
-  const [parents, setParents] = useState([]);
+export default function BusPage() {
+  const [buses, setBuses] = useState([]);
+  const [drivers, setDrivers] = useState([]);
   const [routes, setRoutes] = useState([]);
   const [openForm, setOpenForm] = useState(false);
-  const [editingStudent, setEditingStudent] = useState(null);
+  const [editingBus, setEditingBus] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [lastDeleteData, setLastDeleteData] = useState(null);
   const [formData, setFormData] = useState({
-    fullName: "",
-    age: "",
-    class: "",
-    parent: "",
+    licensePlate: "",
+    capacity: "",
+    currentStatus: "active",
+    driver: "",
     route: "",
-    pickupPoint: "",
-    dropoffPoint: "",
-    status: "pending",
   });
   const [errors, setErrors] = useState({});
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
 
   useEffect(() => {
-    const fetchAll = async () => {
+    const fetchAllData = async () => {
       try {
-        const [studentRes, parentRes, routeRes] = await Promise.all([
-          studentAPI.getAll(),
-          parentAPI.getAll(),
+        const [busRes, driverRes, routeRes] = await Promise.all([
+          busAPI.getAll(),
+          driverAPI.getAll(),
           routeAPI.getAll(),
         ]);
-        setStudents(studentRes.data.data);
-        setParents(parentRes.data.data);
+        setBuses(busRes.data.data);
+        setDrivers(driverRes.data.data);
         setRoutes(routeRes.data.data);
       } catch (err) {
-        console.error("Fetch students error:", err);
+        console.error("Fetch buses error:", err);
       }
     };
-    fetchAll();
+    fetchAllData();
   }, []);
 
-  const handleOpenForm = (student = null) => {
-    if (student) {
-      setEditingStudent(student);
+  const handleOpenForm = (bus = null) => {
+    if (bus) {
+      setEditingBus(bus);
       setFormData({
-        ...student,
-        parent: student.parent?._id || "",
-        route: student.route?._id || "",
+        ...bus,
+        driver: bus.driver?._id || "",
+        route: bus.route?._id || "",
       });
     } else {
-      setEditingStudent(null);
+      setEditingBus(null);
       setFormData({
-        fullName: "",
-        age: "",
-        class: "",
-        parent: "",
+        licensePlate: "",
+        capacity: "",
+        currentStatus: "active",
+        driver: "",
         route: "",
-        pickupPoint: "",
-        dropoffPoint: "",
-        status: "pending",
       });
     }
     setErrors({});
@@ -87,18 +81,14 @@ export default function StudentsPage() {
   };
 
   const handleCloseForm = () => setOpenForm(false);
-
   const handleFormExited = () => {
-    setEditingStudent(null);
+    setEditingBus(null);
     setFormData({
-      fullName: "",
-      age: "",
-      class: "",
-      parent: "",
+      licensePlate: "",
+      capacity: "",
+      currentStatus: "active",
+      driver: "",
       route: "",
-      pickupPoint: "",
-      dropoffPoint: "",
-      status: "pending",
     });
     setErrors({});
   };
@@ -110,17 +100,16 @@ export default function StudentsPage() {
 
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.fullName.trim()) newErrors.fullName = "Tên học sinh là bắt buộc";
-    if (!formData.age || isNaN(formData.age) || Number(formData.age) < 3)
-      newErrors.age = "Tuổi phải là số và tối thiểu 3";
-    if (!formData.class.trim()) newErrors.class = "Lớp là bắt buộc";
-    if (!formData.parent) newErrors.parent = "Vui lòng chọn phụ huynh";
+    if (!formData.licensePlate.trim())
+      newErrors.licensePlate = "Biển số là bắt buộc";
+    else if (formData.licensePlate.length < 5)
+      newErrors.licensePlate = "Tối thiểu 5 ký tự";
+    if (!formData.capacity || isNaN(formData.capacity) || Number(formData.capacity) < 1)
+      newErrors.capacity = "Sức chứa phải là số và tối thiểu 1";
+    if (!formData.currentStatus)
+      newErrors.currentStatus = "Trạng thái là bắt buộc";
+    if (!formData.driver) newErrors.driver = "Vui lòng chọn tài xế";
     if (!formData.route) newErrors.route = "Vui lòng chọn tuyến đường";
-    if (!formData.pickupPoint.trim())
-      newErrors.pickupPoint = "Điểm đón là bắt buộc";
-    if (!formData.dropoffPoint.trim())
-      newErrors.dropoffPoint = "Điểm trả là bắt buộc";
-    if (!formData.status) newErrors.status = "Trạng thái là bắt buộc";
     return newErrors;
   };
 
@@ -128,28 +117,34 @@ export default function StudentsPage() {
     e.preventDefault();
     const newErrors = validateForm();
 
+    const exists = buses.some(
+      (b) =>
+        b.licensePlate.trim().toLowerCase() ===
+          formData.licensePlate.trim().toLowerCase() &&
+        b._id !== editingBus?._id
+    );
+    if (exists) {
+      setErrors({ licensePlate: "Biển số này đã tồn tại trong hệ thống" });
+      return;
+    }
+
     if (Object.keys(newErrors).length === 0) {
       const cleanedData = {
-        fullName: formData.fullName.trim(),
-        age: Number(formData.age),
-        class: formData.class.trim(),
-        parent: formData.parent || null,
+        licensePlate: formData.licensePlate.trim(),
+        capacity: formData.capacity,
+        currentStatus: formData.currentStatus,
+        driver: formData.driver || null,
         route: formData.route || null,
-        pickupPoint: formData.pickupPoint.trim(),
-        dropoffPoint: formData.dropoffPoint.trim(),
-        status: formData.status,
       };
 
-      if (editingStudent) {
-        const res = await studentAPI.update(editingStudent._id, cleanedData);
-        setStudents(
-          students.map((s) =>
-            s._id === editingStudent._id ? res.data.data : s
-          )
+      if (editingBus) {
+        const res = await busAPI.update(editingBus._id, cleanedData);
+        setBuses(
+          buses.map((b) => (b._id === editingBus._id ? res.data.data : b))
         );
       } else {
-        const res = await studentAPI.create(cleanedData);
-        setStudents([...students, res.data.data]);
+        const res = await busAPI.create(cleanedData);
+        setBuses([...buses, res.data.data]);
       }
       handleCloseForm();
     } else {
@@ -157,34 +152,31 @@ export default function StudentsPage() {
     }
   };
 
-  const handleOpenDelete = (student) => {
-    setDeleteConfirm(student);
-    setLastDeleteData(student);
+  const handleOpenDelete = (bus) => {
+    setDeleteConfirm(bus);
+    setLastDeleteData(bus);
   };
 
   const handleDelete = async (_id) => {
-    await studentAPI.delete(_id);
-    setStudents(students.filter((s) => s._id !== _id));
+    await busAPI.delete(_id);
+    setBuses(buses.filter((b) => b._id !== _id));
     setDeleteConfirm(null);
   };
 
-  const rows = students.map((s) => ({
-    id: s._id,
-    fullName: s.fullName,
-    age: s.age,
-    class: s.class,
-    parent: s.parent?._id || "Không có",
-    route: s.route?.name || "Không có",
-    pickupPoint: s.pickupPoint,
-    dropoffPoint: s.dropoffPoint,
-    status:
-      s.status === "pending"
-        ? "Đang đợi"
-        : s.status === "picked_up"
-        ? "Đã đón"
-        : "Đã trả",
-    createdAt: new Date(s.createdAt).toLocaleDateString(),
-    updatedAt: new Date(s.updatedAt).toLocaleDateString(),
+  const rows = buses.map((bus) => ({
+    id: bus._id,
+    licensePlate: bus.licensePlate,
+    capacity: bus.capacity,
+    currentStatus:
+      bus.currentStatus === "active"
+        ? "Hoạt động"
+        : bus.currentStatus === "maintenance"
+        ? "Bảo trì"
+        : "Ngừng hoạt động",
+    driver: bus.driver?.licenseNumber || "Không có",
+    route: bus.route?.name || "Không có",
+    createdAt: new Date(bus.createdAt).toLocaleDateString(),
+    updatedAt: new Date(bus.updatedAt).toLocaleDateString(),
   }));
 
   return (
@@ -204,12 +196,8 @@ export default function StudentsPage() {
           alignItems: "center",
         }}
       >
-        <Typography
-          variant="h5"
-          gutterBottom
-          sx={{ textAlign: "center", color: "#007bff" }}
-        >
-          Quản Lý Học Sinh
+        <Typography variant="h5" gutterBottom sx={{ textAlign: "center", color: "#007bff" }}>
+          Quản Lý Xe Buýt
         </Typography>
 
         <Box sx={{ width: "100%", display: "flex", justifyContent: "flex-end", mb: 3 }}>
@@ -222,7 +210,7 @@ export default function StudentsPage() {
               "&:hover": { backgroundColor: "#0056b3" },
             }}
           >
-            Thêm Học Sinh
+            Thêm Xe Mới
           </Button>
         </Box>
 
@@ -231,12 +219,12 @@ export default function StudentsPage() {
             <Card sx={{ borderRadius: 2, boxShadow: 3 }}>
               <CardContent>
                 <Typography variant="h6" sx={{ mb: 2, color: "#333" }}>
-                  Danh Sách Học Sinh
+                  Danh Sách Xe Buýt
                 </Typography>
 
-                <StudentTable
+                <BusTable
                   rows={rows}
-                  students={students}
+                  buses={buses}
                   paginationModel={paginationModel}
                   setPaginationModel={setPaginationModel}
                   onEdit={handleOpenForm}
@@ -247,6 +235,7 @@ export default function StudentsPage() {
           </Grid>
         </Grid>
 
+        {/* Form thêm/sửa */}
         <Dialog
           open={openForm}
           onClose={handleCloseForm}
@@ -261,7 +250,7 @@ export default function StudentsPage() {
               borderRadius: "4px 4px 0 0",
             }}
           >
-            {editingStudent ? "Sửa Học Sinh" : "Thêm Học Sinh"}
+            {editingBus ? "Sửa Xe Buýt" : "Thêm Xe Buýt"}
             <IconButton
               sx={{ position: "absolute", top: 8, right: 8, color: "#fff" }}
               onClick={handleCloseForm}
@@ -271,15 +260,18 @@ export default function StudentsPage() {
           </DialogTitle>
 
           <form onSubmit={handleSubmit}>
-            <StudentForm
+            <BusForm
               formData={formData}
               errors={errors}
-              parents={parents}
+              drivers={drivers}
               routes={routes}
               handleChange={handleChange}
             />
+
             <DialogActions>
-              <Button onClick={handleCloseForm}>Hủy</Button>
+              <Button onClick={handleCloseForm} sx={{ color: "#333" }}>
+                Hủy
+              </Button>
               <Button
                 type="submit"
                 variant="contained"
@@ -288,13 +280,13 @@ export default function StudentsPage() {
                   "&:hover": { backgroundColor: "#0056b3" },
                 }}
               >
-                {editingStudent ? "Cập Nhật" : "Thêm"}
+                {editingBus ? "Cập Nhật" : "Thêm"}
               </Button>
             </DialogActions>
           </form>
         </Dialog>
 
-        <StudentDeleteDialog
+        <BusDeleteDialog
           deleteConfirm={deleteConfirm}
           lastDeleteData={lastDeleteData}
           onCancel={() => setDeleteConfirm(null)}

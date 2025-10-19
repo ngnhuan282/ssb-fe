@@ -2,6 +2,7 @@ import { createBrowserRouter } from "react-router-dom";
 import App from "../App";
 import ProtectedRoute from "./ProtectedRoute";
 import PublicRoute from "./PublicRoute";
+import { adminRoutes } from "./AdminRoutes";
 
 // USER pages
 import UserDashboardPage from "../pages/user/UserDashboardPage";
@@ -11,11 +12,8 @@ import DriverPage from "../pages/user/DriverPage";
 import LoginPage from "../pages/user/LoginPage";
 import RegisterPage from "../pages/user/RegisterPage";
 import ErrorPage from "../pages/user/ErrorPage";
-import ParentPage from "../pages/user/ParentPage";
 
-// ADMIN pages
-import AdminDashboard from "../pages/admin/AdminDashboard";
-import AdminSchedule from "../pages/admin/AdminSchedule";
+import ParentPage from "../pages/user/ParentPage";
 
 export const router = createBrowserRouter([
   {
@@ -74,20 +72,5 @@ export const router = createBrowserRouter([
       </PublicRoute>
     ),
   },
-  { 
-    path: "/admin", 
-    element: (
-      // <ProtectedRoute allowedRoles={['admin']}>
-        <AdminDashboard />
-      // </ProtectedRoute>
-    ) 
-  },
-  { 
-    path: "/admin/schedule", 
-    element: (
-      // <ProtectedRoute allowedRoles={['admin']}>
-        <AdminSchedule />
-      // </ProtectedRoute>
-    ) 
-  },
+  ...adminRoutes,
 ]);

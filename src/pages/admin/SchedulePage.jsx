@@ -5,7 +5,7 @@ import AdminHeader from "../../components/admin/layout/AdminHeader";
 import AdminSidebar from "../../components/admin/layout/AdminSidebar";
 import ScheduleManager from "../../components/admin/schedule/ScheduleManager";
 
-const AdminSchedule = () => {
+const SchedulePage = () => {
     return (
         <Box sx={{ display: "flex", height: "100vh", backgroundColor: "#f5f6fa" }}>
             <AdminHeader />
@@ -17,4 +17,4 @@ const AdminSchedule = () => {
     );
 };
 
-export default AdminSchedule;
+export default SchedulePage;
