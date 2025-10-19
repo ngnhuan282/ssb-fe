@@ -17,6 +17,7 @@ import ParentPage from "../pages/user/ParentPage";
 
 // ADMIN pages
 import AdminDashboard from "../pages/admin/AdminDashboard";
+import AdminSchedule from "../pages/admin/AdminSchedule";
 
 
 export const router = createBrowserRouter([
@@ -77,4 +78,5 @@ export const router = createBrowserRouter([
     ),
   },
   { path: "/admin", element: <AdminDashboard /> },
+  { path: "/adminSchedule", element: <AdminSchedule /> },
 ]);
