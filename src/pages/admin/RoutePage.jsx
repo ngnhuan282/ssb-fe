@@ -9,7 +9,7 @@ const RoutePage = () => {
   const { data: routes, loading, error, refetch } = useFetch(routeAPI.getAll);
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box sx={{ p: 3, overflowY: "auto" }}>
       <Typography variant="h4" gutterBottom>🚌 Quản lý tuyến đường</Typography>
 
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>

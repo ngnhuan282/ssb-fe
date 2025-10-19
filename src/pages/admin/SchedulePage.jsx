@@ -1,20 +1,13 @@
 import React from "react";
-import { Box, Toolbar, Grid } from "@mui/material";
-
-import AdminHeader from "../../components/admin/layout/AdminHeader";
-import AdminSidebar from "../../components/admin/layout/AdminSidebar";
+import { Box } from "@mui/material";
 import ScheduleManager from "../../components/admin/schedule/ScheduleManager";
 
 const SchedulePage = () => {
-    return (
-        <Box sx={{ display: "flex", height: "100vh", backgroundColor: "#f5f6fa" }}>
-            <AdminHeader />
-            <AdminSidebar />
-            <Box component="main" sx={{ flexGrow: 1, p: 3, mt: 8, overflowY: "auto" }}>
-                <ScheduleManager />
-            </Box>
-        </Box>
-    );
+  return (
+    <Box sx={{ p: 3, overflowY: "auto" }}>
+      <ScheduleManager />
+    </Box>
+  );
 };
 
 export default SchedulePage;
