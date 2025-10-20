@@ -1,7 +1,7 @@
 // src/components/ScheduleManager.jsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Box, Stack, Button } from "@mui/material";
+import { Box, Stack, Button, Dialog, DialogTitle, DialogContent, List, ListItem, ListItemText } from "@mui/material";
 import { Add } from "@mui/icons-material";
 import ScheduleTable from "./ScheduleTable";
 import ScheduleDialog from "./ScheduleDialog";
@@ -12,7 +12,7 @@ import { busAPI } from "../../../services/api";
 import { routeAPI } from "../../../services/api";
 import { driverAPI } from "../../../services/api";
 import { studentAPI } from "../../../services/api";
-import { userAPI } from "../../../services/api";
+
 
 
 export default function ScheduleManager() {
@@ -21,11 +21,11 @@ export default function ScheduleManager() {
     const [routes, setRoutes] = useState([]);
     const [drivers, setDrivers] = useState([]);
     const [students, setStudents] = useState([]);
-    const [users, setUsers] = useState([]);
     const [selectedStudents, setSelectedStudents] = useState([]);
     const [studentDialogOpen, setStudentDialogOpen] = useState(false);
     const [open, setOpen] = useState(false);
     const [editing, setEditing] = useState(null);
+    const [errors, setErrors] = useState({})
     const [form, setForm] = useState({
         route: "",
         bus: "",
@@ -36,8 +36,22 @@ export default function ScheduleManager() {
         frequency: "",
         status: "",
         students: [],
-        nestudent: 0,
+        numstudent: 0,
     });
+
+    const [studentListOpen, setStudentListOpen] = useState(false);
+    const [currentStudents, setCurrentStudents] = useState([]);
+
+    const handleViewStudents = (row) => {
+        const rowStudent = row.students.map(sid => {
+            const student = students.find(st => st._id === sid);
+            return student || { fullName: "Không rõ" };
+        });
+        console.log("studentrow:", rowStudent)
+        setCurrentStudents(rowStudent || []);
+        setStudentListOpen(true);
+    };
+
 
 
     useEffect(() => {
@@ -46,26 +60,18 @@ export default function ScheduleManager() {
 
     const fetchApiData = async () => {
         try {
-            const [schedule, bus, route, driver, student, user] = await Promise.all([
+            setEditing[null]
+            const [schedule, bus, route, driver, student] = await Promise.all([
                 scheduleAPI.getAll(),
                 busAPI.getAll(),
                 routeAPI.getAll(),
                 driverAPI.getAll(),
                 studentAPI.getAll(),
-                userAPI.getAll(),
             ]);
-
-            console.log("Fetched buses:", bus.data.data);
-            console.log("Fetched routes:", route.data.data);
-            console.log("Fetched drivers:", driver.data.data);
-            console.log("Fetched students:", student.data.data);
-
             setBuses(bus.data.data)
             setRoutes(route.data.data)
             setDrivers(driver.data.data)
             setStudents(student.data.data)
-            setUsers(user.data.data)
-
 
             const formatted = schedule.data.data.map((item) => ({
                 ...item,
@@ -89,6 +95,7 @@ export default function ScheduleManager() {
                 updatedAt: item.updatedAt
                     ? moment(item.updatedAt).tz("Asia/Ho_Chi_Minh").format("DD-MM-YYYY HH:mm")
                     : "",
+                onViewStudents: (row) => handleViewStudents(row),
             }));
             console.log("Fetched schedules:", formatted);
             setSchedules(formatted);
@@ -98,16 +105,16 @@ export default function ScheduleManager() {
     };
 
 
-    const handleOpen = (row = null) => {
+    const handleOpen = async (row = null) => {
         if (row) {
-            setEditing("rowww", row._id);
+            setEditing(row._id);
+
+            const rowData = await scheduleAPI.getById(row._id)
 
             const foundBus = buses.find(b => b.licensePlate === row.bus);
-            const foundUserId = drivers.find(d => d.user === row.driver);
-            const foundDriver = users.find(u => u.username === foundUserId);
+            const foundDriver = drivers.find(d => d.user.username === row.driver);
             const foundRoute = routes.find(r => r.name === row.route);
-
-            console.log(row)
+            console.log(rowData)
             setForm({
                 route: foundRoute?._id || "",
                 bus: foundBus?._id || "",
@@ -115,10 +122,13 @@ export default function ScheduleManager() {
                 date: moment(row.date, ["DD-MM-YYYY", "YYYY-MM-DD"]).format("YYYY-MM-DD"),
                 starttime: row.starttime || "",
                 endtime: row.endtime || "",
-                frequency: row.frequency || "daily",
-                status: row.status || "scheduled",
-                numstudent: row.numstudent || "",
+                frequency: rowData.data.data.frequency || "",
+                status: rowData.data.data.status || "",
+                students: rowData.data.data.students || [],
+
             });
+
+            setSelectedStudents(rowData.data.data.students || []);
         } else {
             setEditing(null);
             setForm({
@@ -128,18 +138,27 @@ export default function ScheduleManager() {
                 date: "",
                 starttime: "",
                 endtime: "",
+                frequency: "",
+                status: "",
+                students: [],
             });
+            setSelectedStudents([])
         }
         setOpen(true);
     };
 
-    const handleClose = () => setOpen(false);
+    const handleClose = () => {
+        setOpen(false);
+        setErrors({});
+    };
 
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value });
     };
 
     const handleSave = async () => {
+        if (!validateForm(form)) return;
+
         const payload = {
             route: form.route,
             bus: form.bus,
@@ -156,22 +175,50 @@ export default function ScheduleManager() {
         console.log("Payload to save:", payload);
 
         if (editing) {
-            await axios.put(`http://localhost:5000/api/v1/schedules/${editing}`, payload);
+            await scheduleAPI.update(editing, payload)
         } else {
-            await axios.post("http://localhost:5000/api/v1/schedules", payload);
+            await scheduleAPI.create(payload)
         }
 
         await fetchApiData(); // làm mới danh sách
+        setSelectedStudents([]);
+        setErrors({})
         setOpen(false);
     };
 
 
     const handleDelete = async (id) => {
         if (window.confirm("Bạn có chắc muốn xóa lịch trình này?")) {
-            await axios.delete(`http://localhost:5000/api/v1/schedules/${id}`);
+            await scheduleAPI.delete(id);
             setSchedules((prev) => prev.filter((s) => s._id !== id));
         }
     };
+
+    const validateForm = (form) => {
+        const newErrors = {};
+
+        if (!form.route) newErrors.route = "Vui lòng chọn tuyến đường.";
+        if (!form.bus) newErrors.bus = "Vui lòng chọn xe buýt.";
+        if (!form.driver) newErrors.driver = "Vui lòng chọn tài xế.";
+
+        if (!form.date) newErrors.date = "Vui lòng chọn ngày.";
+        else if (isNaN(new Date(form.date).getTime()))
+            newErrors.date = "Ngày không hợp lệ.";
+
+        if (!form.starttime) newErrors.starttime = "Vui lòng nhập giờ bắt đầu.";
+        if (!form.endtime) newErrors.endtime = "Vui lòng nhập giờ kết thúc.";
+        else if (form.starttime && form.endtime <= form.starttime)
+            newErrors.endtime = "Giờ kết thúc phải sau giờ bắt đầu.";
+
+        if (!form.frequency) newErrors.frequency = "Vui lòng chọn tần suất.";
+        if (!form.status) newErrors.status = "Vui lòng chọn trạng thái";
+        if (!form.students || form.students.length === 0)
+            newErrors.students = "Phải chọn ít nhất một học sinh.";
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
 
     return (
         <Box sx={{ height: 500, width: "100%", p: 2 }}>
@@ -180,7 +227,7 @@ export default function ScheduleManager() {
                 <Button
                     variant="contained"
                     startIcon={<Add />}
-                    onClick={handleOpen}
+                    onClick={() => handleOpen(null)}
                     sx={{
                         background: "linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%)",
                         color: "#fff",
@@ -203,6 +250,7 @@ export default function ScheduleManager() {
                 schedules={schedules}
                 onEdit={handleOpen}
                 onDelete={handleDelete}
+                onViewStudents={handleViewStudents}
             />
 
             <ScheduleDialog
@@ -218,6 +266,7 @@ export default function ScheduleManager() {
                 students={students}
                 selectedStudents={selectedStudents}
                 onSelectStudents={() => setStudentDialogOpen(true)}
+                errors={errors}
             />
             <StudentSelectDialog
                 open={studentDialogOpen}
@@ -230,6 +279,24 @@ export default function ScheduleManager() {
                 }
                 onClose={() => setStudentDialogOpen(false)}
             />
+            <Dialog open={studentListOpen} onClose={() => setStudentListOpen(false)}>
+                <DialogTitle>Danh sách học sinh</DialogTitle>
+                <DialogContent>
+                    {currentStudents.length > 0 ? (
+                        <List>
+                            {currentStudents.map((student, index) => (
+                                <ListItem key={index}>
+                                    <ListItemText
+                                        primary={`Tên: ${student.fullName}, Lớp: ${student.class}, Điểm đón: ${student.pickupPoint}`}
+                                    />
+                                </ListItem>
+                            ))}
+                        </List>
+                    ) : (
+                        <p>Không có học sinh nào trong lịch trình này.</p>
+                    )}
+                </DialogContent>
+            </Dialog>
         </Box>
     );
 }

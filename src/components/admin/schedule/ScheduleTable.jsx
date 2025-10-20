@@ -3,7 +3,7 @@ import { DataGrid } from "@mui/x-data-grid";
 import { Button, Stack } from "@mui/material";
 import { Edit, Delete } from "@mui/icons-material";
 
-export default function ScheduleTable({ schedules, onEdit, onDelete }) {
+export default function ScheduleTable({ schedules, onEdit, onDelete, onViewStudents }) {
     const columns = [
         { field: "route", headerName: "Tuyến", flex: 1 },
         { field: "bus", headerName: "Xe", flex: 1 },
@@ -11,11 +11,27 @@ export default function ScheduleTable({ schedules, onEdit, onDelete }) {
         { field: "date", headerName: "Ngày", flex: 1, },
         { field: "starttime", headerName: "Bắt đầu", flex: 1, },
         { field: "endtime", headerName: "Kết thúc", flex: 1, },
-        { field: "numstudent", headerName: "Số lượng học sinh", flex: 1, },
         { field: "frequency", headerName: "Tần suất", flex: 1, },
         { field: "status", headerName: "Trạng thái", flex: 1, },
         { field: "createdAt", headerName: "CreatedAt", flex: 1, },
         { field: "updatedAt", headerName: "UpdatedAt", flex: 1, },
+        {
+            field: "students",
+            headerName: "Học sinh",
+            flex: 1,
+            renderCell: (params) => (
+                <Stack direction="row">
+                    <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={() => onViewStudents(params.row)}
+                    >
+                        Xem danh sách
+                    </Button>
+                </Stack>
+
+            ),
+        },
         {
             field: "actions",
             headerName: "Thao tác",
