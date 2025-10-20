@@ -1,7 +1,7 @@
 // src/components/ScheduleManager.jsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Box, Stack, Button, Dialog, DialogTitle, DialogContent, List, ListItem, ListItemText } from "@mui/material";
+import { Box, Stack, Button, Dialog, DialogTitle, DialogContent, TableContainer, TableBody, TableCell, TableHead, TableRow, Paper, Table } from "@mui/material";
 import { Add } from "@mui/icons-material";
 import ScheduleTable from "./ScheduleTable";
 import ScheduleDialog from "./ScheduleDialog";
@@ -279,19 +279,34 @@ export default function ScheduleManager() {
                 }
                 onClose={() => setStudentDialogOpen(false)}
             />
-            <Dialog open={studentListOpen} onClose={() => setStudentListOpen(false)}>
+            <Dialog open={studentListOpen} onClose={() => setStudentListOpen(false)} fullWidth
+                maxWidth="md">
                 <DialogTitle>Danh sách học sinh</DialogTitle>
                 <DialogContent>
                     {currentStudents.length > 0 ? (
-                        <List>
-                            {currentStudents.map((student, index) => (
-                                <ListItem key={index}>
-                                    <ListItemText
-                                        primary={`Tên: ${student.fullName}, Lớp: ${student.class}, Điểm đón: ${student.pickupPoint}`}
-                                    />
-                                </ListItem>
-                            ))}
-                        </List>
+                        <TableContainer component={Paper}>
+                            <Table sx={{ minWidth: 650 }} aria-label="a dense table">
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell component="th" scope="row">Tên</TableCell>
+                                        <TableCell align="center">Lớp</TableCell>
+                                        <TableCell align="right">Điểm đón</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {currentStudents.map((student, index) => (
+                                        <TableRow
+                                            key={index}
+                                            sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                        >
+                                            <TableCell component="th" scope="row">{student.fullName}</TableCell>
+                                            <TableCell align="center">{student.class}</TableCell>
+                                            <TableCell align="right">{student.pickupPoint}</TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
                     ) : (
                         <p>Không có học sinh nào trong lịch trình này.</p>
                     )}
