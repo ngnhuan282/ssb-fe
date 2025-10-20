@@ -30,7 +30,8 @@ export default function ScheduleDialog({
     drivers,
     students,
     selectedStudents,
-    onSelectStudents
+    onSelectStudents,
+    errors
 }) {
     return (
         <Dialog
@@ -79,7 +80,7 @@ export default function ScheduleDialog({
                 sx={{ p: 3 }}
             >
                 <Stack spacing={2}>
-                    <FormControl fullWidth>
+                    <FormControl fullWidth error={!!errors.bus}>
                         <InputLabel>Xe</InputLabel>
                         <Select
                             name="bus"
@@ -93,9 +94,10 @@ export default function ScheduleDialog({
                                 </MenuItem>
                             ))}
                         </Select>
+                        {errors.bus && <Typography color="error" variant="body2">{errors.bus}</Typography>}
                     </FormControl>
 
-                    <FormControl fullWidth>
+                    <FormControl fullWidth error={!!errors.route}>
                         <InputLabel>Tuyến</InputLabel>
                         <Select
                             name="route"
@@ -109,9 +111,10 @@ export default function ScheduleDialog({
                                 </MenuItem>
                             ))}
                         </Select>
+                        {errors.route && <Typography color="error" variant="body2">{errors.route}</Typography>}
                     </FormControl>
 
-                    <FormControl fullWidth>
+                    <FormControl fullWidth error={!!errors.driver}>
                         <InputLabel>Tài xế</InputLabel>
                         <Select
                             name="driver"
@@ -125,7 +128,9 @@ export default function ScheduleDialog({
                                 </MenuItem>
                             ))}
                         </Select>
+                        {errors.driver && <Typography color="error" variant="body2">{errors.driver}</Typography>}
                     </FormControl>
+
 
                     <Divider sx={{ my: 1.5 }} />
                     <Stack direction="row" spacing={2}>
@@ -138,6 +143,8 @@ export default function ScheduleDialog({
                             fullWidth
                             size="small"
                             InputLabelProps={{ shrink: true }}
+                            error={!!errors.date}
+                            helperText={errors.date}
                         />
                     </Stack>
 
@@ -151,6 +158,8 @@ export default function ScheduleDialog({
                             fullWidth
                             size="small"
                             InputLabelProps={{ shrink: true }}
+                            error={!!errors.starttime}
+                            helperText={errors.starttime}
                         />
                         <TextField
                             label="Giờ kết thúc"
@@ -161,6 +170,8 @@ export default function ScheduleDialog({
                             fullWidth
                             size="small"
                             InputLabelProps={{ shrink: true }}
+                            error={!!errors.endtime}
+                            helperText={errors.endtime}
                         />
 
                     </Stack>
@@ -175,6 +186,11 @@ export default function ScheduleDialog({
                     >
                         Chọn học sinh ({selectedStudents.length})
                     </Button>
+                    {errors.students && (
+                        <Typography color="error" variant="body2" sx={{ mt: -1 }}>
+                            {errors.students}
+                        </Typography>
+                    )}
                     <Box display="flex" gap={2}>
                         <TextField
                             label="Tần suất"
@@ -183,6 +199,8 @@ export default function ScheduleDialog({
                             value={form.frequency || ""}
                             onChange={onChange}
                             fullWidth
+                            error={!!errors.frequency}
+                            helperText={errors.frequency}
                         >
                             <MenuItem value="daily">Hàng ngày</MenuItem>
                             <MenuItem value="weekly">Hàng tuần</MenuItem>
@@ -196,6 +214,8 @@ export default function ScheduleDialog({
                             value={form.status || ""}
                             onChange={onChange}
                             fullWidth
+                            error={!!errors.status}
+                            helperText={errors.status}
                         >
                             <MenuItem value="scheduled">Đã lên lịch</MenuItem>
                             <MenuItem value="in_progress">Đang thực hiện</MenuItem>
