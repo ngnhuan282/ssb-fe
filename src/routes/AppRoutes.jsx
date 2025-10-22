@@ -11,6 +11,7 @@ import BusPage from "../pages/user/BusPage";
 import DriverPage from "../pages/user/DriverPage";
 import LoginPage from "../pages/user/LoginPage";
 import RegisterPage from "../pages/user/RegisterPage";
+import ProfilePage from "../pages/user/ProfilePage";
 import ErrorPage from "../pages/user/ErrorPage";
 
 import ParentPage from "../pages/user/ParentPage";
@@ -50,6 +51,14 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute allowedRoles={['parent', 'driver']}>
             <DriverPage />
+          </ProtectedRoute>
+        ),
+      },
+      { 
+        path: "profile", 
+        element: (
+          <ProtectedRoute allowedRoles={['parent', 'driver']}>
+            <ProfilePage />
           </ProtectedRoute>
         ),
       },

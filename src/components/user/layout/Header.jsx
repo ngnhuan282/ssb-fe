@@ -17,6 +17,7 @@ import {
   Search,
   Menu as MenuIcon,
   Logout as LogoutIcon,
+  Person as PersonIcon,
 } from "@mui/icons-material";
 import DirectionsBusIcon from "@mui/icons-material/DirectionsBus";
 import { useNavigate } from "react-router-dom";
@@ -35,7 +36,13 @@ const Header = ({ onMenuClick }) => {
     setAnchorEl(null);
   };
 
+  const handleProfile = () => {
+    handleClose();
+    navigate("/profile");
+  };
+
   const handleLogout = async () => {
+    handleClose();
     await logout();
     navigate("/login");
   };
@@ -217,7 +224,7 @@ const Header = ({ onMenuClick }) => {
             id="menu-appbar"
             anchorEl={anchorEl}
             anchorOrigin={{
-              vertical: 'top',
+              vertical: 'bottom',
               horizontal: 'right',
             }}
             keepMounted
@@ -227,7 +234,13 @@ const Header = ({ onMenuClick }) => {
             }}
             open={Boolean(anchorEl)}
             onClose={handleClose}
+            sx={{
+              mt: 1,
+            }}
           >
+            <MenuItem onClick={handleProfile}>
+              <PersonIcon sx={{ mr: 1 }} /> Thông tin cá nhân
+            </MenuItem>
             <MenuItem onClick={handleLogout}>
               <LogoutIcon sx={{ mr: 1 }} /> Đăng xuất
             </MenuItem>
