@@ -48,6 +48,7 @@ export default function StudentPage() {
         ]);
 
         console.log("Students :", studentRes.data.data)
+        console.log("Parents :", parentRes.data.data)
 
         setStudents(studentRes.data.data);
         setParents(parentRes.data.data);
@@ -176,7 +177,7 @@ export default function StudentPage() {
     fullName: s.fullName,
     age: s.age,
     class: s.class,
-    parent: s.parent?._id || "Chưa có",
+    parent: s.parent?.user?.username || "Chưa có",
     route: s.route?.name || "Chưa có",
     pickupPoint: s.pickupPoint,
     dropoffPoint: s.dropoffPoint,

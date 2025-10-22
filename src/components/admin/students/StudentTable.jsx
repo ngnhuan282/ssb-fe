@@ -16,7 +16,7 @@ export default function StudentTable({
     { field: "fullName", headerName: "Họ Tên", flex: 1, minWidth: 180 },
     { field: "age", headerName: "Tuổi", flex: 0.5, minWidth: 60 },
     { field: "class", headerName: "Lớp", flex: 0.7, minWidth: 70 },
-    { field: "parent", headerName: "Mã Phụ Huynh", flex: 1, minWidth: 180 },
+    { field: "parent", headerName: "Phụ Huynh", flex: 1, minWidth: 180 },
     { field: "route", headerName: "Tuyến Đường", flex: 1, minWidth: 200 },
     { field: "pickupPoint", headerName: "Điểm Đón", flex: 1, minWidth: 200 },
     { field: "dropoffPoint", headerName: "Điểm Trả", flex: 1, minWidth: 200 },

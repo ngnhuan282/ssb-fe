@@ -58,7 +58,7 @@ export default function StudentForm({ formData, errors, parents, routes, handleC
           {parents.length > 0 ? (
             parents.map((p) => (
               <MenuItem key={p._id} value={p._id}>
-                {p._id}
+                {p.user?.username}
               </MenuItem>
             ))
           ) : (

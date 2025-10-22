@@ -60,7 +60,7 @@ export default function BusForm({ formData, errors, drivers, routes, handleChang
           {drivers.length > 0 ? (
             drivers.map((driver) => (
               <MenuItem key={driver._id} value={driver._id}>
-                {driver.licenseNumber || "Chưa có mã"}
+                {driver.user?.username}
               </MenuItem>
             ))
           ) : (
