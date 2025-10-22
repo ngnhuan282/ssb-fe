@@ -1,15 +1,12 @@
 import React, { useState, useEffect } from "react";
 import {
-  Box,
-  Typography,
-  Card,
-  CardContent,
-  Button,
-  IconButton,
-  Dialog,
-  DialogTitle,
-  DialogActions,
-  Grid,
+ Box, 
+ Stack, 
+ Button, 
+ Dialog, 
+ DialogTitle, 
+ DialogActions, 
+ IconButton
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
@@ -49,6 +46,9 @@ export default function StudentPage() {
           parentAPI.getAll(),
           routeAPI.getAll(),
         ]);
+
+        console.log("Students :", studentRes.data.data)
+
         setStudents(studentRes.data.data);
         setParents(parentRes.data.data);
         setRoutes(routeRes.data.data);
@@ -60,29 +60,34 @@ export default function StudentPage() {
   }, []);
 
   const handleOpenForm = (student = null) => {
-    if (student) {
-      setEditingStudent(student);
-      setFormData({
-        ...student,
-        parent: student.parent?._id || "",
-        route: student.route?._id || "",
-      });
-    } else {
-      setEditingStudent(null);
-      setFormData({
-        fullName: "",
-        age: "",
-        class: "",
-        parent: "",
-        route: "",
-        pickupPoint: "",
-        dropoffPoint: "",
-        status: "pending",
-      });
-    }
-    setErrors({});
-    setOpenForm(true);
-  };
+  if (student) {
+    setEditingStudent(student);
+    setFormData({
+      fullName: student.fullName || "",
+      age: student.age || "",
+      class: student.class || "",
+      parent: student.parent?._id || "",
+      route: student.route?._id || "",
+      pickupPoint: student.pickupPoint || "",
+      dropoffPoint: student.dropoffPoint || "",
+      status: student.status || "pending",
+    });
+  } else {
+    setEditingStudent(null);
+    setFormData({
+      fullName: "",
+      age: "",
+      class: "",
+      parent: "",
+      route: "",
+      pickupPoint: "",
+      dropoffPoint: "",
+      status: "pending",
+    });
+  }
+  setErrors({});
+  setOpenForm(true);
+};
 
   const handleCloseForm = () => setOpenForm(false);
 
@@ -131,6 +136,7 @@ export default function StudentPage() {
     try {
       let updatedStudents;
       if (editingStudent) {
+        console.log("Form data gửi lên:", formData);
         const res = await studentAPI.update(editingStudent._id, formData);
         updatedStudents = students.map((s) =>
           s._id === editingStudent._id ? res.data.data : s
@@ -170,117 +176,110 @@ export default function StudentPage() {
     fullName: s.fullName,
     age: s.age,
     class: s.class,
-    parent: s.parent?.fullName || "Chưa có",
+    parent: s.parent?._id || "Chưa có",
     route: s.route?.name || "Chưa có",
     pickupPoint: s.pickupPoint,
     dropoffPoint: s.dropoffPoint,
-    status: s.status === "pending"
-      ? "Chờ đợi"
-      : s.status === "picked_up"
-      ? "Đã đón"
-      : "Đã trả",
+    status: s.status === "pending" ? "Chờ đợi" : s.status === "picked_up" ? "Đã đón" : "Đã trả",
     createdAt: new Date(s.createdAt).toLocaleDateString(),
     updatedAt: new Date(s.updatedAt).toLocaleDateString(),
   }));
 
   return (
-    <Box sx={{ p: 3, overflowY: "auto" }}>
-      <Typography
-        variant="h5"
-        gutterBottom
-        sx={{ textAlign: "center", color: "#007bff" }}
+    <Box sx={{ height: 500, width: "100%", p: 2 }}>
+    <Stack direction="row" justifyContent="space-between" mb={2}>
+      <h2>Quản lý học sinh</h2>
+      <Button
+        variant="contained"
+        startIcon={<AddIcon />}
+        onClick={() => handleOpenForm()}
+        sx={{
+          background: "linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%)",
+          color: "#fff",
+          borderRadius: "12px",
+          padding: "5px 20px",
+          textTransform: "none",
+          fontWeight: "600",
+          boxShadow: "0 4px 12px rgba(59, 130, 246, 0.3)",
+          "&:hover": {
+            background: "linear-gradient(135deg, #4338ca 0%, #2563eb 100%)",
+            boxShadow: "0 6px 16px rgba(59, 130, 246, 0.45)",
+          },
+        }}
       >
-        Quản Lý Học Sinh
-      </Typography>
+        Thêm học sinh
+      </Button>
+    </Stack>
 
-      <Box sx={{ width: "100%", display: "flex", justifyContent: "flex-end", mb: 3 }}>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => handleOpenForm()}
-          sx={{
-            backgroundColor: "#007bff",
-            "&:hover": { backgroundColor: "#0056b3" },
-          }}
-        >
-          Thêm Học Sinh
-        </Button>
-      </Box>
+    <StudentTable
+      rows={rows}
+      students={students}
+      paginationModel={paginationModel}
+      setPaginationModel={setPaginationModel}
+      onEdit={handleOpenForm}
+      onDelete={handleOpenDelete}
+    />
 
-      <Grid container spacing={3} justifyContent="center">
-        <Grid item xs={12} md={10}>
-          <Card sx={{ borderRadius: 2, boxShadow: 3 }}>
-            <CardContent>
-              <Typography variant="h6" sx={{ mb: 2, color: "#333" }}>
-                Danh Sách Học Sinh
-              </Typography>
-
-              <StudentTable
-                rows={rows}
-                students={students}
-                paginationModel={paginationModel}
-                setPaginationModel={setPaginationModel}
-                onEdit={handleOpenForm}
-                onDelete={handleOpenDelete}
-              />
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-
-      <Dialog
-        open={openForm}
-        onClose={handleCloseForm}
-        onTransitionExited={handleFormExited}
-        fullWidth
-        maxWidth="sm"
+    <Dialog
+      open={openForm}
+      onClose={handleCloseForm}
+      onTransitionExited={handleFormExited}
+      fullWidth
+      maxWidth="sm"
+    >
+      <DialogTitle
+        sx={{
+          background: "linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%)",
+          color: "#fff",
+          borderRadius: "4px 4px 0 0",
+          fontWeight: 600,
+        }}
       >
-        <DialogTitle
-          sx={{
-            backgroundColor: "#007bff",
-            color: "#fff",
-            borderRadius: "4px 4px 0 0",
-          }}
+        {editingStudent ? "Sửa học sinh" : "Thêm học sinh"}
+        <IconButton
+          sx={{ position: "absolute", top: 8, right: 8, color: "#fff" }}
+          onClick={handleCloseForm}
         >
-          {editingStudent ? "Sửa Học Sinh" : "Thêm Học Sinh"}
-          <IconButton
-            sx={{ position: "absolute", top: 8, right: 8, color: "#fff" }}
-            onClick={handleCloseForm}
+          <CloseIcon />
+        </IconButton>
+      </DialogTitle>
+
+      <form onSubmit={handleSubmit}>
+        <StudentForm
+          formData={formData}
+          errors={errors}
+          parents={parents}
+          routes={routes}
+          handleChange={handleChange}
+        />
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={handleCloseForm} sx={{ color: "#555" }}>
+            Hủy
+          </Button>
+          <Button
+            type="submit"
+            variant="contained"
+            sx={{
+              background: "linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%)",
+              color: "#fff",
+              fontWeight: 600,
+              "&:hover": {
+                background: "linear-gradient(135deg, #4338ca 0%, #2563eb 100%)",
+              },
+            }}
           >
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
+            {editingStudent ? "Cập nhật" : "Thêm"}
+          </Button>
+        </DialogActions>
+      </form>
+    </Dialog>
 
-        <form onSubmit={handleSubmit}>
-          <StudentForm
-            formData={formData}
-            errors={errors}
-            parents={parents}
-            routes={routes}
-            handleChange={handleChange}
-          />
-          <DialogActions>
-            <Button onClick={handleCloseForm}>Hủy</Button>
-            <Button
-              type="submit"
-              variant="contained"
-              sx={{
-                backgroundColor: "#007bff",
-                "&:hover": { backgroundColor: "#0056b3" },
-              }}
-            >
-              {editingStudent ? "Cập Nhật" : "Thêm"}
-            </Button>
-          </DialogActions>
-        </form>
-      </Dialog>
-
-      <StudentDeleteDialog
-        deleteConfirm={deleteConfirm}
-        lastDeleteData={lastDeleteData}
-        onCancel={() => setDeleteConfirm(null)}
-        onConfirm={handleDelete}
-      />
-    </Box>
+    <StudentDeleteDialog
+      deleteConfirm={deleteConfirm}
+      lastDeleteData={lastDeleteData}
+      onCancel={() => setDeleteConfirm(null)}
+      onConfirm={handleDelete}
+    />
+  </Box>
   );
 }
