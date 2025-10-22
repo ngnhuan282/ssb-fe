@@ -165,7 +165,7 @@ export default function BusPage() {
     id: b._id,
     licensePlate: b.licensePlate,
     capacity: b.capacity,
-    currentStatus: b.currentStatus === "active" ? "Hoạt động" : "Bảo dưỡng",
+    currentStatus: b.currentStatus === "active" ? "Hoạt động"  : b.currentStatus === "maintenance" ? "Bảo trì" : "Ngừng hoạt động",
     driver: b.driver?.user || "Chưa có",
     route: b.route?.name || "Chưa có",
     createdAt: new Date(b.createdAt).toLocaleDateString(),
