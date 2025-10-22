@@ -197,6 +197,8 @@ export default function ScheduleManager() {
     const validateForm = (form) => {
         const newErrors = {};
 
+        console.log(form)
+
         if (!form.route) newErrors.route = "Vui lòng chọn tuyến đường.";
         if (!form.bus) newErrors.bus = "Vui lòng chọn xe buýt.";
         if (!form.driver) newErrors.driver = "Vui lòng chọn tài xế.";
@@ -212,8 +214,11 @@ export default function ScheduleManager() {
 
         if (!form.frequency) newErrors.frequency = "Vui lòng chọn tần suất.";
         if (!form.status) newErrors.status = "Vui lòng chọn trạng thái";
-        if (!form.students || form.students.length === 0)
+        if (!selectedStudents || selectedStudents.length === 0)
             newErrors.students = "Phải chọn ít nhất một học sinh.";
+
+        console.log("errors:", newErrors);
+
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
