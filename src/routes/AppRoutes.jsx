@@ -9,13 +9,16 @@ import UserDashboardPage from "../pages/user/UserDashboardPage";
 import MapPage from "../pages/user/MapPage";
 import BusPage from "../pages/user/BusPage";
 import DriverPage from "../pages/user/DriverPage";
+import DriverStudentListPage from "../pages/user/DriverStudentListPage";
 import LoginPage from "../pages/user/LoginPage";
 import RegisterPage from "../pages/user/RegisterPage";
 import ProfilePage from "../pages/user/ProfilePage";
 import ErrorPage from "../pages/user/ErrorPage";
-
+import DriverSchedulePage from "../pages/user/DriverSchedulePage";
 import ParentPage from "../pages/user/ParentPage";
-
+import DriverIncidentReportPage from "../pages/user/DriverIncidentReportPage";
+import DriverPickupPointsPage from "../pages/user/DriverPickupPointPage";
+import DriverTripReportPage from "../pages/user/DriverTripReportPage";
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -41,16 +44,48 @@ export const router = createBrowserRouter([
       { 
         path: "bus", 
         element: (
-          <ProtectedRoute allowedRoles={['parent', 'driver']}>
+          <ProtectedRoute allowedRoles={['parent']}>
             <BusPage />
           </ProtectedRoute>
         ),
       },
       { 
-        path: "driver", 
+        path: "schedule", 
         element: (
-          <ProtectedRoute allowedRoles={['parent', 'driver']}>
-            <DriverPage />
+          <ProtectedRoute allowedRoles={['driver']}>
+            <DriverSchedulePage />
+          </ProtectedRoute>
+        ),
+      },
+      { 
+        path: "pickup-points", 
+        element: (
+          <ProtectedRoute allowedRoles={['driver']}>
+           <DriverPickupPointsPage />
+          </ProtectedRoute>
+        ),
+      },
+      { 
+        path: "incident", 
+        element: (
+          <ProtectedRoute allowedRoles={['driver']}>
+           <DriverIncidentReportPage />
+          </ProtectedRoute>
+        ),
+      },
+      { 
+        path: "trip-report", 
+        element: (
+          <ProtectedRoute allowedRoles={['driver']}>
+           <DriverTripReportPage />
+          </ProtectedRoute>
+        ),
+      },
+      { 
+        path: "students", 
+        element: (
+          <ProtectedRoute allowedRoles={['driver']}>
+            <DriverStudentListPage />
           </ProtectedRoute>
         ),
       },

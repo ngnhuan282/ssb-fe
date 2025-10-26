@@ -1,0 +1,210 @@
+// src/components/user/driver/StopMarkerCard.jsx
+import React from 'react';
+import {
+  Card,
+  CardContent,
+  Box,
+  Typography,
+  Chip,
+  Button,
+  Avatar,
+  Divider,
+} from '@mui/material';
+import {
+  LocationOn,
+  Navigation,
+  CheckCircle,
+  Schedule,
+  People,
+  DirectionsWalk,
+  AccessTime,
+  SkipNext,
+} from '@mui/icons-material';
+
+const StopMarkerCard = ({ stop, onNavigate, onComplete, onSkip }) => {
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'completed': return { bg: '#d4edda', text: '#155724', icon: <CheckCircle /> };
+      case 'current': return { bg: '#fff3cd', text: '#856404', icon: <Schedule /> };
+      case 'pending': return { bg: '#e7f3ff', text: '#004085', icon: <LocationOn /> };
+      default: return { bg: '#f8f9fa', text: '#6c757d', icon: <LocationOn /> };
+    }
+  };
+
+  const statusColor = getStatusColor(stop.status);
+
+  return (
+    <Card
+      sx={{
+        boxShadow: stop.status === 'current' ? 4 : 2,
+        borderRadius: 2,
+        mb: 2,
+        border: stop.status === 'current' ? '2px solid #f39c12' : '1px solid #ecf0f1',
+        transition: 'all 0.3s',
+      }}
+    >
+      <CardContent>
+        {/* Header */}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Avatar
+              sx={{
+                bgcolor: stop.status === 'completed' ? '#27ae60' : stop.status === 'current' ? '#f39c12' : '#667eea',
+                width: 40,
+                height: 40,
+              }}
+            >
+              {stop.order}
+            </Avatar>
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: 600, color: '#2c3e50' }}>
+                {stop.name}
+              </Typography>
+              <Typography variant="caption" color="textSecondary">
+                {stop.time}
+              </Typography>
+            </Box>
+          </Box>
+          <Chip
+            icon={statusColor.icon}
+            label={
+              stop.status === 'completed' ? 'Đã đến' :
+              stop.status === 'current' ? 'Đang đến' : 'Chưa đến'
+            }
+            sx={{
+              bgcolor: statusColor.bg,
+              color: statusColor.text,
+              fontWeight: 600,
+            }}
+          />
+        </Box>
+
+        <Divider sx={{ mb: 2 }} />
+
+        {/* Address */}
+        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mb: 2 }}>
+          <LocationOn sx={{ fontSize: 20, color: '#e74c3c', mt: 0.3 }} />
+          <Typography variant="body2" sx={{ color: '#34495e', flex: 1 }}>
+            {stop.address}
+          </Typography>
+        </Box>
+
+        {/* Students */}
+        {stop.students > 0 && (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+            <People sx={{ fontSize: 20, color: '#3498db' }} />
+            <Typography variant="body2" sx={{ fontWeight: 600, color: '#2c3e50' }}>
+              {stop.students} học sinh
+            </Typography>
+          </Box>
+        )}
+
+        {/* Distance & Time (for pending stops) */}
+        {stop.status !== 'completed' && stop.distance && (
+          <Box sx={{ 
+            bgcolor: '#f8f9fa', 
+            p: 1.5, 
+            borderRadius: 1, 
+            mb: 2,
+            display: 'flex',
+            gap: 2 
+          }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <DirectionsWalk sx={{ fontSize: 18, color: '#95a5a6' }} />
+              <Typography variant="caption" sx={{ fontWeight: 600, color: '#7f8c8d' }}>
+                {stop.distance}
+              </Typography>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <AccessTime sx={{ fontSize: 18, color: '#95a5a6' }} />
+              <Typography variant="caption" sx={{ fontWeight: 600, color: '#7f8c8d' }}>
+                ~{stop.estimatedTime}
+              </Typography>
+            </Box>
+          </Box>
+        )}
+
+        {/* Completion Time (for completed stops) */}
+        {stop.status === 'completed' && stop.completedAt && (
+          <Box sx={{ bgcolor: '#d4edda', p: 1, borderRadius: 1, mb: 2 }}>
+            <Typography variant="caption" sx={{ color: '#155724' }}>
+              ✓ Hoàn thành lúc: {stop.completedAt}
+            </Typography>
+          </Box>
+        )}
+
+        {/* Action Buttons */}
+        {stop.status === 'current' && (
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button
+              fullWidth
+              variant="contained"
+              startIcon={<Navigation />}
+              onClick={() => onNavigate && onNavigate(stop)}
+              sx={{
+                bgcolor: '#3498db',
+                '&:hover': { bgcolor: '#2980b9' },
+                textTransform: 'none',
+                fontWeight: 600,
+              }}
+            >
+              Dẫn đường
+            </Button>
+            <Button
+              fullWidth
+              variant="contained"
+              startIcon={<CheckCircle />}
+              onClick={() => onComplete && onComplete(stop)}
+              sx={{
+                bgcolor: '#27ae60',
+                '&:hover': { bgcolor: '#229954' },
+                textTransform: 'none',
+                fontWeight: 600,
+              }}
+            >
+              Hoàn thành
+            </Button>
+            <Button
+              variant="outlined"
+              onClick={() => onSkip && onSkip(stop)}
+              sx={{
+                minWidth: 'auto',
+                px: 1,
+                borderColor: '#95a5a6',
+                color: '#95a5a6',
+                '&:hover': {
+                  borderColor: '#7f8c8d',
+                  bgcolor: 'rgba(0,0,0,0.04)',
+                },
+              }}
+            >
+              <SkipNext />
+            </Button>
+          </Box>
+        )}
+
+        {stop.status === 'pending' && (
+          <Button
+            fullWidth
+            variant="outlined"
+            startIcon={<Navigation />}
+            onClick={() => onNavigate && onNavigate(stop)}
+            sx={{
+              textTransform: 'none',
+              borderColor: '#667eea',
+              color: '#667eea',
+              '&:hover': {
+                borderColor: '#5568d3',
+                bgcolor: 'rgba(102, 126, 234, 0.08)',
+              },
+            }}
+          >
+            Xem đường đi
+          </Button>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
+
+export default StopMarkerCard;

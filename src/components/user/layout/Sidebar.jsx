@@ -23,16 +23,21 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
+  LocationOn,
+  Warning,
 } from "@mui/icons-material";
 
 const menuItems = [
   { text: "Tổng quan", icon: <Dashboard />, color: "#667eea", path: "/" },
   { text: "Theo dõi xe buýt", icon: <DirectionsBus />, color: "#f093fb", path: "/bus"},
+  { text: "Danh sách học sinh", icon: <Person />, color: "#4facfe" , path: "/students"},
   // { text: "Danh sách tài xế", icon: <Person />, color: "#4facfe" , path: "/driver"},
   // { text: "Phụ huynh", icon: <FamilyRestroom />, color: "#74b9ff", path: "/parent" },
+  { text: "Điểm đón/trả", icon: <LocationOn />, color: "#43e97b", path: "/pickup-points" },
+  { text: "Báo cáo chuyến đi", icon: <Assessment />, color: "#feca57", path: "/trip-report" },
+  { text: "Cảnh báo sự cố", icon: <Warning />, color: "#e74c3c", path: "/incident" },
   { text: "Bản đồ", icon: <Route />, color: "#43e97b", path: "/map" },
   { text: "Lịch làm việc", icon: <Schedule />, color: "#fa709a", path: "/schedule" },
-  { text: "Báo cáo", icon: <Assessment />, color: "#feca57", path: "/report" },
   { text: "Thông báo", icon: <Notifications />, color: "#ff6b6b", path: "/notification" },
   { text: "Cài đặt", icon: <Settings />, color: "#95afc0", path: "/settings" },
 ];
