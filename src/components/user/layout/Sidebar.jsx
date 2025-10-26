@@ -27,11 +27,11 @@ import {
 
 const menuItems = [
   { text: "Tổng quan", icon: <Dashboard />, color: "#667eea", path: "/" },
-  { text: "Xe bus đang hoạt động", icon: <DirectionsBus />, color: "#f093fb", path: "/bus"},
-  { text: "Danh sách tài xế", icon: <Person />, color: "#4facfe" , path: "/driver"},
-  { text: "Phụ huynh", icon: <FamilyRestroom />, color: "#74b9ff", path: "/parent" },
+  { text: "Theo dõi xe buýt", icon: <DirectionsBus />, color: "#f093fb", path: "/bus"},
+  // { text: "Danh sách tài xế", icon: <Person />, color: "#4facfe" , path: "/driver"},
+  // { text: "Phụ huynh", icon: <FamilyRestroom />, color: "#74b9ff", path: "/parent" },
   { text: "Bản đồ", icon: <Route />, color: "#43e97b", path: "/map" },
-  { text: "Lịch trình", icon: <Schedule />, color: "#fa709a", path: "/schedule" },
+  { text: "Lịch làm việc", icon: <Schedule />, color: "#fa709a", path: "/schedule" },
   { text: "Báo cáo", icon: <Assessment />, color: "#feca57", path: "/report" },
   { text: "Thông báo", icon: <Notifications />, color: "#ff6b6b", path: "/notification" },
   { text: "Cài đặt", icon: <Settings />, color: "#95afc0", path: "/settings" },
