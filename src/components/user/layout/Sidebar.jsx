@@ -1,5 +1,5 @@
 // src/components/user/layout/Sidebar.jsx
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Drawer,
@@ -10,6 +10,7 @@ import {
   ListItemText,
   Box,
   IconButton,
+  CircularProgress,
 } from "@mui/material";
 import {
   Dashboard,
@@ -17,7 +18,6 @@ import {
   Schedule,
   Assessment,
   Person,
-  FamilyRestroom,
   Route,
   Notifications,
   Settings,
@@ -26,29 +26,36 @@ import {
   LocationOn,
   Warning,
 } from "@mui/icons-material";
+import { useAuth } from "../../../context/AuthContext"; 
 
+// Định nghĩa menuItems với allowedRoles
 const menuItems = [
-  { text: "Tổng quan", icon: <Dashboard />, color: "#667eea", path: "/" },
-  { text: "Theo dõi xe buýt", icon: <DirectionsBus />, color: "#f093fb", path: "/bus"},
-  { text: "Danh sách học sinh", icon: <Person />, color: "#4facfe" , path: "/students"},
-  // { text: "Danh sách tài xế", icon: <Person />, color: "#4facfe" , path: "/driver"},
-  // { text: "Phụ huynh", icon: <FamilyRestroom />, color: "#74b9ff", path: "/parent" },
-  { text: "Điểm đón/trả", icon: <LocationOn />, color: "#43e97b", path: "/pickup-points" },
-  { text: "Báo cáo chuyến đi", icon: <Assessment />, color: "#feca57", path: "/trip-report" },
-  { text: "Cảnh báo sự cố", icon: <Warning />, color: "#e74c3c", path: "/incident" },
-  { text: "Bản đồ", icon: <Route />, color: "#43e97b", path: "/map" },
-  { text: "Lịch làm việc", icon: <Schedule />, color: "#fa709a", path: "/schedule" },
-  { text: "Thông báo", icon: <Notifications />, color: "#ff6b6b", path: "/notification" },
-  { text: "Cài đặt", icon: <Settings />, color: "#95afc0", path: "/settings" },
+  { text: "Tổng quan", icon: <Dashboard />, color: "#667eea", path: "/", allowedRoles: ["parent", "driver"] },
+  { text: "Theo dõi xe buýt", icon: <DirectionsBus />, color: "#f093fb", path: "/bus", allowedRoles: ["parent"] },
+  { text: "Danh sách học sinh", icon: <Person />, color: "#4facfe", path: "/students", allowedRoles: ["driver"] },
+  { text: "Điểm đón/trả", icon: <LocationOn />, color: "#43e97b", path: "/pickup-points", allowedRoles: ["driver"] },
+  { text: "Báo cáo chuyến đi", icon: <Assessment />, color: "#feca57", path: "/trip-report", allowedRoles: ["driver"] },
+  { text: "Cảnh báo sự cố", icon: <Warning />, color: "#e74c3c", path: "/incident", allowedRoles: ["driver"] },
+  { text: "Bản đồ", icon: <Route />, color: "#43e97b", path: "/map", allowedRoles: ["parent", "driver"] },
+  { text: "Lịch làm việc", icon: <Schedule />, color: "#fa709a", path: "/schedule", allowedRoles: ["driver"] },
+  { text: "Thông báo", icon: <Notifications />, color: "#ff6b6b", path: "/notification", allowedRoles: ["parent", "driver"] },
+  { text: "Cài đặt", icon: <Settings />, color: "#95afc0", path: "/profile", allowedRoles: ["parent", "driver"] }, 
 ];
 
 const drawerWidthOpen = 280;
 const drawerWidthClosed = 80;
 
 const Sidebar = ({ onToggle }) => {
+  const { user, loading } = useAuth(); // Lấy user và loading từ AuthContext
   const [open, setOpen] = useState(true);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const navigate = useNavigate();
+
+  // Lọc menuItems dựa trên vai trò của người dùng
+  const filteredMenuItems = useMemo(() => {
+    if (!user || !user.role) return []; // Nếu không có user hoặc role, trả về mảng rỗng
+    return menuItems.filter((item) => item.allowedRoles.includes(user.role));
+  }, [user]);
 
   const handleToggle = () => {
     const newState = !open;
@@ -57,6 +64,30 @@ const Sidebar = ({ onToggle }) => {
       onToggle(newState);
     }
   };
+
+  // Hiển thị loading khi đang kiểm tra xác thực
+  if (loading) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: "calc(100vh - 70px)",
+          width: open ? drawerWidthOpen : drawerWidthClosed,
+          top: "70px",
+          bgcolor: "#f8f9fa",
+        }}
+      >
+        <CircularProgress size={40} />
+      </Box>
+    );
+  }
+
+  // Nếu không có user, không hiển thị Sidebar
+  if (!user) {
+    return null;
+  }
 
   return (
     <Drawer
@@ -102,13 +133,13 @@ const Sidebar = ({ onToggle }) => {
 
       {/* Menu Items */}
       <List sx={{ px: 1.5 }}>
-        {menuItems.map((item, index) => (
+        {filteredMenuItems.map((item, index) => (
           <ListItem key={index} disablePadding sx={{ mb: 0.5 }}>
             <ListItemButton
               selected={selectedIndex === index}
               onClick={() => {
                 setSelectedIndex(index);
-                navigate(item.path); 
+                navigate(item.path);
               }}
               sx={{
                 borderRadius: 2,
