@@ -8,10 +8,8 @@ import {
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Box, Typography, CircularProgress, Alert, Chip } from "@mui/material";
-import useFetch from "../../../hooks/useFetch";
-import { busAPI, locationAPI } from "../../../services/api";
 
-const center = { lat: 10.775843, lng: 106.660172 };
+const center = { lat: 10.760650, lng: 106.682057 };
 
 const createBusIcon = (status) => {
   const color = status === "running" ? "#28a745" : "#ffc107";
@@ -41,20 +39,10 @@ const createBusIcon = (status) => {
   });
 };
 
-const MapContainer = () => {
-  const {
-    data: busesData,
-    loading: busesLoading,
-    error: busesError,
-  } = useFetch(() => busAPI.getAll());
-
-  const { data: locationsData } = useFetch(() => locationAPI.getAll());
-
-  const buses = busesData?.data || [];
-  const locations = locationsData?.data || [];
-
+const MapContainer = ({buses, loading , error}) => {
   const busesWithLocations = buses.map((bus) => {
-    const location = locations.find((loc) => loc.busId === bus._id);
+    const lat = bus.latitude ?? center.lat;
+    const lng = bus.longitude ?? center.lng;
     return {
       id: bus._id,
       name: bus.name || `Xe ${bus.licensePlate}`,
@@ -63,16 +51,11 @@ const MapContainer = () => {
       route: bus.routeId?.name || "Chưa có tuyến",
       students: bus.students?.length || 0,
       status: bus.status === "active" ? "running" : "stopped",
-      position: location
-        ? {
-            lat: location.latitude,
-            lng: location.longitude,
-          }
-        : center,
+      position: { lat, lng }
     };
   });
 
-  if (busesError) {
+  if (error) {
     return (
       <Box
         sx={{
@@ -82,12 +65,12 @@ const MapContainer = () => {
           height: "100%",
         }}
       >
-        <Alert severity="error">Lỗi API: {busesError}</Alert>
+        <Alert severity="error">Lỗi API: {error}</Alert>
       </Box>
     );
   }
 
-  if (busesLoading) {
+  if (loading) {
     return (
       <Box
         sx={{

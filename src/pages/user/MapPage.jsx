@@ -6,10 +6,22 @@ import MapContainer from '../../components/user/map/MapContainer';
 import MapLegend from '../../components/user/map/MapLegend';
 import { useSocket } from '../../hooks/useSocket';
 import mockBusData from '../../data/mockBusData';
+import { busAPI } from "../../services/api";
+import useFetch from '../../hooks/useFetch';
 
 const MapPage = () => {
   const [buses, setBuses] = useState(mockBusData);
   const socket = useSocket();
+  const {
+    data: busesData,
+    loading: busesLoading,
+    error: busesError
+  } = useFetch(() => busAPI.getAll());
+
+  useEffect(() => {
+    if(busesData?.data)
+      setBuses(busesData.data)
+  }, [busesData]);
 
   useEffect(() => {
     if (socket) {
@@ -18,7 +30,7 @@ const MapPage = () => {
       socket.on('locationUpdated', (data) => {
         setBuses((prevBuses) =>
           prevBuses.map((bus) =>
-            bus.id === data.busId ? { ...bus, latitude: data.latitude, longitude: data.longitude } : bus
+            bus._id === data.busId ? { ...bus, latitude: data.latitude, longitude: data.longitude } : bus
           )
         );
       });
@@ -48,7 +60,7 @@ const MapPage = () => {
           boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
         }}
       >
-        <MapContainer buses={buses} />
+        <MapContainer buses={buses} loading={busesLoading} error={busesError} />
         <MapLegend />
       </Box>
     </Box>
