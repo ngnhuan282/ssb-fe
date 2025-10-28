@@ -6,7 +6,9 @@ import {
  Dialog, 
  DialogTitle, 
  DialogActions, 
- IconButton
+ IconButton,
+ Snackbar,
+ Alert,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
@@ -37,6 +39,7 @@ export default function StudentPage() {
   });
   const [errors, setErrors] = useState({});
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
+  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -148,8 +151,27 @@ export default function StudentPage() {
       }
       setStudents(updatedStudents);
       handleCloseForm();
+      //snackbar
+       if (editingStudent) {
+        setSnackbar({
+          open: true,
+          message: "✅ Cập nhật học sinh thành công!",
+          severity: "success",
+        });
+      } else {
+        setSnackbar({
+          open: true,
+          message: "🎉 Thêm học sinh thành công!",
+          severity: "success",
+        });
+      }
     } catch (err) {
       console.error("Save student error:", err);
+      setSnackbar({
+        open: true,
+        message: "❌ Lưu thông tin học sinh thất bại!",
+        severity: "error",
+      });
     }
   };
 
@@ -165,8 +187,18 @@ export default function StudentPage() {
         ...deleteConfirm,
         deletedAt: new Date().toLocaleString(),
       });
+       setSnackbar({
+        open: true,
+        message: "🗑️ Xóa học sinh thành công!",
+        severity: "success",
+      });
     } catch (err) {
       console.error("Delete student error:", err);
+      setSnackbar({
+        open: true,
+        message: "❌ Xóa học sinh thất bại!",
+        severity: "error",
+      });
     } finally {
       setDeleteConfirm(null);
     }
@@ -281,6 +313,27 @@ export default function StudentPage() {
       onCancel={() => setDeleteConfirm(null)}
       onConfirm={handleDelete}
     />
+
+      {/* Snackbar */}
+    <Snackbar
+      open={snackbar.open}
+      autoHideDuration={4000}
+      onClose={() => setSnackbar({ ...snackbar, open: false })}    
+      anchorOrigin={{ vertical: 'top', horizontal: 'right' }}     
+    >
+        <Alert
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          severity={snackbar.severity}
+          sx={{ width: '100%',
+            fontSize: "1rem",
+            fontWeight: 500,
+            borderRadius: 2,
+            boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
+           }}
+        >
+          {snackbar.message}
+        </Alert>
+    </Snackbar>
   </Box>
   );
 }

@@ -7,6 +7,8 @@ import {
   DialogTitle,
   DialogActions,
   IconButton,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
@@ -34,6 +36,8 @@ export default function BusPage() {
   })
   const [errors, setErrors] = useState({})
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 })
+  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
+
 
   useEffect(() => {
     const fetchAllData = async () => {
@@ -137,8 +141,28 @@ export default function BusPage() {
       }
       setBuses(updatedBuses)
       handleCloseForm()
+      //snackbar
+      if(editingBus){
+        setSnackbar({
+        open: true,
+        message: '✅ Cập nhật xe buýt thành công!',
+        severity: 'success'
+        });
+      }else{
+        setSnackbar({
+        open: true,
+        message: '🚌 Thêm xe buýt thành công!',
+        severity: 'success'
+        });
+      }
+
     } catch (err) {
       console.error("Save bus error:", err)
+      setSnackbar({
+      open: true,
+      message: '❌ Cập nhật xe buýt thất bại!',
+      severity: 'error'
+      });
     }
   }
 
@@ -154,8 +178,19 @@ export default function BusPage() {
         ...deleteConfirm,
         deletedAt: new Date().toLocaleString(),
       })
+      //thong bao thanh cong
+      setSnackbar({
+      open: true,
+      message: '🗑️ Xóa xe buýt thành công!',
+      severity: 'success'
+      });
     } catch (err) {
       console.error("Delete bus error:", err)
+      setSnackbar({
+      open: true,
+      message: '❌ Xóa xe buýt thất bại!',
+      severity: 'error'
+      });
     } finally {
       setDeleteConfirm(null);
     }
@@ -267,6 +302,26 @@ export default function BusPage() {
       onCancel={() => setDeleteConfirm(null)}
       onConfirm={handleDelete}
     />
+    {/* Snackbar */}
+    <Snackbar
+      open={snackbar.open}
+      autoHideDuration={4000}
+      onClose={() => setSnackbar({ ...snackbar, open: false })}    
+      anchorOrigin={{ vertical: 'top', horizontal: 'right' }}     
+    >
+        <Alert
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          severity={snackbar.severity}
+          sx={{ width: '100%',
+            fontSize: "1rem",
+            fontWeight: 500,
+            borderRadius: 2,
+            boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
+           }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
   </Box>
   )
 }
