@@ -93,9 +93,8 @@ export default function StudentPage() {
   setOpenForm(true);
 };
 
-  const handleCloseForm = () => setOpenForm(false);
-
-  const handleFormExited = () => {
+  const handleCloseForm = () => {
+    setOpenForm(false);
     setEditingStudent(null);
     setFormData({
       fullName: "",
@@ -185,7 +184,6 @@ export default function StudentPage() {
       setStudents(updated);
       setLastDeleteData({
         ...deleteConfirm,
-        deletedAt: new Date().toLocaleString(),
       });
        setSnackbar({
         open: true,
@@ -256,7 +254,6 @@ export default function StudentPage() {
     <Dialog
       open={openForm}
       onClose={handleCloseForm}
-      onTransitionExited={handleFormExited}
       fullWidth
       maxWidth="sm"
     >

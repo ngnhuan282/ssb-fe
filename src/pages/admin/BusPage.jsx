@@ -84,9 +84,8 @@ export default function BusPage() {
   setOpenForm(true);
 };
 
-  const handleCloseForm = () => setOpenForm(false);
-
-  const handleFormExited = () => {
+  const handleCloseForm = () => {
+    setOpenForm(false)
     setEditingBus(null)
     setFormData({
       licensePlate: "",
@@ -96,7 +95,7 @@ export default function BusPage() {
       route: "",
     });
     setErrors({})
-  }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -172,25 +171,15 @@ export default function BusPage() {
     if (!deleteConfirm) return
     try {
       await busAPI.delete(deleteConfirm._id)
-      const updated = buses.filter((b) => b._id !== deleteConfirm._id)
-      setBuses(updated)
+      setBuses(buses.filter((b) => b._id !== deleteConfirm._id))
       setLastDeleteData({
         ...deleteConfirm,
-        deletedAt: new Date().toLocaleString(),
       })
       //thong bao thanh cong
-      setSnackbar({
-      open: true,
-      message: '🗑️ Xóa xe buýt thành công!',
-      severity: 'success'
-      });
+      setSnackbar({ open: true, message: 'Xóa xe buýt thành công!', severity: 'success' });
     } catch (err) {
       console.error("Delete bus error:", err)
-      setSnackbar({
-      open: true,
-      message: '❌ Xóa xe buýt thất bại!',
-      severity: 'error'
-      });
+      setSnackbar({ open: true, message: 'Xóa xe buýt thất bại!', severity: 'error' });
     } finally {
       setDeleteConfirm(null);
     }
@@ -245,7 +234,6 @@ export default function BusPage() {
     <Dialog
       open={openForm}
       onClose={handleCloseForm}
-      onTransitionExited={handleFormExited}
       fullWidth
       maxWidth="sm"
     >
