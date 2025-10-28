@@ -16,271 +16,140 @@ import {
 } from '@mui/icons-material';
 import StudentListFilter from '../../components/user/driver/StudentListFilter';
 import StudentCard from '../../components/user/driver/StudentCard';
+import { studentAPI } from '../../services/api'; // Import từ api.js (điều chỉnh path nếu cần)
+import { useAuth } from '../../context/AuthContext'; // Để lấy user (driverId)
 
 const DriverStudentListPage = () => {
+  const { user } = useAuth(); // Lấy user từ AuthContext (giả định có driverId = user.id)
   const [students, setStudents] = useState([]);
   const [filteredStudents, setFilteredStudents] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('all');
   const [stats, setStats] = useState({ all: 0, pending: 0, pickedUp: 0, droppedOff: 0 });
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [loading, setLoading] = useState(true); // Thêm state loading
+  const [error, setError] = useState(null); // Thêm state error
 
   useEffect(() => {
     fetchStudents();
   }, []);
 
-  const fetchStudents = async () => {
-    try {
-      // TODO: Replace with actual API call
-      // const response = await fetch('/api/students/today?driverId=xxx');
-      // const data = await response.json();
-      
-      // Mock data matching Student Schema
-      const mockStudents = [
-        {
-          _id: 'student1',
-          fullName: 'Nguyễn Văn A',
-          age: 10,
-          class: 'Lớp 5A',
-          parent: {
-            _id: 'parent1',
-            user: {
-              _id: 'user1',
-              username: 'Nguyễn Thị B',
-              phone: '0901234567',
-            },
-          },
-          route: 'route1',
-          pickupPoint: '123 Nguyễn Huệ, Quận 1',
-          dropoffPoint: '123 Nguyễn Huệ, Quận 1',
-          status: 'pending',
-        },
-        {
-          _id: 'student2',
-          fullName: 'Trần Thị C',
-          age: 11,
-          class: 'Lớp 5B',
-          parent: {
-            _id: 'parent2',
-            user: {
-              _id: 'user2',
-              username: 'Trần Văn D',
-              phone: '0907654321',
-            },
-          },
-          route: 'route1',
-          pickupPoint: '456 Lê Lợi, Quận 1',
-          dropoffPoint: '456 Lê Lợi, Quận 1',
-          status: 'picked_up',
-        },
-        {
-          _id: 'student3',
-          fullName: 'Lê Văn E',
-          age: 10,
-          class: 'Lớp 5A',
-          parent: {
-            _id: 'parent3',
-            user: {
-              _id: 'user3',
-              username: 'Lê Thị F',
-              phone: '0909876543',
-            },
-          },
-          route: 'route1',
-          pickupPoint: '789 Trần Hưng Đạo, Quận 5',
-          dropoffPoint: '789 Trần Hưng Đạo, Quận 5',
-          status: 'pending',
-        },
-        {
-          _id: 'student4',
-          fullName: 'Phạm Thị G',
-          age: 11,
-          class: 'Lớp 5C',
-          parent: {
-            _id: 'parent4',
-            user: {
-              _id: 'user4',
-              username: 'Phạm Văn H',
-              phone: '0903456789',
-            },
-          },
-          route: 'route1',
-          pickupPoint: '321 Điện Biên Phủ, Quận 3',
-          dropoffPoint: '321 Điện Biên Phủ, Quận 3',
-          status: 'picked_up',
-        },
-      ];
-      
-      setStudents(mockStudents);
-      updateStats(mockStudents);
-    } catch (error) {
-      console.error('Error fetching students:', error);
-      setSnackbar({
-        open: true,
-        message: 'Không thể tải danh sách học sinh',
-        severity: 'error'
-      });
-    }
-  };
-
-  const updateStats = (studentList) => {
-    setStats({
-      all: studentList.length,
-      pending: studentList.filter(s => s.status === 'pending').length,
-      pickedUp: studentList.filter(s => s.status === 'picked_up').length,
-      droppedOff: studentList.filter(s => s.status === 'dropped_off').length,
-    });
-  };
-
-  // Filter students
   useEffect(() => {
-    let filtered = [...students];
-
-    if (activeTab !== 'all') {
-      filtered = filtered.filter(s => s.status === activeTab);
-    }
-
+    // Filter động dựa trên search và tab
+    let filtered = students;
     if (searchTerm) {
-      filtered = filtered.filter(s => 
-        s.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        s.class.toLowerCase().includes(searchTerm.toLowerCase())
+      filtered = filtered.filter(student =>
+        student.fullName.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
-
+    if (activeTab !== 'all') {
+      filtered = filtered.filter(student => student.status === activeTab);
+    }
     setFilteredStudents(filtered);
-  }, [students, activeTab, searchTerm]);
+  }, [students, searchTerm, activeTab]);
+
+  const fetchStudents = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      // API call thực tế
+      // Nếu có endpoint cho driver: const response = await studentAPI.getStudentsForDriver(user.id);
+      const response = await studentAPI.getAll(); // Hoặc getStudentsForDriver nếu có
+      const data = response.data.data; // Giả định cấu trúc response từ ApiResponse (status, data, message)
+      
+      setStudents(data);
+      updateStats(data);
+      setSnackbar({ open: true, message: 'Dữ liệu đã tải thành công', severity: 'success' });
+    } catch (err) {
+      setError('Lỗi khi tải dữ liệu: ' + (err.response?.data?.message || err.message));
+      setSnackbar({ open: true, message: 'Lỗi khi tải dữ liệu', severity: 'error' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateStats = (data) => {
+    const pending = data.filter(s => s.status === 'pending').length;
+    const pickedUp = data.filter(s => s.status === 'picked_up').length;
+    const droppedOff = data.filter(s => s.status === 'dropped_off').length;
+    setStats({
+      all: data.length,
+      pending,
+      pickedUp,
+      droppedOff,
+    });
+  };
 
   const handleCheckIn = async (studentId, checked) => {
     try {
-      // TODO: API call to update student status
-      // await fetch(`/api/students/${studentId}`, {
-      //   method: 'PATCH',
-      //   body: JSON.stringify({ status: checked ? 'picked_up' : 'pending' })
-      // });
-
-      setStudents(prevStudents => 
-        prevStudents.map(student => 
-          student._id === studentId 
-            ? { ...student, status: checked ? 'picked_up' : 'pending' }
-            : student
-        )
+      const newStatus = checked ? 'picked_up' : 'pending'; // Hoặc 'dropped_off' tùy logic
+      await studentAPI.update(studentId, { status: newStatus });
+      // Cập nhật local state mà không cần reload full
+      const updatedStudents = students.map(s =>
+        s._id === studentId ? { ...s, status: newStatus } : s
       );
-      
-      const student = students.find(s => s._id === studentId);
-      setSnackbar({
-        open: true,
-        message: checked 
-          ? `Đã đánh dấu đón ${student.fullName}`
-          : `Đã bỏ đánh dấu ${student.fullName}`,
-        severity: 'success'
-      });
-
-      updateStats(students);
-    } catch (error) {
-      console.error('Error updating student status:', error);
-      setSnackbar({
-        open: true,
-        message: 'Không thể cập nhật trạng thái',
-        severity: 'error'
-      });
+      setStudents(updatedStudents);
+      updateStats(updatedStudents);
+      setSnackbar({ open: true, message: 'Cập nhật trạng thái thành công', severity: 'success' });
+    } catch (err) {
+      setSnackbar({ open: true, message: 'Lỗi cập nhật trạng thái', severity: 'error' });
     }
   };
 
-  const handleCallParent = (phoneNumber) => {
-    if (phoneNumber) {
-      window.location.href = `tel:${phoneNumber}`;
+  const handleCallParent = (phone) => {
+    if (phone) {
+      window.location.href = `tel:${phone}`;
+    } else {
+      setSnackbar({ open: true, message: 'Không có số điện thoại', severity: 'warning' });
     }
   };
 
-  const handleRefresh = () => {
-    setSnackbar({
-      open: true,
-      message: 'Đang làm mới danh sách...',
-      severity: 'info'
-    });
-    fetchStudents();
-  };
+  const progress = stats.all > 0 ? ((stats.pickedUp + stats.droppedOff) / stats.all) * 100 : 0;
 
-  const handleMarkAllPickedUp = async () => {
-    try {
-      // TODO: API call to update all students
-      setStudents(prevStudents => 
-        prevStudents.map(s => ({ ...s, status: 'picked_up' }))
-      );
-      
-      setSnackbar({
-        open: true,
-        message: 'Đã đánh dấu tất cả học sinh đã đón',
-        severity: 'success'
-      });
-      
-      updateStats(students);
-    } catch (error) {
-      console.error('Error marking all:', error);
-      setSnackbar({
-        open: true,
-        message: 'Không thể cập nhật',
-        severity: 'error'
-      });
-    }
-  };
+  if (loading) {
+    return (
+      <Box sx={{ p: 3, textAlign: 'center' }}>
+        <Typography>Đang tải dữ liệu...</Typography>
+        <LinearProgress />
+      </Box>
+    );
+  }
 
-  const progress = (stats.pickedUp / stats.all) * 100 || 0;
+  if (error) {
+    return (
+      <Box sx={{ p: 3, textAlign: 'center' }}>
+        <Typography color="error">{error}</Typography>
+        <Button variant="contained" onClick={fetchStudents} sx={{ mt: 2 }}>Thử lại</Button>
+      </Box>
+    );
+  }
 
   return (
-    <Box sx={{ bgcolor: '#fafafa', minHeight: '100vh', py: 4 }}>
-      <Container maxWidth="lg">
-        {/* Header */}
-        <Box sx={{ mb: 4 }}>
-          <Typography variant="h5" sx={{ fontWeight: 600, color: '#212121', mb: 0.5 }}>
-            Danh sách học sinh
-          </Typography>
-          <Typography variant="body2" color="textSecondary">
-            Quản lý và cập nhật trạng thái học sinh
-          </Typography>
-        </Box>
-
-        {/* Progress Card */}
-        <Paper sx={{ p: 3, mb: 3, borderRadius: 1, border: '1px solid #e0e0e0' }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Box>
-              <Typography variant="body1" sx={{ fontWeight: 600, color: '#212121', mb: 0.5 }}>
-                Tiến độ đón học sinh
-              </Typography>
-              <Typography variant="body2" color="textSecondary">
-                {stats.pickedUp}/{stats.all} học sinh
-              </Typography>
-            </Box>
+    <Box sx={{ minHeight: '100vh', bgcolor: '#f5f7fa', pt: 3, pb: 10 }}>
+      <Container maxWidth="md">
+        {/* Progress Bar */}
+        <Paper sx={{ p: 2, mb: 3, borderRadius: 1, boxShadow: 1 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+              Tiến độ: {stats.pickedUp + stats.droppedOff}/{stats.all}
+            </Typography>
             <Box sx={{ display: 'flex', gap: 1 }}>
               <Button
-                size="small"
-                startIcon={<Refresh sx={{ fontSize: 18 }} />}
-                onClick={handleRefresh}
                 variant="outlined"
-                sx={{ 
-                  textTransform: 'none',
-                  borderColor: '#e0e0e0',
-                  color: '#757575',
-                  '&:hover': {
-                    borderColor: '#1976d2',
-                    bgcolor: '#f5f5f5',
-                  },
-                }}
+                size="small"
+                startIcon={<CheckCircle />}
+                sx={{ textTransform: 'none', fontWeight: 500, borderRadius: 1 }}
               >
-                Làm mới
+                Hoàn tất tất cả
               </Button>
               <Button
+                variant="outlined"
                 size="small"
-                startIcon={<CheckCircle sx={{ fontSize: 18 }} />}
-                onClick={handleMarkAllPickedUp}
-                variant="contained"
-                sx={{ 
-                  textTransform: 'none',
-                  bgcolor: '#4caf50',
-                  '&:hover': { bgcolor: '#388e3c' },
-                }}
+                startIcon={<Refresh />}
+                onClick={fetchStudents}
+                sx={{ textTransform: 'none', fontWeight: 500, borderRadius: 1 }}
               >
-                Đánh dấu tất cả
+                Làm mới
               </Button>
             </Box>
           </Box>
@@ -323,7 +192,7 @@ const DriverStudentListPage = () => {
                 key={student._id}
                 student={student}
                 onCheckIn={handleCheckIn}
-                onCallParent={handleCallParent}
+                onCallParent={() => handleCallParent(student.parent?.user?.phone)}
               />
             ))}
           </Box>
