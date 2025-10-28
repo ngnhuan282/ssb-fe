@@ -180,8 +180,7 @@ export default function StudentPage() {
     if (!deleteConfirm) return;
     try {
       await studentAPI.delete(deleteConfirm._id);
-      const updated = students.filter((s) => s._id !== deleteConfirm._id);
-      setStudents(updated);
+      setStudents(students.filter((s) => s._id !== deleteConfirm._id));
       setLastDeleteData({
         ...deleteConfirm,
       });
