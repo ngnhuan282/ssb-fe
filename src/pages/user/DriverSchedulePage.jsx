@@ -1,149 +1,174 @@
 // src/pages/user/DriverSchedule.jsx
 import React, { useState, useEffect } from 'react';
-import { Box, Container, Grid, Typography, Alert, Snackbar } from '@mui/material';
+import { Box, Container, Grid, Typography, Snackbar, Alert } from '@mui/material';
 import ScheduleCalendar from '../../components/user/driver/ScheduleCalendar';
 import TodayScheduleCard from '../../components/user/driver/TodayScheduleCard';
-import TimelineView from '../../components/user/driver/TimelineView';
+import RouteStopsList from '../../components/user/driver/RouteStopsList';
 
-const DriverSchedulePage = () => {
+const DriverSchedule = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [todaySchedule, setTodaySchedule] = useState(null);
   const [monthSchedules, setMonthSchedules] = useState([]);
-  const [timelineStops, setTimelineStops] = useState([]);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
-  // Mock data - Thay bằng API call thực tế
   useEffect(() => {
     fetchMonthSchedules();
     fetchTodaySchedule();
   }, []);
 
-  const fetchMonthSchedules = () => {
-    // Mock data - Lịch tháng
-    const mockSchedules = [
-      {
-        date: new Date(2025, 9, 27), // 27/10/2025
-        shifts: ['morning', 'afternoon']
-      },
-      {
-        date: new Date(2025, 9, 28),
-        shifts: ['morning']
-      },
-      {
-        date: new Date(2025, 9, 29),
-        shifts: ['afternoon']
-      },
-      {
-        date: new Date(2025, 9, 30),
-        shifts: ['morning', 'afternoon']
-      },
-    ];
-    setMonthSchedules(mockSchedules);
+  const fetchMonthSchedules = async () => {
+    try {
+      // TODO: Replace with actual API call
+      // const response = await fetch('/api/schedules/month?driverId=xxx&month=10&year=2025');
+      // const data = await response.json();
+      
+      // Mock data matching your Schema
+      const mockSchedules = [
+        {
+          _id: '1',
+          date: new Date(2025, 9, 27),
+          status: 'scheduled',
+        },
+        {
+          _id: '2',
+          date: new Date(2025, 9, 28),
+          status: 'in_progress',
+        },
+        {
+          _id: '3',
+          date: new Date(2025, 9, 29),
+          status: 'completed',
+        },
+      ];
+      
+      setMonthSchedules(mockSchedules);
+    } catch (error) {
+      console.error('Error fetching month schedules:', error);
+      setSnackbar({
+        open: true,
+        message: 'Không thể tải lịch tháng',
+        severity: 'error'
+      });
+    }
   };
 
-  const fetchTodaySchedule = () => {
-    // Mock data - Lịch hôm nay
-    const mockTodaySchedule = {
-      shift: 'morning',
-      startTime: '06:00',
-      endTime: '08:00',
-      routeName: 'Tuyến A1 - Quận 1 → Trường DEF',
-      busNumber: '51A-12345',
-      totalStudents: 12,
-    };
-    setTodaySchedule(mockTodaySchedule);
-
-    // Mock timeline stops
-    const mockStops = [
-      {
-        type: 'start',
-        time: '06:00',
-        name: 'Xuất phát',
-        address: 'Bến xe Miền Đông',
-        status: 'completed',
-        students: 0,
-      },
-      {
-        type: 'stop',
-        time: '06:15',
-        name: 'Điểm đón 1',
-        address: '123 Nguyễn Huệ, Quận 1',
-        status: 'completed',
-        students: 3,
-      },
-      {
-        type: 'stop',
-        time: '06:30',
-        name: 'Điểm đón 2',
-        address: '456 Lê Lợi, Quận 1',
-        status: 'current',
-        students: 5,
-        distance: '2.5km',
-        estimatedTime: '8 phút',
-      },
-      {
-        type: 'stop',
-        time: '06:45',
-        name: 'Điểm đón 3',
-        address: '789 Trần Hưng Đạo, Quận 5',
-        status: 'pending',
-        students: 4,
-        distance: '5km',
-        estimatedTime: '15 phút',
-      },
-      {
-        type: 'school',
-        time: '07:45',
-        name: 'Trường DEF',
-        address: 'Số 1 Võ Văn Ngân, Thủ Đức',
-        status: 'pending',
-        students: 0,
-      },
-    ];
-    setTimelineStops(mockStops);
+  const fetchTodaySchedule = async () => {
+    try {
+      // TODO: Replace with actual API call
+      // const response = await fetch('/api/schedules/today?driverId=xxx');
+      // const data = await response.json();
+      
+      // Mock data matching your Schedule Schema
+      const mockSchedule = {
+        _id: '1',
+        bus: {
+          _id: 'bus1',
+          licensePlate: '51A-12345',
+          capacity: 45,
+        },
+        route: {
+          _id: 'route1',
+          name: 'Tuyến A1 - Quận 1 → Trường DEF',
+          stops: [
+            {
+              location: 'Bến xe Miền Đông',
+              time: new Date(2025, 9, 27, 6, 0),
+            },
+            {
+              location: '123 Nguyễn Huệ, Quận 1',
+              time: new Date(2025, 9, 27, 6, 15),
+            },
+            {
+              location: '456 Lê Lợi, Quận 1',
+              time: new Date(2025, 9, 27, 6, 30),
+            },
+            {
+              location: '789 Trần Hưng Đạo, Quận 5',
+              time: new Date(2025, 9, 27, 6, 45),
+            },
+            {
+              location: 'Trường DEF - Số 1 Võ Văn Ngân, Thủ Đức',
+              time: new Date(2025, 9, 27, 7, 45),
+            },
+          ],
+          distance: 15.5,
+          estimatedTime: 105,
+        },
+        driver: {
+          _id: 'driver1',
+          user: 'user1',
+        },
+        date: new Date(2025, 9, 27),
+        starttime: new Date(2025, 9, 27, 6, 0),
+        endtime: new Date(2025, 9, 27, 8, 0),
+        numstudent: 12,
+        students: [], // Array of Student IDs
+        status: 'scheduled', // scheduled | in_progress | completed | delayed
+        frequency: 'daily',
+      };
+      
+      setTodaySchedule(mockSchedule);
+    } catch (error) {
+      console.error('Error fetching today schedule:', error);
+      setSnackbar({
+        open: true,
+        message: 'Không thể tải lịch hôm nay',
+        severity: 'error'
+      });
+    }
   };
 
   const handleDateSelect = (date, schedule) => {
     setSelectedDate(date);
-    console.log('Selected date:', date, 'Schedule:', schedule);
-    setSnackbar({
-      open: true,
-      message: schedule 
-        ? `Bạn có lịch làm việc ngày ${date.toLocaleDateString('vi-VN')}`
-        : `Không có lịch làm việc ngày ${date.toLocaleDateString('vi-VN')}`,
-      severity: schedule ? 'info' : 'warning'
-    });
+    if (schedule) {
+      setSnackbar({
+        open: true,
+        message: `Bạn có lịch làm việc ngày ${date.toLocaleDateString('vi-VN')}`,
+        severity: 'info'
+      });
+    } else {
+      setSnackbar({
+        open: true,
+        message: `Không có lịch làm việc ngày ${date.toLocaleDateString('vi-VN')}`,
+        severity: 'warning'
+      });
+    }
   };
 
-  const handleStartTrip = () => {
-    console.log('Start trip clicked');
-    setSnackbar({
-      open: true,
-      message: '🚌 Đã bắt đầu chuyến đi!',
-      severity: 'success'
-    });
-    // TODO: Navigate to tracking page or start GPS tracking
-  };
+  const handleStartTrip = async () => {
+    try {
+      // TODO: API call to update schedule status
+      // await fetch(`/api/schedules/${todaySchedule._id}`, {
+      //   method: 'PATCH',
+      //   body: JSON.stringify({ status: 'in_progress' })
+      // });
 
-  const handleViewDetails = () => {
-    console.log('View details clicked');
-    setSnackbar({
-      open: true,
-      message: 'Đang tải chi tiết tuyến đường...',
-      severity: 'info'
-    });
-    // TODO: Show detailed route info
+      setTodaySchedule(prev => ({ ...prev, status: 'in_progress' }));
+      
+      setSnackbar({
+        open: true,
+        message: 'Đã bắt đầu chuyến đi',
+        severity: 'success'
+      });
+    } catch (error) {
+      console.error('Error starting trip:', error);
+      setSnackbar({
+        open: true,
+        message: 'Không thể bắt đầu chuyến đi',
+        severity: 'error'
+      });
+    }
   };
 
   return (
-    <Box sx={{ bgcolor: '#f8f9fa', minHeight: '100vh', py: 4 }}>
+    <Box sx={{ bgcolor: '#fafafa', minHeight: '100vh', py: 4 }}>
       <Container maxWidth="xl">
         {/* Header */}
         <Box sx={{ mb: 4 }}>
-          <Typography variant="h4" sx={{ fontWeight: 700, color: '#2c3e50', mb: 1 }}>
-            📅 Lịch làm việc hàng ngày
+          <Typography variant="h5" sx={{ fontWeight: 600, color: '#212121', mb: 0.5 }}>
+            Lịch làm việc
           </Typography>
-          <Typography variant="body1" color="textSecondary">
+          <Typography variant="body2" color="textSecondary">
             Quản lý lịch trình và tuyến đường của bạn
           </Typography>
         </Box>
@@ -158,25 +183,30 @@ const DriverSchedulePage = () => {
             />
           </Grid>
 
-          {/* Right Column - Today's Schedule & Timeline */}
+          {/* Right Column - Today's Schedule & Route */}
           <Grid item xs={12} lg={5}>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
               <TodayScheduleCard 
                 schedule={todaySchedule}
                 onStartTrip={handleStartTrip}
-                onViewDetails={handleViewDetails}
               />
-              <TimelineView stops={timelineStops} />
+              
+              {todaySchedule?.route && (
+                <RouteStopsList 
+                  route={todaySchedule.route}
+                  currentStopIndex={0} // TODO: Track current stop from backend
+                />
+              )}
             </Box>
           </Grid>
         </Grid>
 
-        {/* Snackbar for notifications */}
+        {/* Snackbar */}
         <Snackbar
           open={snackbar.open}
           autoHideDuration={3000}
           onClose={() => setSnackbar({ ...snackbar, open: false })}
-          anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         >
           <Alert 
             onClose={() => setSnackbar({ ...snackbar, open: false })} 
@@ -191,4 +221,4 @@ const DriverSchedulePage = () => {
   );
 };
 
-export default DriverSchedulePage;
+export default DriverSchedule;

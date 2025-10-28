@@ -15,147 +15,135 @@ import {
 import {
   Phone,
   LocationOn,
-  Schedule,
   ExpandMore,
   ExpandLess,
   CheckCircle,
-  Cancel,
+  Circle,
 } from '@mui/icons-material';
 
-const StudentCard = ({ student, onCheckIn, onCallParent, onReportAbsent }) => {
+const StudentCard = ({ student, onCheckIn, onCallParent }) => {
   const [expanded, setExpanded] = useState(false);
   const [checked, setChecked] = useState(student.status === 'picked_up');
 
   const handleCheckChange = (event) => {
     setChecked(event.target.checked);
-    onCheckIn && onCheckIn(student.id, event.target.checked);
+    onCheckIn && onCheckIn(student._id, event.target.checked);
   };
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'picked_up': return { bg: '#d4edda', text: '#155724' };
-      case 'dropped_off': return { bg: '#cce5ff', text: '#004085' };
-      case 'absent': return { bg: '#f8d7da', text: '#721c24' };
-      default: return { bg: '#fff3cd', text: '#856404' };
+      case 'picked_up': return { bg: '#e8f5e9', text: '#2e7d32' };
+      case 'dropped_off': return { bg: '#e3f2fd', text: '#1565c0' };
+      default: return { bg: '#f5f5f5', text: '#757575' };
     }
   };
 
   const statusColor = getStatusColor(student.status);
+  const getInitials = (name) => {
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  };
 
   return (
     <Card
       sx={{
-        boxShadow: 2,
-        borderRadius: 2,
-        mb: 2,
-        border: checked ? '2px solid #27ae60' : '1px solid #ecf0f1',
-        transition: 'all 0.3s',
+        boxShadow: 0,
+        borderRadius: 1,
+        mb: 1.5,
+        border: '1px solid',
+        borderColor: checked ? '#1976d2' : '#e0e0e0',
+        transition: 'all 0.2s',
         '&:hover': {
-          boxShadow: 4,
+          borderColor: '#1976d2',
+          boxShadow: 1,
         },
       }}
     >
-      <CardContent>
+      <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
         <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
           {/* Checkbox */}
           <Checkbox
             checked={checked}
             onChange={handleCheckChange}
-            icon={<Cancel sx={{ color: '#e74c3c' }} />}
-            checkedIcon={<CheckCircle sx={{ color: '#27ae60' }} />}
-            sx={{ mt: 0.5 }}
+            icon={<Circle sx={{ color: '#bdbdbd' }} />}
+            checkedIcon={<CheckCircle sx={{ color: '#4caf50' }} />}
+            sx={{ p: 0, mt: 0.5 }}
           />
 
           {/* Avatar */}
           <Avatar
             sx={{
-              width: 56,
-              height: 56,
-              bgcolor: checked ? '#27ae60' : '#667eea',
-              fontSize: 20,
+              width: 40,
+              height: 40,
+              bgcolor: checked ? '#4caf50' : '#1976d2',
+              fontSize: 14,
               fontWeight: 600,
             }}
           >
-            {student.name.charAt(0)}
+            {getInitials(student.fullName)}
           </Avatar>
 
           {/* Info */}
           <Box sx={{ flex: 1 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
               <Box>
-                <Typography variant="h6" sx={{ fontWeight: 600, color: '#2c3e50', mb: 0.5 }}>
-                  {student.name}
+                <Typography variant="body1" sx={{ fontWeight: 600, color: '#212121', mb: 0.5 }}>
+                  {student.fullName}
                 </Typography>
-                <Chip
-                  label={student.class}
-                  size="small"
-                  sx={{ bgcolor: '#e8eaf6', color: '#5c6bc0', fontSize: 11 }}
-                />
+                <Typography variant="caption" sx={{ color: '#757575' }}>
+                  {student.class}
+                </Typography>
               </Box>
               <Chip
                 label={
                   student.status === 'picked_up' ? 'Đã đón' :
-                  student.status === 'dropped_off' ? 'Đã trả' :
-                  student.status === 'absent' ? 'Vắng' : 'Chưa đón'
+                  student.status === 'dropped_off' ? 'Đã trả' : 'Chưa đón'
                 }
                 size="small"
                 sx={{
                   bgcolor: statusColor.bg,
                   color: statusColor.text,
-                  fontWeight: 600,
+                  fontWeight: 500,
+                  fontSize: '0.7rem',
+                  height: 22,
                 }}
               />
             </Box>
 
-            {/* Basic Info */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mb: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <LocationOn sx={{ fontSize: 16, color: '#95a5a6' }} />
-                <Typography variant="body2" color="textSecondary">
-                  {student.pickupPoint}
-                </Typography>
-              </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Schedule sx={{ fontSize: 16, color: '#95a5a6' }} />
-                <Typography variant="body2" color="textSecondary">
-                  Giờ đón: {student.pickupTime}
-                </Typography>
-              </Box>
+            {/* Pickup Point */}
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.5, mb: 1 }}>
+              <LocationOn sx={{ fontSize: 16, color: '#9e9e9e', mt: 0.2 }} />
+              <Typography variant="body2" color="textSecondary" sx={{ fontSize: '0.875rem' }}>
+                {student.pickupPoint}
+              </Typography>
             </Box>
 
             {/* Actions */}
-            <Box sx={{ display: 'flex', gap: 1 }}>
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
               <Button
                 size="small"
-                startIcon={<Phone />}
-                onClick={() => onCallParent && onCallParent(student.parentPhone)}
+                startIcon={<Phone sx={{ fontSize: 16 }} />}
+                onClick={() => onCallParent && onCallParent(student.parent?.user?.phone)}
                 sx={{
                   textTransform: 'none',
-                  color: '#667eea',
-                  borderColor: '#667eea',
+                  fontSize: '0.75rem',
+                  color: '#1976d2',
+                  minWidth: 'auto',
+                  px: 1,
+                  py: 0.5,
+                  '&:hover': {
+                    bgcolor: '#e3f2fd',
+                  },
                 }}
-                variant="outlined"
               >
-                Gọi PH
+                Gọi
               </Button>
-              <Button
-                size="small"
-                onClick={() => onReportAbsent && onReportAbsent(student.id)}
-                sx={{
-                  textTransform: 'none',
-                  color: '#e74c3c',
-                  borderColor: '#e74c3c',
-                }}
-                variant="outlined"
-              >
-                Báo vắng
-              </Button>
+              
               <IconButton
                 size="small"
                 onClick={() => setExpanded(!expanded)}
-                sx={{ ml: 'auto' }}
+                sx={{ ml: 'auto', p: 0.5 }}
               >
-                {expanded ? <ExpandLess /> : <ExpandMore />}
+                {expanded ? <ExpandLess sx={{ fontSize: 20 }} /> : <ExpandMore sx={{ fontSize: 20 }} />}
               </IconButton>
             </Box>
           </Box>
@@ -163,34 +151,34 @@ const StudentCard = ({ student, onCheckIn, onCallParent, onReportAbsent }) => {
 
         {/* Expanded Details */}
         <Collapse in={expanded}>
-          <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid #ecf0f1' }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, color: '#34495e' }}>
-              Thông tin chi tiết
-            </Typography>
+          <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid #f5f5f5', ml: 7 }}>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                <Typography variant="body2" color="textSecondary">
-                  SĐT phụ huynh:
+              <Box>
+                <Typography variant="caption" sx={{ color: '#9e9e9e', display: 'block', mb: 0.5 }}>
+                  Phụ huynh
                 </Typography>
-                <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                  {student.parentPhone}
-                </Typography>
-              </Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                <Typography variant="body2" color="textSecondary">
-                  Địa chỉ đầy đủ:
-                </Typography>
-                <Typography variant="body2" sx={{ fontWeight: 600, textAlign: 'right', maxWidth: '60%' }}>
-                  {student.fullAddress}
+                <Typography variant="body2" sx={{ color: '#424242' }}>
+                  {student.parent?.user?.username || 'Chưa có thông tin'}
                 </Typography>
               </Box>
-              {student.notes && (
-                <Box sx={{ bgcolor: '#fff3cd', p: 1, borderRadius: 1, mt: 1 }}>
-                  <Typography variant="caption" sx={{ color: '#856404' }}>
-                    📝 Ghi chú: {student.notes}
-                  </Typography>
-                </Box>
-              )}
+              
+              <Box>
+                <Typography variant="caption" sx={{ color: '#9e9e9e', display: 'block', mb: 0.5 }}>
+                  Số điện thoại
+                </Typography>
+                <Typography variant="body2" sx={{ color: '#424242' }}>
+                  {student.parent?.user?.phone || 'Chưa có thông tin'}
+                </Typography>
+              </Box>
+
+              <Box>
+                <Typography variant="caption" sx={{ color: '#9e9e9e', display: 'block', mb: 0.5 }}>
+                  Điểm trả
+                </Typography>
+                <Typography variant="body2" sx={{ color: '#424242' }}>
+                  {student.dropoffPoint}
+                </Typography>
+              </Box>
             </Box>
           </Box>
         </Collapse>
@@ -199,4 +187,4 @@ const StudentCard = ({ student, onCheckIn, onCallParent, onReportAbsent }) => {
   );
 };
 
-export default StudentCard;
+export default StudentCard; 

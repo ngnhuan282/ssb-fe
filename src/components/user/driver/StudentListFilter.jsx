@@ -7,14 +7,10 @@ import {
   Tab,
   Paper,
   InputAdornment,
-  Chip,
+  Badge,
 } from '@mui/material';
 import {
   Search,
-  People,
-  HourglassEmpty,
-  CheckCircle,
-  DirectionsBus,
 } from '@mui/icons-material';
 
 const StudentListFilter = ({ 
@@ -25,10 +21,10 @@ const StudentListFilter = ({
   stats = { all: 0, pending: 0, pickedUp: 0, droppedOff: 0 }
 }) => {
   const tabs = [
-    { label: 'Tất cả', value: 'all', icon: <People />, count: stats.all },
-    { label: 'Chưa đón', value: 'pending', icon: <HourglassEmpty />, count: stats.pending },
-    { label: 'Đã đón', value: 'picked_up', icon: <CheckCircle />, count: stats.pickedUp },
-    { label: 'Đã trả', value: 'dropped_off', icon: <DirectionsBus />, count: stats.droppedOff },
+    { label: 'Tất cả', value: 'all', count: stats.all },
+    { label: 'Chưa đón', value: 'pending', count: stats.pending },
+    { label: 'Đã đón', value: 'picked_up', count: stats.pickedUp },
+    { label: 'Đã trả', value: 'dropped_off', count: stats.droppedOff },
   ];
 
   return (
@@ -36,43 +32,52 @@ const StudentListFilter = ({
       {/* Search Bar */}
       <TextField
         fullWidth
-        placeholder="Tìm kiếm học sinh theo tên..."
+        placeholder="Tìm kiếm học sinh..."
         value={searchTerm}
         onChange={onSearchChange}
+        size="small"
         sx={{
           mb: 2,
           '& .MuiOutlinedInput-root': {
-            borderRadius: 2,
             bgcolor: '#fff',
+            '& fieldset': {
+              borderColor: '#e0e0e0',
+            },
+            '&:hover fieldset': {
+              borderColor: '#1976d2',
+            },
           },
         }}
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">
-              <Search sx={{ color: '#95a5a6' }} />
+              <Search sx={{ color: '#9e9e9e', fontSize: 20 }} />
             </InputAdornment>
           ),
         }}
       />
 
       {/* Filter Tabs */}
-      <Paper sx={{ borderRadius: 2, boxShadow: 2 }}>
+      <Paper sx={{ borderRadius: 1, boxShadow: 0, border: '1px solid #e0e0e0' }}>
         <Tabs
           value={activeTab}
           onChange={onTabChange}
           variant="fullWidth"
           sx={{
+            minHeight: 48,
             '& .MuiTab-root': {
               textTransform: 'none',
-              fontWeight: 600,
-              minHeight: 60,
+              fontWeight: 500,
+              fontSize: '0.875rem',
+              minHeight: 48,
+              color: '#757575',
             },
             '& .Mui-selected': {
-              color: '#667eea',
+              color: '#1976d2',
             },
             '& .MuiTabs-indicator': {
-              backgroundColor: '#667eea',
-              height: 3,
+              backgroundColor: '#1976d2',
+              height: 2,
             },
           }}
         >
@@ -81,20 +86,19 @@ const StudentListFilter = ({
               key={tab.value}
               value={tab.value}
               label={
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    {tab.icon}
-                    <span>{tab.label}</span>
-                  </Box>
-                  <Chip
-                    label={tab.count}
-                    size="small"
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <span>{tab.label}</span>
+                  <Badge
+                    badgeContent={tab.count}
                     sx={{
-                      height: 20,
-                      fontSize: 11,
-                      fontWeight: 700,
-                      bgcolor: activeTab === tab.value ? '#667eea' : '#ecf0f1',
-                      color: activeTab === tab.value ? '#fff' : '#7f8c8d',
+                      '& .MuiBadge-badge': {
+                        bgcolor: activeTab === tab.value ? '#1976d2' : '#e0e0e0',
+                        color: activeTab === tab.value ? '#fff' : '#757575',
+                        fontSize: '0.7rem',
+                        height: 18,
+                        minWidth: 18,
+                        fontWeight: 600,
+                      },
                     }}
                   />
                 </Box>
