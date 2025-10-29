@@ -66,16 +66,16 @@ const DriverPage = () => {
     );
   }
 
-  if (error) {
-    return (
-      <Alert severity="error" sx={{ m: 2 }}>
-        <Typography>
-          <b>Lỗi khi tải dữ liệu!</b>
-        </Typography>
-        {error}
-      </Alert>
-    );
-  }
+  // if (error) {
+  //   return (
+  //     <Alert severity="error" sx={{ m: 2 }}>
+  //       <Typography>
+  //         <b>Lỗi khi tải dữ liệu!</b>
+  //       </Typography>
+  //       {error}
+  //     </Alert>
+  //   );
+  // }
 
   if (!scheduleData) {
     return (
