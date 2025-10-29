@@ -1,4 +1,4 @@
-// src/pages/user/DriverStudentList.jsx
+// src/pages/user/DriverStudentListPage.jsx
 import React, { useState, useEffect } from 'react';
 import {
   Box,
@@ -16,58 +16,64 @@ import {
 } from '@mui/icons-material';
 import StudentListFilter from '../../components/user/driver/StudentListFilter';
 import StudentCard from '../../components/user/driver/StudentCard';
-import { studentAPI } from '../../services/api'; // Import từ api.js (điều chỉnh path nếu cần)
-import { useAuth } from '../../context/AuthContext'; // Để lấy user (driverId)
+import { studentAPI } from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 
 const DriverStudentListPage = () => {
-  const { user } = useAuth(); // Lấy user từ AuthContext (giả định có driverId = user.id)
+  const { user } = useAuth();
   const [students, setStudents] = useState([]);
   const [filteredStudents, setFilteredStudents] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('all');
   const [stats, setStats] = useState({ all: 0, pending: 0, pickedUp: 0, droppedOff: 0 });
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
-  const [loading, setLoading] = useState(true); // Thêm state loading
-  const [error, setError] = useState(null); // Thêm state error
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchStudents();
   }, []);
 
+  // LỌC THEO NAME + TAB
   useEffect(() => {
-    // Filter động dựa trên search và tab
     let filtered = students;
+    
     if (searchTerm) {
-      filtered = filtered.filter(student =>
-        student.fullName.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(student => {
+        const name = (student.name || '').toLowerCase();
+        return name.includes(term);
+      });
     }
+
     if (activeTab !== 'all') {
       filtered = filtered.filter(student => student.status === activeTab);
     }
+
     setFilteredStudents(filtered);
   }, [students, searchTerm, activeTab]);
 
+  // LẤY DỮ LIỆU TỪ DB
   const fetchStudents = async () => {
     setLoading(true);
-    setError(null);
     try {
-      // API call thực tế
-      // Nếu có endpoint cho driver: const response = await studentAPI.getStudentsForDriver(user.id);
-      const response = await studentAPI.getAll(); // Hoặc getStudentsForDriver nếu có
-      const data = response.data.data; // Giả định cấu trúc response từ ApiResponse (status, data, message)
-      
+      const response = await studentAPI.getAll();
+      const data = response.data.data;
+
+      console.log('DB Students:', data.map(s => ({ id: s._id, name: s.name, status: s.status })));
+
       setStudents(data);
       updateStats(data);
-      setSnackbar({ open: true, message: 'Dữ liệu đã tải thành công', severity: 'success' });
+      setSnackbar({ open: true, message: 'Tải từ DB thành công', severity: 'success' });
     } catch (err) {
-      setError('Lỗi khi tải dữ liệu: ' + (err.response?.data?.message || err.message));
-      setSnackbar({ open: true, message: 'Lỗi khi tải dữ liệu', severity: 'error' });
+      setError('Lỗi kết nối DB');
+      setSnackbar({ open: true, message: 'Không tải được', severity: 'error' });
     } finally {
       setLoading(false);
     }
   };
 
+  // CẬP NHẬT THỐNG KÊ
   const updateStats = (data) => {
     const pending = data.filter(s => s.status === 'pending').length;
     const pickedUp = data.filter(s => s.status === 'picked_up').length;
@@ -80,19 +86,66 @@ const DriverStudentListPage = () => {
     });
   };
 
+  // CHECK-IN 1 HỌC SINH
   const handleCheckIn = async (studentId, checked) => {
+    const newStatus = checked ? 'picked_up' : 'pending';
+
     try {
-      const newStatus = checked ? 'picked_up' : 'pending'; // Hoặc 'dropped_off' tùy logic
-      await studentAPI.update(studentId, { status: newStatus });
-      // Cập nhật local state mà không cần reload full
-      const updatedStudents = students.map(s =>
+      const response = await studentAPI.update(studentId, { status: newStatus });
+
+      if (response.data.message !== "Student updated successfully") {
+        throw new Error('Backend không xác nhận');
+      }
+
+      const updated = students.map(s =>
         s._id === studentId ? { ...s, status: newStatus } : s
       );
-      setStudents(updatedStudents);
-      updateStats(updatedStudents);
-      setSnackbar({ open: true, message: 'Cập nhật trạng thái thành công', severity: 'success' });
+      setStudents(updated);
+      updateStats(updated);
     } catch (err) {
-      setSnackbar({ open: true, message: 'Lỗi cập nhật trạng thái', severity: 'error' });
+      console.error('Lỗi check-in:', err.response?.data);
+      setSnackbar({ open: true, message: 'Không lưu được', severity: 'error' });
+    }
+  };
+
+  // HOÀN TẤT TẤT CẢ – CẬP NHẬT DB + UI
+  const handleCompleteAll = async () => {
+    if (stats.pickedUp + stats.droppedOff === stats.all) {
+      setSnackbar({ open: true, message: 'Đã hoàn tất tất cả!', severity: 'info' });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const pendingStudents = students.filter(s => s.status === 'pending');
+
+      // GỌI API CHO TỪNG HỌC SINH
+      const responses = await Promise.all(
+        pendingStudents.map(s =>
+          studentAPI.update(s._id, { status: 'picked_up' })
+        )
+      );
+
+      // KIỂM TRA TỪNG RESPONSE
+      responses.forEach((res, index) => {
+        if (res.data.message !== "Student updated successfully") {
+          throw new Error(`Học sinh ${pendingStudents[index].name} không cập nhật`);
+        }
+      });
+
+      // CẬP NHẬT LOCAL STATE
+      const updated = students.map(s =>
+        s.status === 'pending' ? { ...s, status: 'picked_up' } : s
+      );
+      setStudents(updated);
+      updateStats(updated);
+
+      setSnackbar({ open: true, message: 'Đã hoàn tất tất cả học sinh!', severity: 'success' });
+    } catch (err) {
+      console.error('Hoàn tất lỗi:', err);
+      setSnackbar({ open: true, message: 'Lỗi khi hoàn tất', severity: 'error' });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -106,7 +159,7 @@ const DriverStudentListPage = () => {
 
   const progress = stats.all > 0 ? ((stats.pickedUp + stats.droppedOff) / stats.all) * 100 : 0;
 
-  if (loading) {
+  if (loading && students.length === 0) {
     return (
       <Box sx={{ p: 3, textAlign: 'center' }}>
         <Typography>Đang tải dữ liệu...</Typography>
@@ -135,9 +188,12 @@ const DriverStudentListPage = () => {
             </Typography>
             <Box sx={{ display: 'flex', gap: 1 }}>
               <Button
-                variant="outlined"
+                variant="contained"
+                color="success"
                 size="small"
                 startIcon={<CheckCircle />}
+                onClick={handleCompleteAll}
+                disabled={loading || stats.pickedUp + stats.droppedOff === stats.all}
                 sx={{ textTransform: 'none', fontWeight: 500, borderRadius: 1 }}
               >
                 Hoàn tất tất cả
@@ -147,6 +203,7 @@ const DriverStudentListPage = () => {
                 size="small"
                 startIcon={<Refresh />}
                 onClick={fetchStudents}
+                disabled={loading}
                 sx={{ textTransform: 'none', fontWeight: 500, borderRadius: 1 }}
               >
                 Làm mới
@@ -154,8 +211,8 @@ const DriverStudentListPage = () => {
             </Box>
           </Box>
 
-          <LinearProgress 
-            variant="determinate" 
+          <LinearProgress
+            variant="determinate"
             value={progress}
             sx={{
               height: 6,
@@ -177,6 +234,13 @@ const DriverStudentListPage = () => {
           onTabChange={(e, newValue) => setActiveTab(newValue)}
           stats={stats}
         />
+
+        {/* Loading */}
+        {loading && students.length > 0 && (
+          <Box sx={{ mb: 2 }}>
+            <LinearProgress />
+          </Box>
+        )}
 
         {/* Student List */}
         {filteredStudents.length === 0 ? (
@@ -205,8 +269,8 @@ const DriverStudentListPage = () => {
           onClose={() => setSnackbar({ ...snackbar, open: false })}
           anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         >
-          <Alert 
-            onClose={() => setSnackbar({ ...snackbar, open: false })} 
+          <Alert
+            onClose={() => setSnackbar({ ...snackbar, open: false })}
             severity={snackbar.severity}
             sx={{ width: '100%' }}
           >

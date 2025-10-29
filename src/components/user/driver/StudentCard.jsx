@@ -23,11 +23,26 @@ import {
 
 const StudentCard = ({ student, onCheckIn, onCallParent }) => {
   const [expanded, setExpanded] = useState(false);
-  const [checked, setChecked] = useState(student.status === 'picked_up');
+
+  // CONTROLLED: DÙNG TRỰC TIẾP student.status (sync với parent)
+  const isChecked = student.status === 'picked_up';
 
   const handleCheckChange = (event) => {
-    setChecked(event.target.checked);
     onCheckIn && onCheckIn(student._id, event.target.checked);
+  };
+
+  const displayName = student.fullName || 'Chưa có tên';
+
+  const getInitials = (name) => {
+    if (!name || name === 'Chưa có tên') return '?';
+    return name
+      .trim()
+      .split(' ')
+      .filter(word => word.length > 0)
+      .map(word => word[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
   };
 
   const getStatusColor = (status) => {
@@ -39,9 +54,6 @@ const StudentCard = ({ student, onCheckIn, onCallParent }) => {
   };
 
   const statusColor = getStatusColor(student.status);
-  const getInitials = (name) => {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-  };
 
   return (
     <Card
@@ -50,7 +62,7 @@ const StudentCard = ({ student, onCheckIn, onCallParent }) => {
         borderRadius: 1,
         mb: 1.5,
         border: '1px solid',
-        borderColor: checked ? '#1976d2' : '#e0e0e0',
+        borderColor: isChecked ? '#1976d2' : '#e0e0e0',
         transition: 'all 0.2s',
         '&:hover': {
           borderColor: '#1976d2',
@@ -60,37 +72,34 @@ const StudentCard = ({ student, onCheckIn, onCallParent }) => {
     >
       <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
         <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
-          {/* Checkbox */}
           <Checkbox
-            checked={checked}
+            checked={isChecked}
             onChange={handleCheckChange}
             icon={<Circle sx={{ color: '#bdbdbd' }} />}
             checkedIcon={<CheckCircle sx={{ color: '#4caf50' }} />}
             sx={{ p: 0, mt: 0.5 }}
           />
 
-          {/* Avatar */}
           <Avatar
             sx={{
               width: 40,
               height: 40,
-              bgcolor: checked ? '#4caf50' : '#1976d2',
+              bgcolor: isChecked ? '#4caf50' : '#1976d2',
               fontSize: 14,
               fontWeight: 600,
             }}
           >
-            {getInitials(student.fullName)}
+            {getInitials(displayName)}
           </Avatar>
 
-          {/* Info */}
           <Box sx={{ flex: 1 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
               <Box>
                 <Typography variant="body1" sx={{ fontWeight: 600, color: '#212121', mb: 0.5 }}>
-                  {student.fullName}
+                  {displayName}
                 </Typography>
                 <Typography variant="caption" sx={{ color: '#757575' }}>
-                  {student.class}
+                  {student.class || 'Chưa có lớp'}
                 </Typography>
               </Box>
               <Chip
@@ -109,15 +118,13 @@ const StudentCard = ({ student, onCheckIn, onCallParent }) => {
               />
             </Box>
 
-            {/* Pickup Point */}
             <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.5, mb: 1 }}>
               <LocationOn sx={{ fontSize: 16, color: '#9e9e9e', mt: 0.2 }} />
               <Typography variant="body2" color="textSecondary" sx={{ fontSize: '0.875rem' }}>
-                {student.pickupPoint}
+                {student.pickupPoint || 'Chưa có điểm đón'}
               </Typography>
             </Box>
 
-            {/* Actions */}
             <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
               <Button
                 size="small"
@@ -130,14 +137,12 @@ const StudentCard = ({ student, onCheckIn, onCallParent }) => {
                   minWidth: 'auto',
                   px: 1,
                   py: 0.5,
-                  '&:hover': {
-                    bgcolor: '#e3f2fd',
-                  },
+                  '&:hover': { bgcolor: '#e3f2fd' },
                 }}
               >
                 Gọi
               </Button>
-              
+
               <IconButton
                 size="small"
                 onClick={() => setExpanded(!expanded)}
@@ -149,7 +154,6 @@ const StudentCard = ({ student, onCheckIn, onCallParent }) => {
           </Box>
         </Box>
 
-        {/* Expanded Details */}
         <Collapse in={expanded}>
           <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid #f5f5f5', ml: 7 }}>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
@@ -158,10 +162,10 @@ const StudentCard = ({ student, onCheckIn, onCallParent }) => {
                   Phụ huynh
                 </Typography>
                 <Typography variant="body2" sx={{ color: '#424242' }}>
-                  {student.parent?.user?.username || 'Chưa có thông tin'}
+                  {student.parent?.user?.username || student.parent?.user?.name || 'Chưa có thông tin'}
                 </Typography>
               </Box>
-              
+
               <Box>
                 <Typography variant="caption" sx={{ color: '#9e9e9e', display: 'block', mb: 0.5 }}>
                   Số điện thoại
@@ -176,7 +180,7 @@ const StudentCard = ({ student, onCheckIn, onCallParent }) => {
                   Điểm trả
                 </Typography>
                 <Typography variant="body2" sx={{ color: '#424242' }}>
-                  {student.dropoffPoint}
+                  {student.dropoffPoint || 'Chưa có điểm trả'}
                 </Typography>
               </Box>
             </Box>
@@ -187,4 +191,4 @@ const StudentCard = ({ student, onCheckIn, onCallParent }) => {
   );
 };
 
-export default StudentCard; 
+export default StudentCard;

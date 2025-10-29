@@ -9,14 +9,12 @@ import {
   InputAdornment,
   Badge,
 } from '@mui/material';
-import {
-  Search,
-} from '@mui/icons-material';
+import { Search } from '@mui/icons-material';
 
-const StudentListFilter = ({ 
-  searchTerm, 
-  onSearchChange, 
-  activeTab, 
+const StudentListFilter = ({
+  searchTerm,
+  onSearchChange,
+  activeTab,
   onTabChange,
   stats = { all: 0, pending: 0, pickedUp: 0, droppedOff: 0 }
 }) => {
@@ -29,7 +27,6 @@ const StudentListFilter = ({
 
   return (
     <Box sx={{ mb: 3 }}>
-      {/* Search Bar */}
       <TextField
         fullWidth
         placeholder="Tìm kiếm học sinh..."
@@ -40,12 +37,8 @@ const StudentListFilter = ({
           mb: 2,
           '& .MuiOutlinedInput-root': {
             bgcolor: '#fff',
-            '& fieldset': {
-              borderColor: '#e0e0e0',
-            },
-            '&:hover fieldset': {
-              borderColor: '#1976d2',
-            },
+            '& fieldset': { borderColor: '#e0e0e0' },
+            '&:hover fieldset': { borderColor: '#1976d2' },
           },
         }}
         InputProps={{
@@ -57,7 +50,6 @@ const StudentListFilter = ({
         }}
       />
 
-      {/* Filter Tabs */}
       <Paper sx={{ borderRadius: 1, boxShadow: 0, border: '1px solid #e0e0e0' }}>
         <Tabs
           value={activeTab}
@@ -72,13 +64,8 @@ const StudentListFilter = ({
               minHeight: 48,
               color: '#757575',
             },
-            '& .Mui-selected': {
-              color: '#1976d2',
-            },
-            '& .MuiTabs-indicator': {
-              backgroundColor: '#1976d2',
-              height: 2,
-            },
+            '& .Mui-selected': { color: '#1976d2' },
+            '& .MuiTabs-indicator': { backgroundColor: '#1976d2', height: 2 },
           }}
         >
           {tabs.map((tab) => (

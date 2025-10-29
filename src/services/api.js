@@ -38,6 +38,7 @@ export const scheduleAPI = {
   create: (data) => axiosInstance.post("/schedules", data),
   update: (id, data) => axiosInstance.put(`/schedules/${id}`, data),
   delete: (id) => axiosInstance.delete(`/schedules/${id}`),
+  getByDriver: (driverId) => axiosInstance.get(`/schedules/driver/${driverId}`)
 };
 
 export const studentAPI = {

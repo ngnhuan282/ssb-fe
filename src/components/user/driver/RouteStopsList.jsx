@@ -9,14 +9,16 @@ import {
   ListItem,
   ListItemText,
   Chip,
+  Badge,
 } from '@mui/material';
 import {
   Circle,
   CheckCircle,
   RadioButtonUnchecked,
+  People,
 } from '@mui/icons-material';
 
-const RouteStopsList = ({ route, currentStopIndex = 0 }) => {
+const RouteStopsList = ({ route, currentStopIndex = 0, studentsPerStop = {} }) => {
   if (!route || !route.stops || route.stops.length === 0) {
     return (
       <Card sx={{ boxShadow: 1, borderRadius: 1, border: '1px solid #e0e0e0' }}>
@@ -47,6 +49,11 @@ const RouteStopsList = ({ route, currentStopIndex = 0 }) => {
             const isCompleted = index < currentStopIndex;
             const isCurrent = index === currentStopIndex;
             const isPending = index > currentStopIndex;
+            
+            // Lấy số học sinh tại điểm dừng này (nếu có)
+            const studentCount = studentsPerStop[stop.location] || 
+                                 studentsPerStop[index] || 
+                                 (stop.studentCount || 0);
 
             return (
               <ListItem
@@ -79,7 +86,7 @@ const RouteStopsList = ({ route, currentStopIndex = 0 }) => {
 
                 <ListItemText
                   primary={
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5, flexWrap: 'wrap' }}>
                       <Typography
                         variant="body1"
                         sx={{
@@ -89,6 +96,7 @@ const RouteStopsList = ({ route, currentStopIndex = 0 }) => {
                       >
                         {stop.location}
                       </Typography>
+                      
                       {isCurrent && (
                         <Chip
                           label="Hiện tại"
@@ -98,6 +106,25 @@ const RouteStopsList = ({ route, currentStopIndex = 0 }) => {
                             fontSize: '0.7rem',
                             bgcolor: '#fff3e0',
                             color: '#e65100',
+                            fontWeight: 500,
+                          }}
+                        />
+                      )}
+                      
+                      {studentCount > 0 && (
+                        <Chip
+                          icon={<People sx={{ fontSize: 14 }} />}
+                          label={`${studentCount} học sinh`}
+                          size="small"
+                          sx={{
+                            height: 20,
+                            fontSize: '0.7rem',
+                            bgcolor: '#e3f2fd',
+                            color: '#1565c0',
+                            fontWeight: 500,
+                            '& .MuiChip-icon': {
+                              color: '#1565c0',
+                            },
                           }}
                         />
                       )}
@@ -115,8 +142,11 @@ const RouteStopsList = ({ route, currentStopIndex = 0 }) => {
         </List>
 
         {/* Distance & Estimated Time */}
-        {route.distance && (
+        {(route.distance || route.estimatedTime) && (
           <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid #f5f5f5' }}>
+            <Typography variant="caption" sx={{ color: '#757575', fontWeight: 600, display: 'block', mb: 1 }}>
+              THÔNG TIN TUYẾN ĐƯỜNG
+            </Typography>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
               <Typography variant="caption" color="textSecondary">
                 Tổng quãng đường
