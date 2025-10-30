@@ -75,6 +75,7 @@ export default function DriverDialog({
             name="phoneNumber"
             value={formData.phoneNumber || ""}
             onChange={onChange}
+            onBlur={(e) => validateField(e.target.name, e.target.value)}
             fullWidth
             error={!!errors.phoneNumber}
             helperText={errors.phoneNumber}

@@ -8,6 +8,8 @@ import {
   DialogActions,
   IconButton,
   Grid,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
@@ -33,6 +35,12 @@ export default function DriverPage() {
 
   });
   const [errors, setErrors] = useState({});
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [snackbar, setSnackbar] = useState({
+  open: false,
+  message: "",
+  severity: "success",
+});
 
   // ===== Fetch drivers =====
   useEffect(() => {
@@ -77,7 +85,6 @@ export default function DriverPage() {
 
     if (driver) {
       setEditingDriver(driver);
-      console.log("Editing driver:", driver);
       setFormData({
         fullName: driver.fullName,
         phoneNumber: driver.phoneNumber,
@@ -106,7 +113,42 @@ export default function DriverPage() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    validateField(name, value);//kiem tra dinh dang ngay khi nguoi dung nhap
   };
+
+  const handleDeleteClick = (driver) => {
+  setDeleteConfirm(driver); // Mở dialog xác nhận xoá
+};
+
+
+// delete driver
+const handleDelete = async () => {
+  if (!deleteConfirm) return;
+  try {
+    await driverAPI.delete(deleteConfirm._id);
+
+    setDrivers((prev) => prev.filter((d) => d._id !== deleteConfirm._id));
+    setLastDeleteData({ ...deleteConfirm });
+
+    setSnackbar({
+      open: true,
+      message: 'Xóa tài xế thành công!',
+      severity: 'success',
+    });
+  } catch (err) {
+    console.error("❌ Delete driver error:", err);
+    setSnackbar({
+      open: true,
+      message: 'Xóa tài xế thất bại!',
+      severity: 'error',
+    });
+  } finally {
+    setDeleteConfirm(null);
+  }
+};
+
+
+
 
   const validateForm = () => {
     const newErrors = {};
@@ -119,6 +161,32 @@ export default function DriverPage() {
     return newErrors;
   };
 
+  const validateField = (name, value) => {
+  let message = "";
+
+  switch (name) {
+    case "fullName":
+      if (!value.trim()) message = "Tên tài xế là bắt buộc";
+      break;
+    case "phoneNumber":
+      if (!value.trim()) message = "Số điện thoại là bắt buộc";
+      else if (!/^\d{10,11}$/.test(value)) message = "Số điện thoại không hợp lệ, 10 số nguyên dương";
+      break;
+    case "licenseNumber":
+      if (!value.trim()) message = "Số bằng lái là bắt buộc";
+      break;
+    case "email":
+      if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
+        message = "Email không hợp lệ";
+      break;
+    default:
+      break;
+  }
+
+  setErrors((prev) => ({ ...prev, [name]: message }));
+};
+
+
   const handleSubmit = async (e) => {
   e.preventDefault();
   const newErrors = validateForm();
@@ -129,17 +197,21 @@ export default function DriverPage() {
 
   try {
     let updatedDrivers;
-    console.log("Submitting form data:", formData); // <-- log trước khi gửi
+    console.log("Submitting form data:", formData);
     if (editingDriver) {
       const res = await driverAPI.update(editingDriver._id, formData);
       updatedDrivers = drivers.map(d =>
         d._id === editingDriver._id ? { ...d, ...res.data.data } : d
       );
-      console.log("Cập nhật tài xế thành công:", res.data.data); // <-- log khi update
+      setSnackbar({
+        open: true,
+        message: "Cập nhật tài xế thành công!",
+        severity: "success",
+      });
     } else {
-      console.log("Creating new driver with data:", formData); // <-- log dữ liệu gửi đi
+      console.log("Creating new driver with data:", formData); 
       const res = await driverAPI.create(formData);
-      console.log("Response from creating driver:", res.data.data); // <-- log toàn bộ response
+      console.log("Response from creating driver:", res.data.data);
       updatedDrivers = [...drivers, { ...res.data.data, 
         id: res.data.data._id,
         fullName: res.data.data.user?.username || "",
@@ -150,15 +222,21 @@ export default function DriverPage() {
         createdAt: res.data.data.createdAt ? new Date(res.data.data.createdAt).toLocaleDateString() : "",
         updatedAt: res.data.data.updatedAt ? new Date(res.data.data.updatedAt).toLocaleDateString() : "",
       }];
-      console.log("Theem tài xế thành công:", res.data.data); // <-- log khi update
-      console.log("con cac:", drivers); // <-- log khi update
+        setSnackbar({
+        open: true,
+        message: "Thêm tài xế thành công!",
+        severity: "success",
+      });
     }
-    console.log("Updated drivers list:", updatedDrivers); // <-- log danh sách tài xế sau khi cập nhật
     setDrivers(updatedDrivers);
     handleCloseForm();
   } catch (err) {
     console.error("Save driver error:", err);
-    
+     setSnackbar({
+      open: true,
+      message: "Lưu tài xế thất bại!",
+      severity: "error",
+    });
   }
 };
 
@@ -186,6 +264,7 @@ export default function DriverPage() {
           <DriverTable
             rows={drivers}
             onEdit={handleOpenForm}
+            onDelete={handleDeleteClick}
           />
         </Grid>
       </Grid>
@@ -217,16 +296,33 @@ export default function DriverPage() {
           </DialogActions>
         </form>
       </Dialog>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
 
       <DriverDeleteDialog
-        deleteConfirm={null} // giữ nguyên xóa
+        deleteConfirm={deleteConfirm}
+        onConfirm={handleDelete} // ✅ gọi hàm khi xác nhận
+        onCancel={() => setDeleteConfirm(null)}
       />
       <DriverDialog
       open={openForm}
       onClose={handleCloseForm}
       formData={formData}
       onChange={handleChange}
-      onSave={handleSubmit}   // Đây là form submit
+      onSave={handleSubmit}  
+      onDelete={handleDeleteClick}
       errors={errors}
       editing={!!editingDriver}
       buses={buses}

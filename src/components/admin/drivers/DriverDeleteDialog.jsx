@@ -23,11 +23,11 @@ export default function DriverDeleteDialog({
         TransitionComponent={Fade}
         keepMounted
       >
-        <DialogTitle>
-          <Typography variant="h6" sx={{ fontWeight: 600 }}>
-            Xác nhận xóa tài xế
-          </Typography>
-        </DialogTitle>
+        <DialogTitle component="div">
+        <Typography variant="h6" sx={{ fontWeight: 600 }}>
+          Xác nhận xóa tài xế
+        </Typography>
+      </DialogTitle>
         <Box sx={{ px: 3, pb: 2 }}>
           <Typography>
             Bạn có chắc chắn muốn xóa{" "}
