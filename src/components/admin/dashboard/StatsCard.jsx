@@ -3,7 +3,7 @@ import { Card, CardContent, Typography, Box, Chip } from "@mui/material";
 import { TrendingUp } from "@mui/icons-material";
 
 const StatsCard = ({ stat }) => (
-  <Card sx={{ background: `linear-gradient(135deg, ${stat.color} 0%, ${stat.color}dd 100%)`, color: "#fff" }}>
+  <Card sx={{ background: `linear-gradient(135deg, ${stat.color} 0%, ${stat.color}dd 100%)`, color: "#fff", borderRadius: 3, width: "300px" }}>
     <CardContent>
       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
         <Box>{stat.icon}</Box>

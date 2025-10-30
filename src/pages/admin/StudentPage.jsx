@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from "react";
 import {
- Box, 
- Stack, 
- Button, 
- Dialog, 
- DialogTitle, 
- DialogActions, 
- IconButton,
- Snackbar,
- Alert,
+  Box,
+  Stack,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogActions,
+  IconButton,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
@@ -18,6 +16,7 @@ import { routeAPI } from "../../services/api";
 import StudentTable from "../../components/admin/students/StudentTable";
 import StudentForm from "../../components/admin/students/StudentForm";
 import StudentDeleteDialog from "../../components/admin/students/StudentDeleteDialog";
+import Notification from "../../components/admin/layout/AdminNotification";
 
 export default function StudentPage() {
   const [students, setStudents] = useState([]);
@@ -63,35 +62,43 @@ export default function StudentPage() {
     fetchAll();
   }, []);
 
+  const showNotification = (message, type = "success") => {
+    setSnackbar({ open: true, message, type });
+  };
+
+  const handleCloseNotification = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
+
   const handleOpenForm = (student = null) => {
-  if (student) {
-    setEditingStudent(student);
-    setFormData({
-      fullName: student.fullName || "",
-      age: student.age || "",
-      class: student.class || "",
-      parent: student.parent?._id || "",
-      route: student.route?._id || "",
-      pickupPoint: student.pickupPoint || "",
-      dropoffPoint: student.dropoffPoint || "",
-      status: student.status || "pending",
-    });
-  } else {
-    setEditingStudent(null);
-    setFormData({
-      fullName: "",
-      age: "",
-      class: "",
-      parent: "",
-      route: "",
-      pickupPoint: "",
-      dropoffPoint: "",
-      status: "pending",
-    });
-  }
-  setErrors({});
-  setOpenForm(true);
-};
+    if (student) {
+      setEditingStudent(student);
+      setFormData({
+        fullName: student.fullName || "",
+        age: student.age || "",
+        class: student.class || "",
+        parent: student.parent?._id || "",
+        route: student.route?._id || "",
+        pickupPoint: student.pickupPoint || "",
+        dropoffPoint: student.dropoffPoint || "",
+        status: student.status || "pending",
+      });
+    } else {
+      setEditingStudent(null);
+      setFormData({
+        fullName: "",
+        age: "",
+        class: "",
+        parent: "",
+        route: "",
+        pickupPoint: "",
+        dropoffPoint: "",
+        status: "pending",
+      });
+    }
+    setErrors({});
+    setOpenForm(true);
+  };
 
   const handleCloseForm = () => {
     setOpenForm(false);
@@ -151,26 +158,14 @@ export default function StudentPage() {
       setStudents(updatedStudents);
       handleCloseForm();
       //snackbar
-       if (editingStudent) {
-        setSnackbar({
-          open: true,
-          message: "✅ Cập nhật học sinh thành công!",
-          severity: "success",
-        });
+      if (editingStudent) {
+        showNotification('Cập nhật học sinh thành công!', 'success')
       } else {
-        setSnackbar({
-          open: true,
-          message: "🎉 Thêm học sinh thành công!",
-          severity: "success",
-        });
+        showNotification('Thêm học sinh thành công!', 'success')
       }
     } catch (err) {
       console.error("Save student error:", err);
-      setSnackbar({
-        open: true,
-        message: "❌ Lưu thông tin học sinh thất bại!",
-        severity: "error",
-      });
+      showNotification('Lưu thông tin xe buýt thất bại !')
     }
   };
 
@@ -184,18 +179,10 @@ export default function StudentPage() {
       setLastDeleteData({
         ...deleteConfirm,
       });
-       setSnackbar({
-        open: true,
-        message: "🗑️ Xóa học sinh thành công!",
-        severity: "success",
-      });
+      showNotification('Xóa học sinh thành công!', 'success')
     } catch (err) {
       console.error("Delete student error:", err);
-      setSnackbar({
-        open: true,
-        message: "❌ Xóa học sinh thất bại!",
-        severity: "error",
-      });
+      showNotification('Xóa học sinh thất bại!', 'error')
     } finally {
       setDeleteConfirm(null);
     }
@@ -217,119 +204,105 @@ export default function StudentPage() {
 
   return (
     <Box sx={{ height: 500, width: "100%", p: 2 }}>
-    <Stack direction="row" justifyContent="space-between" mb={2}>
-      <h2>Quản lý học sinh</h2>
-      <Button
-        variant="contained"
-        startIcon={<AddIcon />}
-        onClick={() => handleOpenForm()}
-        sx={{
-          background: "linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%)",
-          color: "#fff",
-          borderRadius: "12px",
-          padding: "5px 20px",
-          textTransform: "none",
-          fontWeight: "600",
-          boxShadow: "0 4px 12px rgba(59, 130, 246, 0.3)",
-          "&:hover": {
-            background: "linear-gradient(135deg, #4338ca 0%, #2563eb 100%)",
-            boxShadow: "0 6px 16px rgba(59, 130, 246, 0.45)",
-          },
-        }}
-      >
-        Thêm học sinh
-      </Button>
-    </Stack>
-
-    <StudentTable
-      rows={rows}
-      students={students}
-      paginationModel={paginationModel}
-      setPaginationModel={setPaginationModel}
-      onEdit={handleOpenForm}
-      onDelete={handleOpenDelete}
-    />
-
-    <Dialog
-      open={openForm}
-      onClose={handleCloseForm}
-      fullWidth
-      maxWidth="sm"
-    >
-      <DialogTitle
-        sx={{
-          background: "linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%)",
-          color: "#fff",
-          borderRadius: "4px 4px 0 0",
-          fontWeight: 600,
-        }}
-      >
-        {editingStudent ? "Sửa học sinh" : "Thêm học sinh"}
-        <IconButton
-          sx={{ position: "absolute", top: 8, right: 8, color: "#fff" }}
-          onClick={handleCloseForm}
+      <Stack direction="row" justifyContent="space-between" mb={2}>
+        <h2>Quản lý học sinh</h2>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={() => handleOpenForm()}
+          sx={{
+            background: "linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%)",
+            color: "#fff",
+            borderRadius: "12px",
+            padding: "5px 20px",
+            textTransform: "none",
+            fontWeight: "600",
+            boxShadow: "0 4px 12px rgba(59, 130, 246, 0.3)",
+            "&:hover": {
+              background: "linear-gradient(135deg, #4338ca 0%, #2563eb 100%)",
+              boxShadow: "0 6px 16px rgba(59, 130, 246, 0.45)",
+            },
+          }}
         >
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
+          Thêm học sinh
+        </Button>
+      </Stack>
 
-      <form onSubmit={handleSubmit}>
-        <StudentForm
-          formData={formData}
-          errors={errors}
-          parents={parents}
-          routes={routes}
-          handleChange={handleChange}
-        />
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={handleCloseForm} sx={{ color: "#555" }}>
-            Hủy
-          </Button>
-          <Button
-            type="submit"
-            variant="contained"
-            sx={{
-              background: "linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%)",
-              color: "#fff",
-              fontWeight: 600,
-              "&:hover": {
-                background: "linear-gradient(135deg, #4338ca 0%, #2563eb 100%)",
-              },
-            }}
+      <StudentTable
+        rows={rows}
+        students={students}
+        paginationModel={paginationModel}
+        setPaginationModel={setPaginationModel}
+        onEdit={handleOpenForm}
+        onDelete={handleOpenDelete}
+      />
+
+      <Dialog
+        open={openForm}
+        onClose={handleCloseForm}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle
+          sx={{
+            background: "linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%)",
+            color: "#fff",
+            borderRadius: "4px 4px 0 0",
+            fontWeight: 600,
+          }}
+        >
+          {editingStudent ? "Sửa học sinh" : "Thêm học sinh"}
+          <IconButton
+            sx={{ position: "absolute", top: 8, right: 8, color: "#fff" }}
+            onClick={handleCloseForm}
           >
-            {editingStudent ? "Cập nhật" : "Thêm"}
-          </Button>
-        </DialogActions>
-      </form>
-    </Dialog>
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
 
-    <StudentDeleteDialog
-      deleteConfirm={deleteConfirm}
-      lastDeleteData={lastDeleteData}
-      onCancel={() => setDeleteConfirm(null)}
-      onConfirm={handleDelete}
-    />
+        <form onSubmit={handleSubmit}>
+          <StudentForm
+            formData={formData}
+            errors={errors}
+            parents={parents}
+            routes={routes}
+            handleChange={handleChange}
+          />
+          <DialogActions sx={{ px: 3, pb: 2 }}>
+            <Button onClick={handleCloseForm} sx={{ color: "#555" }}>
+              Hủy
+            </Button>
+            <Button
+              type="submit"
+              variant="contained"
+              sx={{
+                background: "linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%)",
+                color: "#fff",
+                fontWeight: 600,
+                "&:hover": {
+                  background: "linear-gradient(135deg, #4338ca 0%, #2563eb 100%)",
+                },
+              }}
+            >
+              {editingStudent ? "Cập nhật" : "Thêm"}
+            </Button>
+          </DialogActions>
+        </form>
+      </Dialog>
 
-      {/* Snackbar */}
-    <Snackbar
-      open={snackbar.open}
-      autoHideDuration={4000}
-      onClose={() => setSnackbar({ ...snackbar, open: false })}    
-      anchorOrigin={{ vertical: 'top', horizontal: 'right' }}     
-    >
-        <Alert
-          onClose={() => setSnackbar({ ...snackbar, open: false })}
-          severity={snackbar.severity}
-          sx={{ width: '100%',
-            fontSize: "1rem",
-            fontWeight: 500,
-            borderRadius: 2,
-            boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
-           }}
-        >
-          {snackbar.message}
-        </Alert>
-    </Snackbar>
-  </Box>
+      <StudentDeleteDialog
+        deleteConfirm={deleteConfirm}
+        lastDeleteData={lastDeleteData}
+        onCancel={() => setDeleteConfirm(null)}
+        onConfirm={handleDelete}
+      />
+
+      <Notification
+        open={snackbar.open}
+        message={snackbar.message}
+        type={snackbar.type}
+        onClose={handleCloseNotification}
+      />
+    </Box>
   );
 }

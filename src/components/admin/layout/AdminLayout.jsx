@@ -20,9 +20,9 @@ const AdminLayout = () => {
         component="main"
         sx={{
           flexGrow: 1,
-          mt: 8, 
+          mt: 8,
           p: 3, // Padding đều cho tất cả các page
-          minHeight: "calc(100vh - 64px)", 
+          minHeight: "calc(100vh - 64px)",
           width: 0,
           overflowY: "auto",
           overflowX: "hidden",

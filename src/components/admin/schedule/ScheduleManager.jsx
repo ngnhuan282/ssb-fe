@@ -1,11 +1,13 @@
 // src/components/ScheduleManager.jsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Box, Stack, Button, Dialog, DialogTitle, DialogContent, TableContainer, TableBody, TableCell, TableHead, TableRow, Paper, Table } from "@mui/material";
+import { Box, Stack, Button, Dialog, DialogTitle, DialogContent, TableContainer, TableBody, TableCell, TableHead, TableRow, Paper, Table, IconButton } from "@mui/material";
 import { Add } from "@mui/icons-material";
 import ScheduleTable from "./ScheduleTable";
 import ScheduleDialog from "./ScheduleDialog";
 import StudentSelectDialog from "./StudentSelectDialog";
+import ScheduleDeleteDialog from "./ScheduleDeleteDialog";
+import Notification from "../layout/AdminNotification";
 import moment from "moment-timezone";
 import { scheduleAPI } from "../../../services/api";
 import { busAPI } from "../../../services/api";
@@ -25,7 +27,13 @@ export default function ScheduleManager() {
     const [studentDialogOpen, setStudentDialogOpen] = useState(false);
     const [open, setOpen] = useState(false);
     const [editing, setEditing] = useState(null);
-    const [errors, setErrors] = useState({})
+    const [errors, setErrors] = useState({});
+    const [deleteConfirm, setDeleteConfirm] = useState(null);
+    const [notify, setNotify] = useState({
+        open: false,
+        message: "",
+        type: "success",
+    });
     const [form, setForm] = useState({
         route: "",
         bus: "",
@@ -52,6 +60,13 @@ export default function ScheduleManager() {
         setStudentListOpen(true);
     };
 
+    const showNotification = (message, type = "success") => {
+        setNotify({ open: true, message, type });
+    };
+
+    const handleCloseNotification = () => {
+        setNotify({ ...notify, open: false });
+    };
 
 
     useEffect(() => {
@@ -60,7 +75,7 @@ export default function ScheduleManager() {
 
     const fetchApiData = async () => {
         try {
-            setEditing[null]
+            setEditing(null)
             const [schedule, bus, route, driver, student] = await Promise.all([
                 scheduleAPI.getAll(),
                 busAPI.getAll(),
@@ -97,10 +112,10 @@ export default function ScheduleManager() {
                     : "",
                 onViewStudents: (row) => handleViewStudents(row),
             }));
-            console.log("Fetched schedules:", formatted);
             setSchedules(formatted);
         } catch (error) {
             console.error("Error fetching schedules:", error);
+            showNotification("Xảy ra lỗi khi lấy dữ liệu !", "success");
         }
     };
 
@@ -176,8 +191,10 @@ export default function ScheduleManager() {
 
         if (editing) {
             await scheduleAPI.update(editing, payload)
+            showNotification("Thêm lịch trình thành công", "success");
         } else {
             await scheduleAPI.create(payload)
+            showNotification("Cập nhật lịch trình thành công", "success");
         }
 
         await fetchApiData(); // làm mới danh sách
@@ -186,12 +203,14 @@ export default function ScheduleManager() {
         setOpen(false);
     };
 
+    const handleOpenDelete = (scheduleId) => setDeleteConfirm(scheduleId);
 
-    const handleDelete = async (id) => {
-        if (window.confirm("Bạn có chắc muốn xóa lịch trình này?")) {
-            await scheduleAPI.delete(id);
-            setSchedules((prev) => prev.filter((s) => s._id !== id));
-        }
+    const handleDelete = async () => {
+        if (!deleteConfirm) return;
+        await scheduleAPI.delete(deleteConfirm);
+        setSchedules((prev) => prev.filter((s) => s._id !== deleteConfirm));
+        setDeleteConfirm(null);
+        showNotification("Xóa lịch trình thành công", "success");
     };
 
     const validateForm = (form) => {
@@ -231,7 +250,8 @@ export default function ScheduleManager() {
                 <h2>Quản lý lịch trình</h2>
                 <Button
                     variant="contained"
-                    startIcon={<Add />}
+                    size="small"
+                    startIcon={<Add sx={{ fontSize: 18 }} />}
                     onClick={() => handleOpen(null)}
                     sx={{
                         background: "linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%)",
@@ -249,12 +269,15 @@ export default function ScheduleManager() {
                 >
                     Thêm lịch trình
                 </Button>
+
+
+
             </Stack>
 
             <ScheduleTable
                 schedules={schedules}
                 onEdit={handleOpen}
-                onDelete={handleDelete}
+                onDelete={handleOpenDelete}
                 onViewStudents={handleViewStudents}
             />
 
@@ -284,6 +307,19 @@ export default function ScheduleManager() {
                 }
                 onClose={() => setStudentDialogOpen(false)}
             />
+
+            <ScheduleDeleteDialog
+                deleteConfirm={deleteConfirm}
+                onCancel={() => setDeleteConfirm(null)}
+                onConfirm={handleDelete}
+            />
+            <Notification
+                open={notify.open}
+                message={notify.message}
+                type={notify.type}
+                onClose={handleCloseNotification}
+            />
+
             <Dialog open={studentListOpen} onClose={() => setStudentListOpen(false)} fullWidth
                 maxWidth="md">
                 <DialogTitle>Danh sách học sinh</DialogTitle>
@@ -291,7 +327,7 @@ export default function ScheduleManager() {
                     {currentStudents.length > 0 ? (
                         <TableContainer component={Paper}>
                             <Table sx={{ minWidth: 650 }} aria-label="a dense table">
-                                <TableHead>
+                                <TableHead sx={{ backgroundColor: "#f5f5f5" }}>
                                     <TableRow>
                                         <TableCell component="th" scope="row">Tên</TableCell>
                                         <TableCell align="center">Lớp</TableCell>
@@ -302,7 +338,10 @@ export default function ScheduleManager() {
                                     {currentStudents.map((student, index) => (
                                         <TableRow
                                             key={index}
-                                            sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                            sx={{
+                                                '&:last-child td, &:last-child th': { border: 0 },
+                                                backgroundColor: index % 2 === 0 ? "#ffffff" : "#f9fafb",
+                                            }}
                                         >
                                             <TableCell component="th" scope="row">{student.fullName}</TableCell>
                                             <TableCell align="center">{student.class}</TableCell>
