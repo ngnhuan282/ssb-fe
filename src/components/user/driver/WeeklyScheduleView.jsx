@@ -1,5 +1,5 @@
 // src/components/user/driver/WeeklyScheduleView.jsx
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   Card,
   CardContent,
@@ -13,6 +13,7 @@ import {
   TableRow,
   Chip,
   IconButton,
+  CircularProgress,
 } from '@mui/material';
 import {
   ChevronLeft,
@@ -20,7 +21,17 @@ import {
   Circle,
 } from '@mui/icons-material';
 
-const WeeklyScheduleView = ({ weekSchedules = [], currentWeekStart, onWeekChange }) => {
+const WeeklyScheduleView = ({ weekSchedules = [], weekStart, onWeekChange }) => {
+  // Sửa: Kiểm tra weekStart trước khi xử lý
+  if (!weekStart) {
+    return (
+      <Card sx={{ p: 4, textAlign: 'center' }}>
+        <CircularProgress size={24} />
+        <Typography mt={2}>Đang tải lịch tuần...</Typography>
+      </Card>
+    );
+  }
+
   const getWeekDays = (startDate) => {
     const days = [];
     for (let i = 0; i < 7; i++) {
@@ -31,7 +42,8 @@ const WeeklyScheduleView = ({ weekSchedules = [], currentWeekStart, onWeekChange
     return days;
   };
 
-  const weekDays = getWeekDays(currentWeekStart);
+  // Sửa: Dùng useMemo để tránh tính lại không cần thiết
+  const weekDays = useMemo(() => getWeekDays(weekStart), [weekStart]);
   
   const dayNames = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
 
@@ -70,13 +82,13 @@ const WeeklyScheduleView = ({ weekSchedules = [], currentWeekStart, onWeekChange
             Lịch tuần
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <IconButton size="small" onClick={() => onWeekChange(-1)} sx={{ color: '#424242' }}>
+            <IconButton size="small" onClick={() => onWeekChange('prev')} sx={{ color: '#424242' }}>
               <ChevronLeft />
             </IconButton>
             <Typography variant="body2" sx={{ color: '#757575', minWidth: 180, textAlign: 'center' }}>
               {weekDays[0].toLocaleDateString('vi-VN')} - {weekDays[6].toLocaleDateString('vi-VN')}
             </Typography>
-            <IconButton size="small" onClick={() => onWeekChange(1)} sx={{ color: '#424242' }}>
+            <IconButton size="small" onClick={() => onWeekChange('next')} sx={{ color: '#424242' }}>
               <ChevronRight />
             </IconButton>
           </Box>

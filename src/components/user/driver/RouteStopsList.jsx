@@ -16,6 +16,8 @@ import {
   CheckCircle,
   RadioButtonUnchecked,
   People,
+  ArrowUpward,
+  ArrowDownward,
 } from '@mui/icons-material';
 
 const RouteStopsList = ({ route, currentStopIndex = 0, studentsPerStop = {} }) => {
@@ -50,8 +52,13 @@ const RouteStopsList = ({ route, currentStopIndex = 0, studentsPerStop = {} }) =
             const isCurrent = index === currentStopIndex;
             const isPending = index > currentStopIndex;
             
-            // Lấy số học sinh tại điểm dừng này (nếu có)
-            const studentCount = studentsPerStop[stop.location] || 
+            // ✅ FIX: Dùng stop.name thay vì stop.location
+            const stopName = stop.name || stop.location || 'Điểm dừng không tên';
+            const stopType = stop.type || 'unknown';
+            
+            // Lấy số học sinh tại điểm dừng này
+            const studentCount = studentsPerStop[stopName] || 
+                                 studentsPerStop[stop.location] ||
                                  studentsPerStop[index] || 
                                  (stop.studentCount || 0);
 
@@ -94,16 +101,48 @@ const RouteStopsList = ({ route, currentStopIndex = 0, studentsPerStop = {} }) =
                           color: isCompleted ? '#757575' : isCurrent ? '#212121' : '#9e9e9e',
                         }}
                       >
-                        {stop.location}
+                        {stopName}
                       </Typography>
+                      
+                      {/* Chip loại điểm dừng */}
+                      {stopType === 'pickup' && (
+                        <Chip
+                          icon={<ArrowUpward sx={{ fontSize: 12 }} />}
+                          label="Đón"
+                          size="small"
+                          sx={{
+                            height: 18,
+                            fontSize: '0.65rem',
+                            bgcolor: '#e8f5e9',
+                            color: '#2e7d32',
+                            fontWeight: 500,
+                            '& .MuiChip-icon': { color: '#2e7d32' },
+                          }}
+                        />
+                      )}
+                      {stopType === 'dropoff' && (
+                        <Chip
+                          icon={<ArrowDownward sx={{ fontSize: 12 }} />}
+                          label="Trả"
+                          size="small"
+                          sx={{
+                            height: 18,
+                            fontSize: '0.65rem',
+                            bgcolor: '#fff3e0',
+                            color: '#e65100',
+                            fontWeight: 500,
+                            '& .MuiChip-icon': { color: '#e65100' },
+                          }}
+                        />
+                      )}
                       
                       {isCurrent && (
                         <Chip
                           label="Hiện tại"
                           size="small"
                           sx={{
-                            height: 20,
-                            fontSize: '0.7rem',
+                            height: 18,
+                            fontSize: '0.65rem',
                             bgcolor: '#fff3e0',
                             color: '#e65100',
                             fontWeight: 500,
@@ -117,8 +156,8 @@ const RouteStopsList = ({ route, currentStopIndex = 0, studentsPerStop = {} }) =
                           label={`${studentCount} học sinh`}
                           size="small"
                           sx={{
-                            height: 20,
-                            fontSize: '0.7rem',
+                            height: 18,
+                            fontSize: '0.65rem',
                             bgcolor: '#e3f2fd',
                             color: '#1565c0',
                             fontWeight: 500,
@@ -133,6 +172,11 @@ const RouteStopsList = ({ route, currentStopIndex = 0, studentsPerStop = {} }) =
                   secondary={
                     <Typography variant="caption" sx={{ color: '#9e9e9e' }}>
                       {formatTime(stop.time) || 'Chưa có giờ'}
+                      {stop.lat && stop.lng && (
+                        <span style={{ marginLeft: 8, color: '#bdbdbd' }}>
+                          • {stop.lat.toFixed(4)}, {stop.lng.toFixed(4)}
+                        </span>
+                      )}
                     </Typography>
                   }
                 />

@@ -42,7 +42,12 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await authAPI.login({ email, password });
       const userData = response.data.data.user;
-      
+
+      if (userData.id && !userData._id) {
+      userData._id = userData.id;
+      delete userData.id; // optional
+    }
+
       // Lưu vào state
       setUser(userData);
       setIsAuthenticated(true);

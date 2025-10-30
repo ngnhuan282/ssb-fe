@@ -48,6 +48,11 @@ const TodayScheduleCard = ({ schedule, onStartTrip, liveLocation = null }) => {
     }
   };
 
+  // THÊM: Định dạng ngày hôm nay
+  const scheduleDate = new Date(schedule.date);
+  const dayNames = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
+  const formattedDate = `${dayNames[scheduleDate.getDay()]}, ${scheduleDate.getDate()}/${scheduleDate.getMonth() + 1}`;
+
   return (
     <Card sx={{ boxShadow: 1, borderRadius: 1, border: '1px solid #e0e0e0' }}>
       <CardContent sx={{ p: 3 }}>
@@ -57,8 +62,12 @@ const TodayScheduleCard = ({ schedule, onStartTrip, liveLocation = null }) => {
             <Typography variant="h6" sx={{ fontWeight: 600, color: '#212121', mb: 0.5 }}>
               Lịch trình hôm nay
             </Typography>
+            {/* THÊM: Hiển thị ngày ngay dưới */}
+            <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem' }}>
+              {formattedDate}
+            </Typography>
             {schedule.frequency && (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
                 <Repeat sx={{ fontSize: 14, color: '#757575' }} />
                 <Typography variant="caption" sx={{ color: '#757575' }}>
                   {getFrequencyLabel(schedule.frequency)}
@@ -201,7 +210,7 @@ const TodayScheduleCard = ({ schedule, onStartTrip, liveLocation = null }) => {
         {schedule.status === 'completed' && (
           <Box sx={{ bgcolor: '#e8f5e9', p: 2, borderRadius: 1, textAlign: 'center' }}>
             <Typography variant="body2" sx={{ color: '#2e7d32', fontWeight: 500 }}>
-              ✓ Chuyến đi đã hoàn thành
+              Chuyến đi đã hoàn thành
             </Typography>
           </Box>
         )}
