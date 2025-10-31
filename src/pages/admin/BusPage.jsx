@@ -25,7 +25,6 @@ export default function BusPage() {
   const [openForm, setOpenForm] = useState(false)
   const [editingBus, setEditingBus] = useState(null)
   const [deleteConfirm, setDeleteConfirm] = useState(null)
-  const [lastDeleteData, setLastDeleteData] = useState(null)
   const [formData, setFormData] = useState({
     licensePlate: "",
     capacity: "",
@@ -34,7 +33,6 @@ export default function BusPage() {
     route: "",
   })
   const [errors, setErrors] = useState({})
-  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 })
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
 
 
@@ -156,20 +154,16 @@ export default function BusPage() {
 
     } catch (err) {
       console.error("Save bus error:", err)
-      showNotification('Lưu thông tin xe buýt thất bại !')
+      showNotification('Lưu thông tin xe buýt thất bại !','error')
     }
   }
-
-  const handleOpenDelete = (bus) => setDeleteConfirm(bus)
 
   const handleDelete = async () => {
     if (!deleteConfirm) return
     try {
       await busAPI.delete(deleteConfirm._id)
       setBuses(buses.filter((b) => b._id !== deleteConfirm._id))
-      setLastDeleteData({
-        ...deleteConfirm,
-      })
+
       //thong bao thanh cong
       showNotification('Xóa xe buýt thành công!', 'success')
     } catch (err) {
@@ -193,7 +187,7 @@ export default function BusPage() {
 
   return (
     <Box sx={{ height: 500, width: "100%", p: 2 }}>
-      <Stack direction="row" justifyContent="space-between" mb={2}>
+      <Stack direction="row" justifyContent="space-between" mb={2} alignItems="center">
         <h2>Quản lý xe buýt</h2>
         <Button
           variant="contained"
@@ -203,14 +197,9 @@ export default function BusPage() {
             background: "linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%)",
             color: "#fff",
             borderRadius: "12px",
-            padding: "5px 20px",
+            minHeight: "50px",
             textTransform: "none",
             fontWeight: "600",
-            boxShadow: "0 4px 12px rgba(59, 130, 246, 0.3)",
-            "&:hover": {
-              background: "linear-gradient(135deg, #4338ca 0%, #2563eb 100%)",
-              boxShadow: "0 6px 16px rgba(59, 130, 246, 0.45)",
-            },
           }}
         >
           Thêm xe buýt
@@ -220,10 +209,8 @@ export default function BusPage() {
       <BusTable
         rows={rows}
         buses={buses}
-        paginationModel={paginationModel}
-        setPaginationModel={setPaginationModel}
         onEdit={handleOpenForm}
-        onDelete={handleOpenDelete}
+        onDelete={setDeleteConfirm}
       />
 
       <Dialog
@@ -288,7 +275,6 @@ export default function BusPage() {
 
       <BusDeleteDialog
         deleteConfirm={deleteConfirm}
-        lastDeleteData={lastDeleteData}
         onCancel={() => setDeleteConfirm(null)}
         onConfirm={handleDelete}
       />

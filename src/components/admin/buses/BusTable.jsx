@@ -20,8 +20,6 @@ import { Edit, Delete, Search } from "@mui/icons-material";
 export default function BusTable({
   rows,
   buses,
-  paginationModel,
-  setPaginationModel,
   onEdit,
   onDelete,
 }) {
@@ -34,32 +32,9 @@ export default function BusTable({
     { field: "capacity", headerName: "Sức Chứa", flex: 1, minWidth: 100 },
     { field: "currentStatus", headerName: "Trạng Thái", flex: 1, minWidth: 130 },
     { field: "driver", headerName: "Tài Xế", flex: 1, minWidth: 130 },
-    { field: "route", headerName: "Tuyến Đường", flex: 1, minWidth: 200 },
+    { field: "route", headerName: "Tuyến Đường", flex: 1, minWidth: 150 },
     { field: "createdAt", headerName: "Ngày Tạo", flex: 1, minWidth: 120 },
     { field: "updatedAt", headerName: "Ngày Cập Nhật", flex: 1, minWidth: 120 },
-    // {
-    //   field: "actions",
-    //   headerName: "Hành Động",
-    //   sortable: false,
-    //   flex: 1,
-    //   minWidth: 100,
-    //   renderCell: (params) => (
-    //     <>
-    //       <IconButton
-    //         onClick={() => onEdit(buses.find((b) => b._id === params.row.id))}
-    //         sx={{ color: "#007bff" }}
-    //       >
-    //         <EditIcon />
-    //       </IconButton>
-    //       <IconButton
-    //         onClick={() => onDelete(buses.find((b) => b._id === params.row.id))}
-    //         sx={{ color: "#dc3545" }}
-    //       >
-    //         <DeleteIcon />
-    //       </IconButton>
-    //     </>
-    //   ),
-    // },
   ];
 
   const filteredRows = rows.filter((row) =>
@@ -138,11 +113,11 @@ export default function BusTable({
           <TableHead sx={{ backgroundColor: "#f5f5f5" }}>
             <TableRow>
               {columns.map((col) => (
-                <TableCell key={col.field} sx={{ fontWeight: "bold" }}>
+                <TableCell key={col.field} sx={{ fontWeight: "bold" , minWidth: col.minWidth }}>
                   {col.headerName}
                 </TableCell>
               ))}
-              {(onEdit || onDelete) && <TableCell sx={{ fontWeight: "bold" }}>Thao tác</TableCell>}
+              {(onEdit || onDelete) && <TableCell sx={{ width: "80px",  whiteSpace: "nowrap" , pl:3 , fontWeight: "bold"  }}>Thao tác</TableCell>}
             </TableRow>
           </TableHead>
           <TableBody>
@@ -154,7 +129,7 @@ export default function BusTable({
                   transition: "background-color 0.2s ease"
                 }}>
                   {columns.map((col) => (
-                    <TableCell key={col.field}>{row[col.field]}</TableCell>
+                    <TableCell key={col.field} sx={{ minWidth: col.minWidth }}>{row[col.field]}</TableCell>
                   ))}
                   {(onEdit || onDelete) && (
                     <TableCell>
@@ -194,6 +169,7 @@ export default function BusTable({
           onPageChange={handleChangePage}
           rowsPerPage={rowsPerPage}
           onRowsPerPageChange={handleChangeRowsPerPage}
+          rowsPerPageOptions={[5, 10, 25, 50 ,100]}   
           labelRowsPerPage="Số dòng mỗi trang"
           sx={{
             "& .MuiTablePagination-toolbar": {

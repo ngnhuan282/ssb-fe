@@ -10,18 +10,16 @@ import {
 
 export default function StudentDeleteDialog({
   deleteConfirm,
-  lastDeleteData,
   onCancel,
   onConfirm,
 }) {
-  const target = deleteConfirm || lastDeleteData;
 
   return (
     <Dialog open={!!deleteConfirm} onClose={onCancel}>
       <DialogTitle sx={{ color: "#dc3545" }}>Xác Nhận Xóa</DialogTitle>
       <DialogContent>
         <Typography>
-          Bạn có chắc muốn xóa học sinh {target?.fullName}?
+          Bạn có chắc muốn xóa học sinh {deleteConfirm?.fullName}?
         </Typography>
       </DialogContent>
       <DialogActions>
@@ -29,7 +27,7 @@ export default function StudentDeleteDialog({
         <Button
           variant="contained"
           color="error"
-          onClick={() => onConfirm(target._id)}
+          onClick={() => onConfirm()}
         >
           Xóa
         </Button>

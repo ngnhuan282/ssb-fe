@@ -9,18 +9,16 @@ import {
 
 export default function BusDeleteDialog({
   deleteConfirm,
-  lastDeleteData,
   onCancel,
   onConfirm,
 }) {
-  const target = deleteConfirm || lastDeleteData;
 
   return (
     <Dialog open={!!deleteConfirm} onClose={onCancel}>
       <DialogTitle sx={{ color: "#dc3545" }}>Xác Nhận Xóa</DialogTitle>
       <DialogContent>
         <Typography>
-          Bạn có chắc muốn xóa xe {target?.licensePlate}?
+          Bạn có chắc muốn xóa xe {deleteConfirm?.licensePlate}?
         </Typography>
       </DialogContent>
       <DialogActions>
@@ -28,7 +26,7 @@ export default function BusDeleteDialog({
         <Button
           variant="contained"
           color="error"
-          onClick={() => onConfirm(target._id)}
+          onClick={() => onConfirm()}
         >
           Xóa
         </Button>

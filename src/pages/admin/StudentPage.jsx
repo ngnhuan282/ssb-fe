@@ -25,7 +25,6 @@ export default function StudentPage() {
   const [openForm, setOpenForm] = useState(false);
   const [editingStudent, setEditingStudent] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
-  const [lastDeleteData, setLastDeleteData] = useState(null);
   const [formData, setFormData] = useState({
     fullName: "",
     age: "",
@@ -37,7 +36,6 @@ export default function StudentPage() {
     status: "pending",
   });
   const [errors, setErrors] = useState({});
-  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
 
   useEffect(() => {
@@ -169,16 +167,11 @@ export default function StudentPage() {
     }
   };
 
-  const handleOpenDelete = (student) => setDeleteConfirm(student);
-
   const handleDelete = async () => {
     if (!deleteConfirm) return;
     try {
       await studentAPI.delete(deleteConfirm._id);
       setStudents(students.filter((s) => s._id !== deleteConfirm._id));
-      setLastDeleteData({
-        ...deleteConfirm,
-      });
       showNotification('Xóa học sinh thành công!', 'success')
     } catch (err) {
       console.error("Delete student error:", err);
@@ -204,7 +197,7 @@ export default function StudentPage() {
 
   return (
     <Box sx={{ height: 500, width: "100%", p: 2 }}>
-      <Stack direction="row" justifyContent="space-between" mb={2}>
+      <Stack direction="row" justifyContent="space-between" mb={2} alignItems="center">
         <h2>Quản lý học sinh</h2>
         <Button
           variant="contained"
@@ -214,14 +207,9 @@ export default function StudentPage() {
             background: "linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%)",
             color: "#fff",
             borderRadius: "12px",
-            padding: "5px 20px",
+            minHeight: "50px",
             textTransform: "none",
             fontWeight: "600",
-            boxShadow: "0 4px 12px rgba(59, 130, 246, 0.3)",
-            "&:hover": {
-              background: "linear-gradient(135deg, #4338ca 0%, #2563eb 100%)",
-              boxShadow: "0 6px 16px rgba(59, 130, 246, 0.45)",
-            },
           }}
         >
           Thêm học sinh
@@ -231,10 +219,8 @@ export default function StudentPage() {
       <StudentTable
         rows={rows}
         students={students}
-        paginationModel={paginationModel}
-        setPaginationModel={setPaginationModel}
         onEdit={handleOpenForm}
-        onDelete={handleOpenDelete}
+        onDelete={setDeleteConfirm}
       />
 
       <Dialog
@@ -292,7 +278,6 @@ export default function StudentPage() {
 
       <StudentDeleteDialog
         deleteConfirm={deleteConfirm}
-        lastDeleteData={lastDeleteData}
         onCancel={() => setDeleteConfirm(null)}
         onConfirm={handleDelete}
       />

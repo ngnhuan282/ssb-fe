@@ -19,8 +19,6 @@ import { Edit, Delete, Search } from "@mui/icons-material";
 export default function StudentTable({
   rows,
   students,
-  paginationModel,
-  setPaginationModel,
   onEdit,
   onDelete,
 }) {
@@ -29,39 +27,16 @@ export default function StudentTable({
   const [search, setSearch] = React.useState("");
 
   const columns = [
-    { field: "fullName", headerName: "Họ Tên", flex: 1, minWidth: 180 },
+    { field: "fullName", headerName: "Họ Tên", flex: 1, minWidth: 170 },
     { field: "age", headerName: "Tuổi", flex: 0.5, minWidth: 60 },
     { field: "class", headerName: "Lớp", flex: 0.7, minWidth: 70 },
-    { field: "parent", headerName: "Phụ Huynh", flex: 1, minWidth: 180 },
-    { field: "route", headerName: "Tuyến Đường", flex: 1, minWidth: 200 },
-    { field: "pickupPoint", headerName: "Điểm Đón", flex: 1, minWidth: 200 },
-    { field: "dropoffPoint", headerName: "Điểm Trả", flex: 1, minWidth: 200 },
+    { field: "parent", headerName: "Phụ Huynh", flex: 1, minWidth: 130 },
+    { field: "route", headerName: "Tuyến Đường", flex: 1, minWidth: 140 },
+    { field: "pickupPoint", headerName: "Điểm Đón", flex: 1, minWidth: 170 },
+    { field: "dropoffPoint", headerName: "Điểm Trả", flex: 1, minWidth: 170 },
     { field: "status", headerName: "Trạng Thái", flex: 1, minWidth: 100 },
     { field: "createdAt", headerName: "Ngày Tạo", flex: 1, minWidth: 100 },
     { field: "updatedAt", headerName: "Ngày Cập Nhật", flex: 1, minWidth: 100 },
-    // {
-    //   field: "actions",
-    //   headerName: "Hành Động",
-    //   flex: 1,
-    //   sortable: false,
-    //   minWidth: 100,
-    //   renderCell: (params) => (
-    //     <>
-    //       <IconButton
-    //         onClick={() => onEdit(students.find((s) => s._id === params.row.id))}
-    //         sx={{ color: "#007bff" }}
-    //       >
-    //         <EditIcon />
-    //       </IconButton>
-    //       <IconButton
-    //         onClick={() => onDelete(students.find((s) => s._id === params.row.id))}
-    //         sx={{ color: "#dc3545" }}
-    //       >
-    //         <DeleteIcon />
-    //       </IconButton>
-    //     </>
-    //   ),
-    // },
   ];
 
   const filteredRows = rows.filter((row) =>
@@ -77,29 +52,6 @@ export default function StudentTable({
   };
 
   return (
-    // <Paper sx={{ height: "67vh", borderRadius: 2, overflow: "auto" }}>
-    //   <DataGrid
-    //     rows={rows}
-    //     columns={columns}
-    //     paginationModel={paginationModel}
-    //     onPaginationModelChange={setPaginationModel}
-    //     pageSizeOptions={[5, 8, 10, 20]}
-    //     pagination
-    //     disableRowSelectionOnClick
-    //     sx={{
-    //       backgroundColor: "#fff",
-    //       border: "none",
-    //       "& .MuiDataGrid-columnHeaders": {
-    //         backgroundColor: "#f0f0f0",
-    //         fontWeight: "bold",
-    //       },
-    //       "& .MuiDataGrid-cell:focus, & .MuiDataGrid-columnHeader:focus": {
-    //         outline: "none",
-    //       },
-    //     }}
-    //   />
-    // </Paper>
-
     <Paper
       elevation={3}
       sx={{
@@ -140,11 +92,11 @@ export default function StudentTable({
           <TableHead sx={{ backgroundColor: "#f5f5f5" }}>
             <TableRow>
               {columns.map((col) => (
-                <TableCell key={col.field} sx={{ fontWeight: "bold" }}>
+                <TableCell key={col.field} sx={{ fontWeight: "bold" , minWidth: col.minWidth}}>
                   {col.headerName}
                 </TableCell>
               ))}
-              {(onEdit || onDelete) && <TableCell sx={{ fontWeight: "bold" }}>Thao tác</TableCell>}
+              {(onEdit || onDelete) && <TableCell sx={{ width: "80px",  whiteSpace: "nowrap" , pl:3 , fontWeight: "bold" }}>Thao tác</TableCell>}
             </TableRow>
           </TableHead>
           <TableBody>
@@ -156,7 +108,7 @@ export default function StudentTable({
                   transition: "background-color 0.2s ease"
                 }}>
                   {columns.map((col) => (
-                    <TableCell key={col.field}>{row[col.field]}</TableCell>
+                    <TableCell key={col.field} sx={{ minWidth: col.minWidth }}>{row[col.field]}</TableCell>
                   ))}
                   {(onEdit || onDelete) && (
                     <TableCell>
@@ -196,6 +148,7 @@ export default function StudentTable({
           onPageChange={handleChangePage}
           rowsPerPage={rowsPerPage}
           onRowsPerPageChange={handleChangeRowsPerPage}
+          rowsPerPageOptions={[5, 10, 25, 50 ,100]}   
           labelRowsPerPage="Số dòng mỗi trang"
           sx={{
             "& .MuiTablePagination-toolbar": {
