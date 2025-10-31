@@ -117,7 +117,7 @@ export default function DriverDialog({
             <InputLabel>Xe đăng ký</InputLabel>
             <Select
               name="assignedBus"
-              value={formData.assignedBus || ""}
+              value={formData.assignedBus}
               onChange={onChange}
               label="Xe đăng ký"
             >

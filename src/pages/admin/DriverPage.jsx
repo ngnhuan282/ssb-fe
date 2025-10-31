@@ -15,7 +15,7 @@ import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
 import { driverAPI, busAPI } from "../../services/api"; // busAPI để fetch xe
 import DriverTable from "../../components/admin/drivers/DriverTable";
-import DriverForm from "../../components/admin/drivers/DriverForm";
+// import DriverForm from "../../components/admin/drivers/DriverForm";
 import DriverDeleteDialog from "../../components/admin/drivers/DriverDeleteDialog";
 import DriverDialog from "../../components/admin/drivers/DriverDialog";
 
@@ -47,6 +47,8 @@ export default function DriverPage() {
     const fetchDrivers = async () => {
       try {
         const res = await driverAPI.getAll();
+         const bus = await busAPI.getAll();
+        setBuses(bus.data.data);
       
         const flatDrivers = res.data.data.map(driver => ({
           id: driver._id,
@@ -67,17 +69,17 @@ export default function DriverPage() {
       }
     };
 
-    const fetchBuses = async () => {
-      try {
-        const res = await busAPI.getAll();
-        setBuses(res.data.data);
-      } catch (err) {
-        console.error("Fetch buses error:", err);
-      }
-    };
+    // const fetchBuses = async () => {
+    //   try {
+    //     const res = await busAPI.getAll();
+    //     setBuses(res.data.data);
+    //   } catch (err) {
+    //     console.error("Fetch buses error:", err);
+    //   }
+    // };
 
     fetchDrivers();
-    fetchBuses();
+    // fetchBuses();
   }, []);
 
   // ===== Form Thêm/Sửa =====
@@ -85,12 +87,13 @@ export default function DriverPage() {
 
     if (driver) {
       setEditingDriver(driver);
+      const foundBus = buses.find(bus => bus.licensePlate === driver.assignedBus);
       setFormData({
         fullName: driver.fullName,
         phoneNumber: driver.phoneNumber,
         email: driver.email,
         licenseNumber: driver.licenseNumber,
-        assignedBus: driver.assignedBus?._id || "",
+        assignedBus: foundBus._id || "",
         status: driver.status === "Đang làm việc" ? "active" : "inactive",
       });
     } else {
@@ -188,14 +191,14 @@ const handleDelete = async () => {
 
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  const newErrors = validateForm();
-  if (Object.keys(newErrors).length > 0) {
-    setErrors(newErrors);
-    return;
-  }
+    e.preventDefault();
+    const newErrors = validateForm();
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
 
-  try {
+    
     let updatedDrivers;
     console.log("Submitting form data:", formData);
     if (editingDriver) {
@@ -222,6 +225,7 @@ const handleDelete = async () => {
         createdAt: res.data.data.createdAt ? new Date(res.data.data.createdAt).toLocaleDateString() : "",
         updatedAt: res.data.data.updatedAt ? new Date(res.data.data.updatedAt).toLocaleDateString() : "",
       }];
+      console.log("Updated drivers list:", updatedDrivers);
         setSnackbar({
         open: true,
         message: "Thêm tài xế thành công!",
@@ -230,14 +234,6 @@ const handleDelete = async () => {
     }
     setDrivers(updatedDrivers);
     handleCloseForm();
-  } catch (err) {
-    console.error("Save driver error:", err);
-     setSnackbar({
-      open: true,
-      message: "Lưu tài xế thất bại!",
-      severity: "error",
-    });
-  }
 };
 
 
@@ -282,12 +278,12 @@ const handleDelete = async () => {
         </DialogTitle>
 
         <form onSubmit={handleSubmit}>
-          <DriverForm
+          {/* <DriverForm
             formData={formData}
             errors={errors}
             handleChange={handleChange}
             buses={buses} // truyền danh sách xe cho select
-          />
+          /> */}
           <DialogActions>
             <Button onClick={handleCloseForm}>Hủy</Button>
             <Button type="submit" variant="contained" sx={{ backgroundColor: "#007bff" }}>
