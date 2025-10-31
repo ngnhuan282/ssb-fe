@@ -28,13 +28,13 @@ export default function BusTable({
   const [search, setSearch] = React.useState("");
 
   const columns = [
-    { field: "licensePlate", headerName: "Biển Số", flex: 1, minWidth: 120 },
-    { field: "capacity", headerName: "Sức Chứa", flex: 1, minWidth: 100 },
-    { field: "currentStatus", headerName: "Trạng Thái", flex: 1, minWidth: 130 },
-    { field: "driver", headerName: "Tài Xế", flex: 1, minWidth: 130 },
-    { field: "route", headerName: "Tuyến Đường", flex: 1, minWidth: 150 },
-    { field: "createdAt", headerName: "Ngày Tạo", flex: 1, minWidth: 120 },
-    { field: "updatedAt", headerName: "Ngày Cập Nhật", flex: 1, minWidth: 120 },
+    { field: "licensePlate", headerName: "Biển Số", flex: 1},
+    { field: "capacity", headerName: "Sức Chứa", flex: 1},
+    { field: "currentStatus", headerName: "Trạng Thái"},
+    { field: "driver", headerName: "Tài Xế", flex: 1},
+    { field: "route", headerName: "Tuyến Đường", flex: 1},
+    { field: "createdAt", headerName: "Ngày Tạo", flex: 1},
+    { field: "updatedAt", headerName: "Ngày Cập Nhật", flex: 1},
   ];
 
   const filteredRows = rows.filter((row) =>
@@ -50,29 +50,6 @@ export default function BusTable({
   };
 
   return (
-    // <Paper sx={{ height: "67vh", borderRadius: 2, overflow: "auto" }}>
-    //   <DataGrid
-    //     rows={rows}
-    //     columns={columns}
-    //     paginationModel={paginationModel}
-    //     onPaginationModelChange={setPaginationModel}
-    //     pageSizeOptions={[5, 8, 10, 20]}
-    //     pagination
-    //     disableRowSelectionOnClick
-    //     sx={{
-    //       backgroundColor: "#fff",
-    //       border: "none",
-    //       "& .MuiDataGrid-columnHeaders": {
-    //         backgroundColor: "#f0f0f0",
-    //         fontWeight: "bold",
-    //       },
-    //       "& .MuiDataGrid-cell:focus, & .MuiDataGrid-columnHeader:focus": {
-    //         outline: "none",
-    //       },
-    //     }}
-    //   />
-    // </Paper>
-
     <Paper
       elevation={3}
       sx={{
@@ -113,7 +90,7 @@ export default function BusTable({
           <TableHead sx={{ backgroundColor: "#f5f5f5" }}>
             <TableRow>
               {columns.map((col) => (
-                <TableCell key={col.field} sx={{ fontWeight: "bold" , minWidth: col.minWidth }}>
+                <TableCell key={col.field} sx={{ fontWeight: "bold"}}>
                   {col.headerName}
                 </TableCell>
               ))}
@@ -129,7 +106,7 @@ export default function BusTable({
                   transition: "background-color 0.2s ease"
                 }}>
                   {columns.map((col) => (
-                    <TableCell key={col.field} sx={{ minWidth: col.minWidth }}>{row[col.field]}</TableCell>
+                    <TableCell key={col.field}>{row[col.field]}</TableCell>
                   ))}
                   {(onEdit || onDelete) && (
                     <TableCell>

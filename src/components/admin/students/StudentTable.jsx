@@ -27,16 +27,16 @@ export default function StudentTable({
   const [search, setSearch] = React.useState("");
 
   const columns = [
-    { field: "fullName", headerName: "Họ Tên", flex: 1, minWidth: 170 },
-    { field: "age", headerName: "Tuổi", flex: 0.5, minWidth: 60 },
-    { field: "class", headerName: "Lớp", flex: 0.7, minWidth: 70 },
-    { field: "parent", headerName: "Phụ Huynh", flex: 1, minWidth: 130 },
-    { field: "route", headerName: "Tuyến Đường", flex: 1, minWidth: 140 },
-    { field: "pickupPoint", headerName: "Điểm Đón", flex: 1, minWidth: 170 },
-    { field: "dropoffPoint", headerName: "Điểm Trả", flex: 1, minWidth: 170 },
-    { field: "status", headerName: "Trạng Thái", flex: 1, minWidth: 100 },
-    { field: "createdAt", headerName: "Ngày Tạo", flex: 1, minWidth: 100 },
-    { field: "updatedAt", headerName: "Ngày Cập Nhật", flex: 1, minWidth: 100 },
+    { field: "fullName", headerName: "Họ Tên", flex: 1},
+    { field: "age", headerName: "Tuổi", flex: 1},
+    { field: "class", headerName: "Lớp", flex: 1},
+    { field: "parent", headerName: "Phụ Huynh", flex: 1},
+    { field: "route", headerName: "Tuyến Đường", flex: 1},
+    { field: "pickupPoint", headerName: "Điểm Đón", flex: 1},
+    { field: "dropoffPoint", headerName: "Điểm Trả", flex: 1},
+    { field: "status", headerName: "Trạng Thái", flex: 1},
+    { field: "createdAt", headerName: "Ngày Tạo", flex: 1},
+    { field: "updatedAt", headerName: "Ngày Cập Nhật", flex: 1},
   ];
 
   const filteredRows = rows.filter((row) =>
@@ -92,7 +92,7 @@ export default function StudentTable({
           <TableHead sx={{ backgroundColor: "#f5f5f5" }}>
             <TableRow>
               {columns.map((col) => (
-                <TableCell key={col.field} sx={{ fontWeight: "bold" , minWidth: col.minWidth}}>
+                <TableCell key={col.field} sx={{ fontWeight: "bold"}}>
                   {col.headerName}
                 </TableCell>
               ))}
@@ -108,7 +108,7 @@ export default function StudentTable({
                   transition: "background-color 0.2s ease"
                 }}>
                   {columns.map((col) => (
-                    <TableCell key={col.field} sx={{ minWidth: col.minWidth }}>{row[col.field]}</TableCell>
+                    <TableCell key={col.field}>{row[col.field]}</TableCell>
                   ))}
                   {(onEdit || onDelete) && (
                     <TableCell>

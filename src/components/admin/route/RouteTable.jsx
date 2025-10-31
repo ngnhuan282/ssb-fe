@@ -30,12 +30,12 @@ export default function RouteTable({
   const [search, setSearch] = React.useState("");
 
   const columns = [
-    { field: "name", headerName: "Tên Tuyến", flex: 1, minWidth: 160 },
-    { field: "distance", headerName: "Quãng đường", flex: 1, minWidth: 70 },
-    { field: "estimatedTime", headerName: "Thời gian dự kiến", flex: 1, minWidth: 70 },
-    { field: "assignedBus", headerName: "Xe phụ trách", flex: 1, minWidth: 150 },
-    { field: "createdAt", headerName: "Ngày tạo", flex: 1, minWidth: 130 },
-    { field: "updatedAt", headerName: "Ngày cập nhật", flex: 1, minWidth: 130 },
+    { field: "name", headerName: "Tên Tuyến", flex: 1},
+    { field: "distance", headerName: "Quãng đường", flex: 1},
+    { field: "estimatedTime", headerName: "Thời gian dự kiến", flex: 1},
+    { field: "assignedBus", headerName: "Xe phụ trách", flex: 1},
+    { field: "createdAt", headerName: "Ngày tạo", flex: 1},
+    { field: "updatedAt", headerName: "Ngày cập nhật", flex: 1},
   ];
 
   const filteredRows = rows.filter((row) =>
@@ -92,7 +92,7 @@ export default function RouteTable({
           <TableHead sx={{ backgroundColor: "#f5f5f5" }}>
             <TableRow>
               {columns.map((col) => (
-                <TableCell key={col.field} sx={{ fontWeight: "bold" , minWidth: col.minWidth }}> {/* them colminwidth de co the ap dung minwidth o tren  */}
+                <TableCell key={col.field} sx={{ fontWeight: "bold"}}> {/* them colminwidth de co the ap dung minwidth o tren  */}
                   {col.headerName}
                 </TableCell>
               ))}
@@ -109,7 +109,7 @@ export default function RouteTable({
                   transition: "background-color 0.2s ease"
                 }}>
                   {columns.map((col) => (
-                    <TableCell key={col.field} sx={{ minWidth: col.minWidth }}>{row[col.field]}</TableCell> // them colminwidth de co the ap dung minwidth o tren 
+                    <TableCell key={col.field}>{row[col.field]}</TableCell> // them colminwidth de co the ap dung minwidth o tren 
                   ))}
                   {onViewStops && (
                     <TableCell direction="row">
