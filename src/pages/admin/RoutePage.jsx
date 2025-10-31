@@ -25,7 +25,7 @@ import RouteForm from "../../components/admin/route/RouteForm";
 import RouteDeleteDialog from "../../components/admin/route/RouteDeleteDialog";
 import Notification from "../../components/admin/layout/AdminNotification";
 
-export default function RoutePage(){
+export default function RoutePage() {
   const [routes, setRoutes] = useState([]);
   const [buses, setBuses] = useState([]);
   const [editingRoute, setEditingRoute] = useState(null);
@@ -43,18 +43,18 @@ export default function RoutePage(){
   const [stopListOpen, setStopListOpen] = useState(false);// state cho xem diem dung table
   const [currentStops, setCurrentStops] = useState([]);
 
-  useEffect(() =>{
+  useEffect(() => {
     const fetchAllData = async () => {
-      try{
+      try {
         const [routeRes, busRes] = await Promise.all([routeAPI.getAll(), busAPI.getAll()]);
         setRoutes(routeRes.data.data);
         setBuses(busRes.data.data);
-      }catch(err){
+      } catch (err) {
         console.error("Fetch route error:", err);
       }
     }
     fetchAllData();
-  },[]);
+  }, []);
 
   const showNotification = (message, type = "success") => {
     setSnackbar({ open: true, message, type });
@@ -65,9 +65,9 @@ export default function RoutePage(){
   };
 
   const handleOpenForm = (route = null) => {
-          console.log("Buses :", buses)
-      console.log("route :", routes)
-    if(route){
+    console.log("Buses :", buses)
+    console.log("route :", routes)
+    if (route) {
       setEditingRoute(route);
       setFormData({
         name: route.name || "",
@@ -76,13 +76,15 @@ export default function RoutePage(){
         estimatedTime: route.estimatedTime || "",
         assignedBus: route.assignedBus?._id || "",
       });
-    }else{
+    } else {
       setEditingRoute(null);
-      setFormData({ name: "",
+      setFormData({
+        name: "",
         stops: [],
         distance: "",
         estimatedTime: "",
-        assignedBus: "" });
+        assignedBus: ""
+      });
     }
     setErrors({});
     setOpenForm(true);
@@ -124,36 +126,36 @@ export default function RoutePage(){
       newErrors.distance = "Quãng đường phải > 0";
     if (!formData.estimatedTime || Number(formData.estimatedTime) <= 0)
       newErrors.estimatedTime = "Thời gian dự kiến phải > 0";
-    if(!formData.assignedBus) newErrors.assignedBus = "Vui lòng chọn xe phụ trách";
-    if (!formData.stops || formData.stops.length === 0){
+    if (!formData.assignedBus) newErrors.assignedBus = "Vui lòng chọn xe phụ trách";
+    if (!formData.stops || formData.stops.length === 0) {
       newErrors.stops = "Tuyến đường phải có ít nhất một điểm dừng";
-    }else {
+    } else {
       const invalidStop = formData.stops.some(
         (stop) => !stop.location.trim() || !stop.time
       );
       if (invalidStop) newErrors.stops = "Vui lòng nhập đầy đủ thông tin điểm dừng";
-    } 
+    }
     return newErrors;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const newErrors = validateForm();
-    if(Object.keys(newErrors).length > 0 ){
+    if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
 
-    try{
-      const cleanedStopsID = formData.stops.map(({ _id, ...stop})=> stop );
-      const cleanedFormData = {...formData, stops:cleanedStopsID};
+    try {
+      const cleanedStopsID = formData.stops.map(({ _id, ...stop }) => stop);
+      const cleanedFormData = { ...formData, stops: cleanedStopsID };
 
       let updatedRoutes;
       console.log("Form data gửi lên:", cleanedFormData)
-      if(editingRoute){
+      if (editingRoute) {
         const res = await routeAPI.update(editingRoute._id, cleanedFormData);
-        updatedRoutes = routes.map((r)=> (r._id === editingRoute._id ? res.data.data : r));
-      }else{
+        updatedRoutes = routes.map((r) => (r._id === editingRoute._id ? res.data.data : r));
+      } else {
         const res = await routeAPI.create(cleanedFormData);
         updatedRoutes = [...routes, res.data.data];
       }
@@ -165,26 +167,26 @@ export default function RoutePage(){
       } else {
         showNotification('Thêm tuyến đường thành công!', 'success')
       }
-    }catch (err) {
+    } catch (err) {
       console.error("Save route error:", err);
       showNotification('Lưu tuyến đường thất bại!', 'error')
     }
   }
 
   const handleDelete = async () => {
-    if(!deleteConfirm) return;
-    try{
+    if (!deleteConfirm) return;
+    try {
       await routeAPI.delete(deleteConfirm._id);
       setRoutes(routes.filter((r) => r._id !== deleteConfirm._id));
       showNotification('Xóa tuyến đường thành công!', 'success')
-    }catch(err){
+    } catch (err) {
       console.error("Delete route error:", err);
       showNotification('Xóa tuyến đường thất bại!', 'error')
     } finally {
       setDeleteConfirm(null);
     }
   }
-  
+
   const rows = routes.map((r) => ({
     id: r._id,
     name: r.name,
@@ -197,13 +199,13 @@ export default function RoutePage(){
   }))
 
   const handleViewStops = (row) => {
-  setCurrentStops(row.stops || []);
-  setStopListOpen(true);
+    setCurrentStops(row.stops || []);
+    setStopListOpen(true);
   };
-  
-  return(
-     <Box sx={{ p: 2 }}>
-    <Stack direction="row" justifyContent="space-between" mb={2} alignItems="center">
+
+  return (
+    <Box sx={{ p: 2 }}>
+      <Stack direction="row" justifyContent="space-between" mb={2} alignItems="center">
         <h2>Quản lý tuyến đường</h2>
         <Button
           variant="contained"
@@ -216,6 +218,11 @@ export default function RoutePage(){
             minHeight: "50px",
             textTransform: "none",
             fontWeight: "600",
+            boxShadow: "0 4px 12px rgba(59, 130, 246, 0.3)",
+            "&:hover": {
+              background: "linear-gradient(135deg, #4338ca 0%, #2563eb 100%)",
+              boxShadow: "0 6px 16px rgba(59, 130, 246, 0.45)",
+            },
           }}
         >
           Thêm tuyến đường
@@ -310,11 +317,11 @@ export default function RoutePage(){
                 </TableBody>
               </Table>
             </TableContainer>
-            ) : (
-              <Box sx={{ p: 2, textAlign: "center", color: "text.secondary" }}>
-                Chưa có điểm dừng nào.
-              </Box>
-            )}
+          ) : (
+            <Box sx={{ p: 2, textAlign: "center", color: "text.secondary" }}>
+              Chưa có điểm dừng nào.
+            </Box>
+          )}
         </DialogContent>
       </Dialog>
 

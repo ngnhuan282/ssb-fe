@@ -210,6 +210,11 @@ export default function StudentPage() {
             minHeight: "50px",
             textTransform: "none",
             fontWeight: "600",
+            boxShadow: "0 4px 12px rgba(59, 130, 246, 0.3)",
+            "&:hover": {
+              background: "linear-gradient(135deg, #4338ca 0%, #2563eb 100%)",
+              boxShadow: "0 6px 16px rgba(59, 130, 246, 0.45)",
+            },
           }}
         >
           Thêm học sinh
