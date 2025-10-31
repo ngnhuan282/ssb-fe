@@ -246,7 +246,7 @@ export default function ScheduleManager() {
 
     return (
         <Box sx={{ height: 500, width: "100%", p: 2 }}>
-            <Stack direction="row" justifyContent="space-between" mb={2}>
+            <Stack direction="row" justifyContent="space-between" mb={2} alignItems="center">
                 <h2>Quản lý lịch trình</h2>
                 <Button
                     variant="contained"
@@ -257,7 +257,7 @@ export default function ScheduleManager() {
                         background: "linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%)",
                         color: "#fff",
                         borderRadius: "12px",
-                        padding: "5px 20px",
+                        minHeight: "50px",
                         textTransform: "none",
                         fontWeight: "600",
                         boxShadow: "0 4px 12px rgba(59, 130, 246, 0.3)",
