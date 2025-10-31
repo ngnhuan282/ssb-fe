@@ -26,7 +26,7 @@ export default function RouteTable({
   onViewStops,
 }) {
   const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [rowsPerPage, setRowsPerPage] = React.useState(6);
   const [search, setSearch] = React.useState("");
 
   const columns = [
@@ -159,7 +159,7 @@ export default function RouteTable({
           onPageChange={handleChangePage}
           rowsPerPage={rowsPerPage}
           onRowsPerPageChange={handleChangeRowsPerPage}
-          rowsPerPageOptions={[5, 10, 25, 50 ,100]}   
+          rowsPerPageOptions={[6, 10, 25, 50 ,100]}   
           labelRowsPerPage="Số dòng mỗi trang"
           sx={{
             "& .MuiTablePagination-toolbar": {
