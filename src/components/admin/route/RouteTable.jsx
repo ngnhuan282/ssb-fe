@@ -1,38 +1,192 @@
 import React from "react";
 import { DataGrid } from "@mui/x-data-grid";
-import { IconButton } from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
+import {
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TablePagination,
+  IconButton,
+  TextField,
+  Stack,
+  Box,
+  InputAdornment,
+  Button
+} from "@mui/material";
+import { Edit, Delete, Search, FormatListBulleted } from "@mui/icons-material";
 
-const RouteTable = ({ routes, onRefresh }) => {
+export default function RouteTable({
+  rows,
+  routes,
+  onEdit,
+  onDelete,
+  onViewStops,
+}) {
+  const [page, setPage] = React.useState(0);
+  const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [search, setSearch] = React.useState("");
+
   const columns = [
-    { field: "id", headerName: "STT", width: 70 },
-    { field: "name", headerName: "Tên tuyến", width: 200 },
-    { field: "startPoint", headerName: "Điểm xuất phát", width: 200 },
-    { field: "endPoint", headerName: "Điểm kết thúc", width: 200 },
-    {
-      field: "actions",
-      headerName: "Hành động",
-      width: 150,
-      renderCell: (params) => (
-        <>
-          <IconButton color="primary">
-            <EditIcon />
-          </IconButton>
-          <IconButton color="error">
-            <DeleteIcon />
-          </IconButton>
-        </>
-      ),
-    },
+    { field: "name", headerName: "Tên Tuyến", flex: 1, minWidth: 160 },
+    { field: "distance", headerName: "Quãng đường", flex: 1, minWidth: 70 },
+    { field: "estimatedTime", headerName: "Thời gian dự kiến", flex: 1, minWidth: 70 },
+    { field: "assignedBus", headerName: "Xe phụ trách", flex: 1, minWidth: 150 },
+    { field: "createdAt", headerName: "Ngày tạo", flex: 1, minWidth: 130 },
+    { field: "updatedAt", headerName: "Ngày cập nhật", flex: 1, minWidth: 130 },
   ];
 
-  const rows = routes.map((route, index) => ({
-    id: index + 1,
-    ...route,
-  }));
+  const filteredRows = rows.filter((row) =>
+    Object.values(row).some((value) =>
+      String(value).toLowerCase().includes(search.toLowerCase())
+    )
+  );
 
-  return <DataGrid rows={rows} columns={columns} autoHeight pageSize={5} rowsPerPageOptions={[5]} />;
-};
+  const handleChangePage = (_, newPage) => setPage(newPage);
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(+event.target.value);
+    setPage(0);
+  };
 
-export default RouteTable;
+
+  return (
+    <Paper
+      elevation={3}
+      sx={{
+        height: "67vh",
+        display: "flex",
+        flexDirection: "column",
+        p: 3,
+        borderRadius: 3,
+        backgroundColor: "#fff",
+      }}
+    >
+      <TextField
+        variant="outlined"
+        placeholder="Tìm kiếm tuyến đường..."
+        fullWidth
+        size="small"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        sx={{
+          mb: 2,
+          "& .MuiOutlinedInput-root": {
+            borderRadius: 3,
+          },
+        }}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <Search sx={{ color: "gray" }} />
+            </InputAdornment>
+          ),
+        }}
+      />
+      <TableContainer
+        sx={{
+          borderRadius: 3,
+        }}>
+        <Table>
+          <TableHead sx={{ backgroundColor: "#f5f5f5" }}>
+            <TableRow>
+              {columns.map((col) => (
+                <TableCell key={col.field} sx={{ fontWeight: "bold" , minWidth: col.minWidth }}> {/* them colminwidth de co the ap dung minwidth o tren  */}
+                  {col.headerName}
+                </TableCell>
+              ))}
+              {onViewStops && <TableCell sx={{  width: "80px",  whiteSpace: "nowrap" ,fontWeight: "bold" }}>Điểm dừng</TableCell>}
+              {(onEdit || onDelete) && <TableCell sx={{ width: "80px",  whiteSpace: "nowrap" , pl:3 , fontWeight: "bold" }}>Thao tác</TableCell>}  {/* them pl3 can giua thao tac */}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {filteredRows
+              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+              .map((row, idx) => (
+                <TableRow key={idx} hover sx={{
+                  backgroundColor: idx % 2 === 0 ? "#ffffff" : "#f9fafb",
+                  transition: "background-color 0.2s ease"
+                }}>
+                  {columns.map((col) => (
+                    <TableCell key={col.field} sx={{ minWidth: col.minWidth }}>{row[col.field]}</TableCell> // them colminwidth de co the ap dung minwidth o tren 
+                  ))}
+                  {onViewStops && (
+                    <TableCell direction="row">
+                        <Button
+                            size="small"
+                            onClick={() => onViewStops(row)}
+                        >
+                            <FormatListBulleted />
+                        </Button>
+                    </TableCell>
+                  )}
+                  {(onEdit || onDelete) && (
+                    <TableCell >
+                      <Stack direction="row" spacing={1}>
+                        {onEdit && (
+                          <IconButton color="primary" onClick={() => onEdit(routes.find((r) => r._id === row.id))}>
+                            <Edit fontSize="small" />
+                          </IconButton>
+                        )}
+                        {onDelete && (
+                          <IconButton color="error" onClick={() => onDelete(routes.find((r) => r._id === row.id))}>
+                            <Delete fontSize="small" />
+                          </IconButton>
+                        )}
+                      </Stack>
+                    </TableCell>
+                  )}
+                </TableRow>
+              ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      <Box
+        sx={{
+          mt: "auto",
+          borderTop: "1px solid #e5e7eb",
+          backgroundColor: "#f9fafb",
+          borderBottomLeftRadius: 12,
+          borderBottomRightRadius: 12,
+        }}
+      >
+        <TablePagination
+          component="div"
+          count={filteredRows.length}
+          page={page}
+          onPageChange={handleChangePage}
+          rowsPerPage={rowsPerPage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+          rowsPerPageOptions={[5, 10, 25, 50 ,100]}   
+          labelRowsPerPage="Số dòng mỗi trang"
+          sx={{
+            "& .MuiTablePagination-toolbar": {
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              px: 2,
+            },
+            "& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows":
+            {
+              fontSize: "0.9rem",
+            },
+            "& .MuiTablePagination-actions button": {
+              color: "#2563eb",
+              borderRadius: "50%",
+              border: "1px solid #2563eb30",
+              width: 32,
+              height: 32,
+              margin: "0 4px",
+              transition: "0.2s",
+              "&:hover": {
+                backgroundColor: "#2563eb15",
+              },
+            },
+          }}
+        />
+      </Box>
+    </Paper >
+  );
+}
