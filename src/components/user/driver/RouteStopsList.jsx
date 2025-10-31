@@ -1,4 +1,4 @@
-// src/components/user/driver/RouteStopsList.jsx
+// src/components/user/driver/RouteStopsList.jsx - READ-ONLY VERSION
 import React from 'react';
 import {
   Card,
@@ -9,18 +9,15 @@ import {
   ListItem,
   ListItemText,
   Chip,
-  Badge,
 } from '@mui/material';
 import {
   Circle,
-  CheckCircle,
-  RadioButtonUnchecked,
   People,
   ArrowUpward,
   ArrowDownward,
 } from '@mui/icons-material';
 
-const RouteStopsList = ({ route, currentStopIndex = 0, studentsPerStop = {} }) => {
+const RouteStopsList = ({ route }) => {
   if (!route || !route.stops || route.stops.length === 0) {
     return (
       <Card sx={{ boxShadow: 1, borderRadius: 1, border: '1px solid #e0e0e0' }}>
@@ -39,6 +36,12 @@ const RouteStopsList = ({ route, currentStopIndex = 0, studentsPerStop = {} }) =
     return date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
   };
 
+  // ✨ Hàm đếm số học sinh tại mỗi điểm dừng (optional - nếu có data)
+  const getStudentCountAtStop = (stop) => {
+    // Có thể lấy từ stop.studentCount hoặc tính từ students array
+    return stop.studentCount || 0;
+  };
+
   return (
     <Card sx={{ boxShadow: 1, borderRadius: 1, border: '1px solid #e0e0e0' }}>
       <CardContent sx={{ p: 3 }}>
@@ -48,19 +51,9 @@ const RouteStopsList = ({ route, currentStopIndex = 0, studentsPerStop = {} }) =
 
         <List sx={{ p: 0 }}>
           {route.stops.map((stop, index) => {
-            const isCompleted = index < currentStopIndex;
-            const isCurrent = index === currentStopIndex;
-            const isPending = index > currentStopIndex;
-            
-            // ✅ FIX: Dùng stop.name thay vì stop.location
             const stopName = stop.name || stop.location || 'Điểm dừng không tên';
             const stopType = stop.type || 'unknown';
-            
-            // Lấy số học sinh tại điểm dừng này
-            const studentCount = studentsPerStop[stopName] || 
-                                 studentsPerStop[stop.location] ||
-                                 studentsPerStop[index] || 
-                                 (stop.studentCount || 0);
+            const studentCount = getStudentCountAtStop(stop);
 
             return (
               <ListItem
@@ -77,18 +70,13 @@ const RouteStopsList = ({ route, currentStopIndex = 0, studentsPerStop = {} }) =
                     top: 40,
                     bottom: -16,
                     width: 2,
-                    bgcolor: isCompleted || isCurrent ? '#1976d2' : '#e0e0e0',
+                    bgcolor: '#e0e0e0', // ✅ Tất cả điểm đều màu xám (không phân biệt trạng thái)
                   } : {},
                 }}
               >
+                {/* Icon - Tất cả đều giống nhau */}
                 <Box sx={{ mr: 2, display: 'flex', alignItems: 'center' }}>
-                  {isCompleted ? (
-                    <CheckCircle sx={{ fontSize: 24, color: '#4caf50' }} />
-                  ) : isCurrent ? (
-                    <RadioButtonUnchecked sx={{ fontSize: 24, color: '#ff9800' }} />
-                  ) : (
-                    <Circle sx={{ fontSize: 24, color: '#e0e0e0' }} />
-                  )}
+                  <Circle sx={{ fontSize: 24, color: '#1976d2' }} />
                 </Box>
 
                 <ListItemText
@@ -97,8 +85,8 @@ const RouteStopsList = ({ route, currentStopIndex = 0, studentsPerStop = {} }) =
                       <Typography
                         variant="body1"
                         sx={{
-                          fontWeight: isCurrent ? 600 : 500,
-                          color: isCompleted ? '#757575' : isCurrent ? '#212121' : '#9e9e9e',
+                          fontWeight: 500,
+                          color: '#424242',
                         }}
                       >
                         {stopName}
@@ -136,20 +124,9 @@ const RouteStopsList = ({ route, currentStopIndex = 0, studentsPerStop = {} }) =
                         />
                       )}
                       
-                      {isCurrent && (
-                        <Chip
-                          label="Hiện tại"
-                          size="small"
-                          sx={{
-                            height: 18,
-                            fontSize: '0.65rem',
-                            bgcolor: '#fff3e0',
-                            color: '#e65100',
-                            fontWeight: 500,
-                          }}
-                        />
-                      )}
+                      {/* ❌ XÓA: Không hiển thị "Hiện tại" */}
                       
+                      {/* Số học sinh (nếu có) */}
                       {studentCount > 0 && (
                         <Chip
                           icon={<People sx={{ fontSize: 14 }} />}

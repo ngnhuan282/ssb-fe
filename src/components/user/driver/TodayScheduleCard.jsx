@@ -1,4 +1,3 @@
-// src/components/user/driver/TodayScheduleCard.jsx
 import React from 'react';
 import {
   Card,
@@ -6,7 +5,6 @@ import {
   Typography,
   Box,
   Chip,
-  Button,
   Divider,
   Grid,
 } from '@mui/material';
@@ -15,19 +13,18 @@ import {
   DirectionsBus,
   Place,
   People,
-  PlayArrow,
-  MyLocation,
   Repeat,
+  CalendarToday,
 } from '@mui/icons-material';
 
-const TodayScheduleCard = ({ schedule, onStartTrip, liveLocation = null }) => {
+const TodayScheduleCard = ({ schedule }) => {
   if (!schedule) {
     return (
       <Card sx={{ boxShadow: 1, borderRadius: 1, border: '1px solid #e0e0e0' }}>
         <CardContent sx={{ textAlign: 'center', py: 6 }}>
           <AccessTime sx={{ fontSize: 48, color: '#bdbdbd', mb: 2 }} />
           <Typography variant="body1" color="textSecondary">
-            Không có lịch làm việc hôm nay
+            Chọn một ngày để xem chi tiết lịch trình
           </Typography>
         </CardContent>
       </Card>
@@ -39,6 +36,12 @@ const TodayScheduleCard = ({ schedule, onStartTrip, liveLocation = null }) => {
     return date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
   };
 
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const dayNames = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
+    return `${dayNames[date.getDay()]}, ${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+  };
+
   const getFrequencyLabel = (frequency) => {
     switch (frequency) {
       case 'daily': return 'Hàng ngày';
@@ -48,10 +51,23 @@ const TodayScheduleCard = ({ schedule, onStartTrip, liveLocation = null }) => {
     }
   };
 
-  // THÊM: Định dạng ngày hôm nay
-  const scheduleDate = new Date(schedule.date);
-  const dayNames = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
-  const formattedDate = `${dayNames[scheduleDate.getDay()]}, ${scheduleDate.getDate()}/${scheduleDate.getMonth() + 1}`;
+  // ✅ Giữ lại status nhưng chỉ hiển thị, không có action
+  const getStatusConfig = (status) => {
+    switch (status) {
+      case 'scheduled':
+        return { label: 'Đã lên lịch', color: '#e3f2fd', textColor: '#1565c0' };
+      case 'in_progress':
+        return { label: 'Đang thực hiện', color: '#fff3e0', textColor: '#e65100' };
+      case 'completed':
+        return { label: 'Hoàn thành', color: '#e8f5e9', textColor: '#2e7d32' };
+      case 'delayed':
+        return { label: 'Trễ', color: '#ffebee', textColor: '#c62828' };
+      default:
+        return { label: 'Đã lên lịch', color: '#f5f5f5', textColor: '#757575' };
+    }
+  };
+
+  const statusConfig = getStatusConfig(schedule.status);
 
   return (
     <Card sx={{ boxShadow: 1, borderRadius: 1, border: '1px solid #e0e0e0' }}>
@@ -60,12 +76,14 @@ const TodayScheduleCard = ({ schedule, onStartTrip, liveLocation = null }) => {
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
           <Box>
             <Typography variant="h6" sx={{ fontWeight: 600, color: '#212121', mb: 0.5 }}>
-              Lịch trình hôm nay
+              Chi tiết lịch trình
             </Typography>
-            {/* THÊM: Hiển thị ngày ngay dưới */}
-            <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem' }}>
-              {formattedDate}
-            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
+              <CalendarToday sx={{ fontSize: 14, color: '#757575' }} />
+              <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem' }}>
+                {formatDate(schedule.date)}
+              </Typography>
+            </Box>
             {schedule.frequency && (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
                 <Repeat sx={{ fontSize: 14, color: '#757575' }} />
@@ -76,22 +94,11 @@ const TodayScheduleCard = ({ schedule, onStartTrip, liveLocation = null }) => {
             )}
           </Box>
           <Chip
-            label={
-              schedule.status === 'scheduled' ? 'Chưa bắt đầu' : 
-              schedule.status === 'in_progress' ? 'Đang thực hiện' :
-              schedule.status === 'completed' ? 'Hoàn thành' : 
-              schedule.status === 'delayed' ? 'Trễ' : 'Đã lên lịch'
-            }
+            label={statusConfig.label}
             size="small"
             sx={{
-              bgcolor: schedule.status === 'scheduled' ? '#e3f2fd' :
-                       schedule.status === 'in_progress' ? '#fff3e0' :
-                       schedule.status === 'completed' ? '#e8f5e9' : 
-                       schedule.status === 'delayed' ? '#ffebee' : '#f5f5f5',
-              color: schedule.status === 'scheduled' ? '#1565c0' :
-                     schedule.status === 'in_progress' ? '#e65100' :
-                     schedule.status === 'completed' ? '#2e7d32' : 
-                     schedule.status === 'delayed' ? '#c62828' : '#757575',
+              bgcolor: statusConfig.color,
+              color: statusConfig.textColor,
               fontWeight: 500,
               fontSize: '0.75rem',
             }}
@@ -101,7 +108,7 @@ const TodayScheduleCard = ({ schedule, onStartTrip, liveLocation = null }) => {
         <Divider sx={{ mb: 2 }} />
 
         {/* Schedule Details */}
-        <Grid container spacing={2} sx={{ mb: 2 }}>
+        <Grid container spacing={2}>
           <Grid item xs={12}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
               <AccessTime sx={{ fontSize: 20, color: '#757575' }} />
@@ -159,61 +166,6 @@ const TodayScheduleCard = ({ schedule, onStartTrip, liveLocation = null }) => {
           </Grid>
         </Grid>
 
-        {/* Live Location (when in progress) */}
-        {schedule.status === 'in_progress' && liveLocation && (
-          <Box sx={{ bgcolor: '#e3f2fd', p: 2, borderRadius: 1, mb: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-              <MyLocation sx={{ fontSize: 16, color: '#1565c0' }} />
-              <Typography variant="caption" sx={{ color: '#1565c0', fontWeight: 600 }}>
-                VỊ TRÍ HIỆN TẠI
-              </Typography>
-            </Box>
-            <Typography variant="body2" sx={{ color: '#424242', fontWeight: 500 }}>
-              {liveLocation.address || 'Đang cập nhật...'}
-            </Typography>
-            <Typography variant="caption" sx={{ color: '#757575' }}>
-              Cập nhật: {liveLocation.lastUpdate || 'Vừa xong'}
-            </Typography>
-          </Box>
-        )}
-
-        {/* Action Button */}
-        {schedule.status === 'scheduled' && (
-          <Button
-            fullWidth
-            variant="contained"
-            startIcon={<PlayArrow />}
-            onClick={onStartTrip}
-            sx={{
-              bgcolor: '#1976d2',
-              color: '#fff',
-              textTransform: 'none',
-              fontWeight: 500,
-              py: 1.2,
-              '&:hover': {
-                bgcolor: '#1565c0',
-              },
-            }}
-          >
-            Bắt đầu chuyến đi
-          </Button>
-        )}
-
-        {schedule.status === 'in_progress' && (
-          <Box sx={{ bgcolor: '#fff3e0', p: 2, borderRadius: 1, textAlign: 'center' }}>
-            <Typography variant="body2" sx={{ color: '#e65100', fontWeight: 500 }}>
-              Chuyến đi đang diễn ra
-            </Typography>
-          </Box>
-        )}
-
-        {schedule.status === 'completed' && (
-          <Box sx={{ bgcolor: '#e8f5e9', p: 2, borderRadius: 1, textAlign: 'center' }}>
-            <Typography variant="body2" sx={{ color: '#2e7d32', fontWeight: 500 }}>
-              Chuyến đi đã hoàn thành
-            </Typography>
-          </Box>
-        )}
       </CardContent>
     </Card>
   );

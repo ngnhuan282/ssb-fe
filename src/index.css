@@ -12,3 +12,21 @@ body,
 * {
   box-sizing: border-box;
 }
+
+/* BẮT BUỘC CHO LEAFLET */
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+  border-radius: 8px;
+}
+
+/* Hiệu ứng nhịp tim */
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(231, 76, 60, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
+}
+
+.pulse-marker > div {
+  animation: pulse 1.5s infinite;
+}

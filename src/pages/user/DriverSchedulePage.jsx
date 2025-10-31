@@ -1,5 +1,4 @@
-// src/pages/user/DriverSchedulePage.jsx
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Container,
@@ -22,7 +21,7 @@ import TodayScheduleCard from '../../components/user/driver/TodayScheduleCard';
 import RouteStopsList from '../../components/user/driver/RouteStopsList';
 
 // APIs
-import { scheduleAPI, driverAPI, locationAPI } from '../../services/api.js';
+import { scheduleAPI, driverAPI } from '../../services/api.js';
 
 // Auth
 import { useAuth } from '../../context/AuthContext';
@@ -33,17 +32,13 @@ const DriverSchedulePage = () => {
 
   // States
   const [viewMode, setViewMode] = useState('month');
-  const [todaySchedule, setTodaySchedule] = useState(null);
+  const [selectedSchedule, setSelectedSchedule] = useState(null); // Đổi từ todaySchedule
   const [monthSchedules, setMonthSchedules] = useState([]);
   const [weekSchedules, setWeekSchedules] = useState([]);
-  // Sửa: Khởi tạo bằng function để đảm bảo luôn có giá trị hợp lệ
   const [currentWeekStart, setCurrentWeekStart] = useState(() => getMonday(new Date()));
-  const [liveLocation, setLiveLocation] = useState(null);
-  const [studentsPerStop, setStudentsPerStop] = useState({});
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [driver, setDriver] = useState(null);
   const [loadingSchedules, setLoadingSchedules] = useState(false);
-  const locationIntervalRef = useRef(null);
 
   // Helpers
   function getMonday(d) {
@@ -51,7 +46,7 @@ const DriverSchedulePage = () => {
     const day = date.getDay();
     const diff = date.getDate() - day + (day === 0 ? -6 : 1);
     const monday = new Date(date.setDate(diff));
-    monday.setHours(0, 0, 0, 0); // Reset giờ để tránh lỗi múi giờ
+    monday.setHours(0, 0, 0, 0);
     return monday;
   }
 
@@ -70,7 +65,6 @@ const DriverSchedulePage = () => {
   const fetchDriver = async () => {
     if (!user) return;
     try {
-      console.log('Fetching driver for user._id:', user._id);
       const { data: { data: drivers } } = await driverAPI.getAll();
       
       const myDriver = drivers.find(d => {
@@ -79,7 +73,6 @@ const DriverSchedulePage = () => {
         return driverUserId === currentUserId;
       });
       
-      console.log('Found driver:', myDriver?._id, myDriver);
       setDriver(myDriver);
     } catch (err) {
       console.error('Fetch driver error:', err);
@@ -98,10 +91,7 @@ const DriverSchedulePage = () => {
     setLoadingSchedules(true);
     try {
       const userId = user._id;
-      console.log('Fetching schedules for user._id:', userId);
-      
       const { data: { data: allSchedules } } = await scheduleAPI.getByDriver(userId);
-      console.log('All schedules for driver:', allSchedules.length);
 
       if (allSchedules.length === 0) {
         showSnackbar('Không có lịch trình nào cho tài xế này', 'info');
@@ -110,37 +100,32 @@ const DriverSchedulePage = () => {
       }
 
       allSchedules.sort((a, b) => new Date(b.date) - new Date(a.date));
-
       setMonthSchedules(allSchedules);
 
+      // Tự động chọn lịch hôm nay (nếu có)
       const today = new Date(); 
       today.setHours(0, 0, 0, 0);
       
-      let todaySch = allSchedules.find(s => {
+      const todaySch = allSchedules.find(s => {
         const d = new Date(s.date); 
         d.setHours(0, 0, 0, 0);
         return d.getTime() === today.getTime();
       });
       
-      if (!todaySch && allSchedules.length > 0) {
-        todaySch = allSchedules[0];
-        showSnackbar('Không có lịch hôm nay, hiển thị lịch gần nhất', 'info');
-      }
-      setTodaySchedule(todaySch);
+      // Nếu có lịch hôm nay thì hiển thị, không thì hiển thị lịch đầu tiên
+      setSelectedSchedule(todaySch || allSchedules[0]);
 
+      // Week schedules
       const weekStart = currentWeekStart.getTime();
       const weekEnd = new Date(currentWeekStart);
       weekEnd.setDate(weekEnd.getDate() + 7);
       
-      let weekSch = allSchedules.filter(s => {
+      const weekSch = allSchedules.filter(s => {
         const d = new Date(s.date).getTime();
         return d >= weekStart && d < weekEnd.getTime();
       });
       
-      if (weekSch.length === 0 && allSchedules.length > 0) {
-        weekSch = allSchedules.slice(0, 7);
-      }
-      setWeekSchedules(weekSch);
+      setWeekSchedules(weekSch.length > 0 ? weekSch : allSchedules.slice(0, 7));
 
     } catch (err) {
       console.error('Fetch schedules error:', err);
@@ -154,17 +139,6 @@ const DriverSchedulePage = () => {
     fetchSchedulesByDriver();
   }, [driver, currentWeekStart, user]);
 
-  const handleStartTrip = async (scheduleId) => {
-    try {
-      await scheduleAPI.updateStatus(scheduleId, 'in_progress');
-      showSnackbar('Đã bắt đầu chuyến đi', 'success');
-      fetchSchedulesByDriver();
-    } catch (err) {
-      showSnackbar('Lỗi khi bắt đầu chuyến đi', 'error');
-    }
-  };
-
-  // Sửa: Kiểm tra currentWeekStart trước khi thay đổi
   const handleWeekChange = (direction) => {
     if (!currentWeekStart) return;
     const newStart = new Date(currentWeekStart);
@@ -176,16 +150,23 @@ const DriverSchedulePage = () => {
     setSnackbar({ ...snackbar, open: false });
   };
 
+  // ✨ Handler khi click vào lịch trong calendar
+  const handleScheduleSelect = (date, schedule) => {
+    if (schedule) {
+      setSelectedSchedule(schedule);
+    }
+  };
+
   return (
     <Box sx={{ bgcolor: '#f5f5f5', minHeight: '100vh', py: 4 }}>
       <Container maxWidth="xl">
         {/* Header */}
         <Box sx={{ mb: 4 }}>
           <Typography variant="h4" fontWeight="bold" gutterBottom>
-            Lịch làm việc
+            📅 Lịch làm việc
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            Quản lý và theo dõi lịch trình của bạn
+            Xem lịch trình được phân công
           </Typography>
         </Box>
 
@@ -234,40 +215,40 @@ const DriverSchedulePage = () => {
               {viewMode === 'month' ? (
                 <ScheduleCalendar
                   schedules={monthSchedules}
-                  onScheduleClick={(schedule) => setTodaySchedule(schedule)}
+                  onDateSelect={handleScheduleSelect}
+                />
+              ) : currentWeekStart ? (
+                <WeeklyScheduleView
+                  weekSchedules={weekSchedules}
+                  weekStart={currentWeekStart}
+                  onWeekChange={handleWeekChange}
+                  onScheduleClick={(schedule) => setSelectedSchedule(schedule)}
                 />
               ) : (
-                // Sửa: Chỉ render WeeklyScheduleView khi currentWeekStart tồn tại
-                currentWeekStart ? (
-                  <WeeklyScheduleView
-                    schedules={weekSchedules}
-                    weekStart={currentWeekStart}
-                    onWeekChange={handleWeekChange}
-                    onScheduleClick={(schedule) => setTodaySchedule(schedule)}
-                  />
-                ) : (
-                  <Paper sx={{ p: 4, textAlign: 'center' }}>
-                    <CircularProgress size={24} />
-                    <Typography mt={2}>Đang tải tuần...</Typography>
-                  </Paper>
-                )
+                <Paper sx={{ p: 4, textAlign: 'center' }}>
+                  <CircularProgress size={24} />
+                  <Typography mt={2}>Đang tải tuần...</Typography>
+                </Paper>
               )}
             </Grid>
 
-            {/* Right Column - Today's Schedule & Route */}
+            {/* Right Column - Selected Schedule Details */}
             <Grid item xs={12} lg={4}>
               <Box sx={{ position: 'sticky', top: 24 }}>
-                {todaySchedule && (
+                {selectedSchedule && (
                   <>
                     <TodayScheduleCard
-                      schedule={todaySchedule}
-                      onStartTrip={handleStartTrip}
-                      liveLocation={liveLocation}
+                      schedule={selectedSchedule}
+                      onStartTrip={null} 
+                      liveLocation={null} 
                     />
-                    <RouteStopsList
-                      route={todaySchedule.route}
-                      studentsPerStop={studentsPerStop}
-                    />
+                    <Box sx={{ mt: 2 }}>
+                      <RouteStopsList
+                        route={selectedSchedule.route}
+                        currentStopIndex={-1} 
+                        studentsPerStop={{}} 
+                      />
+                    </Box>
                   </>
                 )}
               </Box>
