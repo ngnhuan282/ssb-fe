@@ -8,8 +8,8 @@ import { Map as MapIcon, List as ListIcon, MyLocation, Refresh } from '@mui/icon
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import StopMarkerCard from '../../components/user/driver/StopMarkerCard';
-import StudentPickupDetail from '../../components/user/driver/StudentPickupDetail';
+import StopMarkerCard from '../../components/user/pickup/StopMarkerCard';
+import StudentPickupDetail from '../../components/user/pickup/StudentPickupDetail';
 
 // Fix Leaflet icon
 delete L.Icon.Default.prototype._getIconUrl;
@@ -284,7 +284,7 @@ const DriverPickupPointsPage = () => {
         />
       </Container>
     </Box>
-  );
+  );  
 };
 
 export default DriverPickupPointsPage

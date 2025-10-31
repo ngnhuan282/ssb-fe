@@ -15,10 +15,10 @@ import { CalendarMonth, ViewWeek, DirectionsBus } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
 // Components
-import ScheduleCalendar from '../../components/user/driver/ScheduleCalendar';
-import WeeklyScheduleView from '../../components/user/driver/WeeklyScheduleView';
-import TodayScheduleCard from '../../components/user/driver/TodayScheduleCard';
-import RouteStopsList from '../../components/user/driver/RouteStopsList';
+import ScheduleCalendar from '../../components/user/schedule/ScheduleCalendar.jsx';
+import WeeklyScheduleView from '../../components/user/schedule/WeeklyScheduleView.jsx';
+import TodayScheduleCard from '../../components/user/schedule/TodayScheduleCard.jsx';
+import RouteStopsList from '../../components/user/schedule/RouteStopsList.jsx';
 
 // APIs
 import { scheduleAPI, driverAPI } from '../../services/api.js';

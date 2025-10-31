@@ -14,8 +14,8 @@ import {
   CheckCircle,
   Refresh,
 } from '@mui/icons-material';
-import StudentListFilter from '../../components/user/driver/StudentListFilter';
-import StudentCard from '../../components/user/driver/StudentCard';
+import StudentListFilter from '../../components/user/student/StudentListFilter';
+import StudentCard from '../../components/user/student/StudentCard';
 import { studentAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 
