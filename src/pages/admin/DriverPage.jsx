@@ -37,19 +37,21 @@ export default function DriverPage() {
   const [errors, setErrors] = useState({});
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [snackbar, setSnackbar] = useState({
-  open: false,
-  message: "",
-  severity: "success",
-});
+    open: false,
+    message: "",
+    severity: "success",
+  });
 
   // ===== Fetch drivers =====
   useEffect(() => {
     const fetchDrivers = async () => {
       try {
         const res = await driverAPI.getAll();
-         const bus = await busAPI.getAll();
+        const [bus, user] = await Promise.all([
+          busAPI.getAll(),
+        ])
         setBuses(bus.data.data);
-      
+
         const flatDrivers = res.data.data.map(driver => ({
           id: driver._id,
           _id: driver._id,
@@ -87,8 +89,11 @@ export default function DriverPage() {
 
     if (driver) {
       setEditingDriver(driver);
+      console.log('Driver', driver)
       const foundBus = buses.find(bus => bus.licensePlate === driver.assignedBus);
+      console.log(editingDriver?.user)
       setFormData({
+        user: driver?.user._id,
         fullName: driver.fullName,
         phoneNumber: driver.phoneNumber,
         email: driver.email,
@@ -120,35 +125,36 @@ export default function DriverPage() {
   };
 
   const handleDeleteClick = (driver) => {
-  setDeleteConfirm(driver); // Mở dialog xác nhận xoá
-};
+    setDeleteConfirm(driver); // Mở dialog xác nhận xoá
+  };
 
 
-// delete driver
-const handleDelete = async () => {
-  if (!deleteConfirm) return;
-  try {
-    await driverAPI.delete(deleteConfirm._id);
+  // delete driver
+  const handleDelete = async () => {
+    if (!deleteConfirm) return;
+    try {
+      console.log(deleteConfirm?.user)
+      await driverAPI.delete(deleteConfirm._id, deleteConfirm?.user);
 
-    setDrivers((prev) => prev.filter((d) => d._id !== deleteConfirm._id));
-    setLastDeleteData({ ...deleteConfirm });
+      setDrivers((prev) => prev.filter((d) => d._id !== deleteConfirm._id));
+      // setLastDeleteData({ ...deleteConfirm });
 
-    setSnackbar({
-      open: true,
-      message: 'Xóa tài xế thành công!',
-      severity: 'success',
-    });
-  } catch (err) {
-    console.error("❌ Delete driver error:", err);
-    setSnackbar({
-      open: true,
-      message: 'Xóa tài xế thất bại!',
-      severity: 'error',
-    });
-  } finally {
-    setDeleteConfirm(null);
-  }
-};
+      setSnackbar({
+        open: true,
+        message: 'Xóa tài xế thành công!',
+        severity: 'success',
+      });
+    } catch (err) {
+      console.error("❌ Delete driver error:", err);
+      setSnackbar({
+        open: true,
+        message: 'Xóa tài xế thất bại!',
+        severity: 'error',
+      });
+    } finally {
+      setDeleteConfirm(null);
+    }
+  };
 
 
 
@@ -165,29 +171,29 @@ const handleDelete = async () => {
   };
 
   const validateField = (name, value) => {
-  let message = "";
+    let message = "";
 
-  switch (name) {
-    case "fullName":
-      if (!value.trim()) message = "Tên tài xế là bắt buộc";
-      break;
-    case "phoneNumber":
-      if (!value.trim()) message = "Số điện thoại là bắt buộc";
-      else if (!/^\d{10,11}$/.test(value)) message = "Số điện thoại không hợp lệ, 10 số nguyên dương";
-      break;
-    case "licenseNumber":
-      if (!value.trim()) message = "Số bằng lái là bắt buộc";
-      break;
-    case "email":
-      if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
-        message = "Email không hợp lệ";
-      break;
-    default:
-      break;
-  }
+    switch (name) {
+      case "fullName":
+        if (!value.trim()) message = "Tên tài xế là bắt buộc";
+        break;
+      case "phoneNumber":
+        if (!value.trim()) message = "Số điện thoại là bắt buộc";
+        else if (!/^\d{10,11}$/.test(value)) message = "Số điện thoại không hợp lệ, 10 số nguyên dương";
+        break;
+      case "licenseNumber":
+        if (!value.trim()) message = "Số bằng lái là bắt buộc";
+        break;
+      case "email":
+        if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
+          message = "Email không hợp lệ";
+        break;
+      default:
+        break;
+    }
 
-  setErrors((prev) => ({ ...prev, [name]: message }));
-};
+    setErrors((prev) => ({ ...prev, [name]: message }));
+  };
 
 
   const handleSubmit = async (e) => {
@@ -198,13 +204,28 @@ const handleDelete = async () => {
       return;
     }
 
-    
+
     let updatedDrivers;
+    console.log(editingDriver?.user)
     console.log("Submitting form data:", formData);
     if (editingDriver) {
-      const res = await driverAPI.update(editingDriver._id, formData);
+      const payload = {
+        ...formData,
+        user: typeof formData.user === "object" ? formData.user._id : formData.user
+      }
+      const res = await driverAPI.update(editingDriver._id, payload);
       updatedDrivers = drivers.map(d =>
-        d._id === editingDriver._id ? { ...d, ...res.data.data } : d
+        d._id === editingDriver._id ? {
+          ...d, ...res.data.data,
+          id: res.data.data._id,
+          fullName: res.data.data.user?.username || "",
+          assignedBus: res.data.data.assignedBus?.licensePlate || "",
+          phoneNumber: res.data.data.user?.phone || "",
+          email: res.data.data.user?.email || "",
+          status: res.data.data.status === "active" ? "Đang làm việc" : "Nghỉ",
+          createdAt: res.data.data.createdAt ? new Date(res.data.data.createdAt).toLocaleDateString() : "",
+          updatedAt: res.data.data.updatedAt ? new Date(res.data.data.updatedAt).toLocaleDateString() : "",
+        } : d
       );
       setSnackbar({
         open: true,
@@ -212,21 +233,22 @@ const handleDelete = async () => {
         severity: "success",
       });
     } else {
-      console.log("Creating new driver with data:", formData); 
+      console.log("Creating new driver with data:", formData);
       const res = await driverAPI.create(formData);
       console.log("Response from creating driver:", res.data.data);
-      updatedDrivers = [...drivers, { ...res.data.data, 
+      updatedDrivers = [...drivers, {
+        ...res.data.data,
         id: res.data.data._id,
         fullName: res.data.data.user?.username || "",
         assignedBus: res.data.data.assignedBus?.licensePlate || "",
         phoneNumber: res.data.data.user?.phone || "",
         email: res.data.data.user?.email || "",
-        status: res.data.data.status === "active" ? "Đang làm việc" : "Nghỉ", 
+        status: res.data.data.status === "active" ? "Đang làm việc" : "Nghỉ",
         createdAt: res.data.data.createdAt ? new Date(res.data.data.createdAt).toLocaleDateString() : "",
         updatedAt: res.data.data.updatedAt ? new Date(res.data.data.updatedAt).toLocaleDateString() : "",
       }];
       console.log("Updated drivers list:", updatedDrivers);
-        setSnackbar({
+      setSnackbar({
         open: true,
         message: "Thêm tài xế thành công!",
         severity: "success",
@@ -234,7 +256,7 @@ const handleDelete = async () => {
     }
     setDrivers(updatedDrivers);
     handleCloseForm();
-};
+  };
 
 
   return (
@@ -313,16 +335,16 @@ const handleDelete = async () => {
         onCancel={() => setDeleteConfirm(null)}
       />
       <DriverDialog
-      open={openForm}
-      onClose={handleCloseForm}
-      formData={formData}
-      onChange={handleChange}
-      onSave={handleSubmit}  
-      onDelete={handleDeleteClick}
-      errors={errors}
-      editing={!!editingDriver}
-      buses={buses}
-    />
+        open={openForm}
+        onClose={handleCloseForm}
+        formData={formData}
+        onChange={handleChange}
+        onSave={handleSubmit}
+        onDelete={handleDeleteClick}
+        errors={errors}
+        editing={!!editingDriver}
+        buses={buses}
+      />
 
     </Box>
   );

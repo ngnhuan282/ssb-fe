@@ -12,8 +12,8 @@ export const driverAPI = {
   getAll: () => axiosInstance.get("/drivers"),
   getById: (id) => axiosInstance.get(`/drivers/${id}`),
   create: (data) => axiosInstance.post("/drivers", data),
-  update: (id, data) => axiosInstance.put(`/drivers/${id}`, data),
-  delete: (id) => axiosInstance.delete(`/drivers/${id}`),
+  update: (id, data, updateUser) => axiosInstance.put(`/drivers/${id}`, data),
+  delete: (id, data) => axiosInstance.delete(`/drivers/${id}`, data),
 };
 
 export const locationAPI = {
@@ -80,18 +80,18 @@ export const userAPI = {
 
 export const authAPI = {
   // Đăng nhập
-  login: (credentials) => 
+  login: (credentials) =>
     axiosInstance.post("/auth/login", credentials),
-  
+
   // Đăng xuất
-  logout: () => 
+  logout: () =>
     axiosInstance.post("/auth/logout"),
-  
+
   // Refresh token
-  refreshToken: () => 
+  refreshToken: () =>
     axiosInstance.post("/auth/refresh-token"),
-  
+
   // Lấy thông tin user hiện tại
-  getCurrentUser: () => 
+  getCurrentUser: () =>
     axiosInstance.get("/auth/me"),
 }
