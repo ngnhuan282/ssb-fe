@@ -1,47 +1,64 @@
-import React from "react";
-import { Box, Typography } from "@mui/material";
-import { School } from "@mui/icons-material";
+// src/components/user/login/LoginHeader.jsx
+import { Box, Typography } from '@mui/material';
+import SchoolBusImage from '../../../assets/school-bus.png'; // Dùng chung ảnh
 
-const LoginHeader = () => {
+export default function LoginHeader() {
   return (
-    <>
-      {/* Logo Icon */}
-      <Box
-        sx={{
-          display: "inline-flex",
-          alignItems: "center",
-          justifyContent: "center",
-          width: 80,
-          height: 80,
-          borderRadius: "50%",
-          background: "linear-gradient(135deg, #64b5f6 0%, #ab47bc 100%)",
-          mb: 2,
-          boxShadow: "0 4px 15px rgba(100, 181, 246, 0.3)",
-        }}
-      >
-        <School sx={{ fontSize: 45, color: "#fff" }} />
-      </Box>
-
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        textAlign: 'center',
+        height: '100%',
+        px: { xs: 2, md: 3 },
+      }}
+    >
       <Typography
         variant="h4"
         fontWeight="bold"
+        color="primary"
+        gutterBottom
         sx={{
-          mb: 1,
-          background: "linear-gradient(135deg, #64b5f6 0%, #ab47bc 100%)",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
-          backgroundClip: "text",
-          fontSize: { xs: "1.75rem", sm: "2rem" },
+          fontSize: { xs: '1.8rem', md: '2.2rem' },
+          lineHeight: 1.2,
         }}
       >
-        Smart School Bus
+        SSB 1.0
       </Typography>
 
-      <Typography variant="body1" sx={{ mb: 4, color: "#666", fontSize: 15 }}>
-        Chào mừng trở lại! 👋
+      <Typography
+        variant="subtitle1"
+        color="text.secondary"
+        sx={{
+          mb: 3,
+          fontSize: { xs: '1rem', md: '1.1rem' },
+          maxWidth: 280,
+        }}
+      >
+        An tâm trên mọi nẻo đường
       </Typography>
-    </>
+
+      <Box
+        sx={{
+          width: '100%',
+          maxWidth: 320,
+          borderRadius: 3,
+          overflow: 'hidden',
+          boxShadow: '0 6px 20px rgba(0,0,0,0.08)',
+        }}
+      >
+        <img
+          src={SchoolBusImage}
+          alt="School Bus"
+          style={{
+            width: '100%',
+            height: 'auto',
+            display: 'block',
+          }}
+        />
+      </Box>
+    </Box>
   );
-};
-
-export default LoginHeader;
+}

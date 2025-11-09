@@ -1,47 +1,64 @@
 // src/components/user/register/RegisterHeader.jsx
-import React from "react";
-import { Box, Typography } from "@mui/material";
-import { School } from "@mui/icons-material";
+import { Box, Typography } from '@mui/material';
+import SchoolBusImage from '../../../assets/school-bus.png';
 
-const RegisterHeader = () => {
+export default function RegisterHeader() {
   return (
-    <Box sx={{ textAlign: "center", mb: 3 }}>
-      <Box
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',    // Căn giữa ngang
+        justifyContent: 'center', // Căn giữa dọc
+        textAlign: 'center',
+        height: '100%',
+        px: { xs: 2, md: 3 },
+      }}
+    >
+      <Typography
+        variant="h4"
+        fontWeight="bold"
+        color="primary"
+        gutterBottom
         sx={{
-          display: "inline-flex",
-          alignItems: "center",
-          justifyContent: "center",
-          width: 60,
-          height: 60,
-          borderRadius: "50%",
-          background: "linear-gradient(135deg, #64b5f6 0%, #ab47bc 100%)",
-          mb: 1.5,
-          boxShadow: "0 4px 15px rgba(100, 181, 246, 0.3)",
+          fontSize: { xs: '1.8rem', md: '2.2rem' },
+          lineHeight: 1.2,
         }}
       >
-        <School sx={{ fontSize: 32, color: "#fff" }} />
-      </Box>
+        SSB 1.0
+      </Typography>
 
       <Typography
-        variant="h5"
-        fontWeight="bold"
+        variant="subtitle1"
+        color="text.secondary"
         sx={{
-          mb: 0.5,
-          background: "linear-gradient(135deg, #64b5f6 0%, #ab47bc 100%)",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
-          backgroundClip: "text",
-          fontSize: { xs: "1.4rem", sm: "1.6rem" },
+          mb: 3,
+          fontSize: { xs: '1rem', md: '1.1rem' },
+          maxWidth: 280,
         }}
       >
-        Đăng ký tài khoản
+        An tâm trên mọi nẻo đường
       </Typography>
 
-      <Typography variant="body2" sx={{ color: "#666", fontSize: 13 }}>
-        Theo dõi xe đưa đón của con bạn! 🚌
-      </Typography>
+      <Box
+        sx={{
+          width: '100%',
+          maxWidth: 320,
+          borderRadius: 3,
+          overflow: 'hidden',
+          boxShadow: '0 6px 20px rgba(0,0,0,0.08)',
+        }}
+      >
+        <img
+          src={SchoolBusImage}
+          alt="School Bus"
+          style={{
+            width: '100%',
+            height: 'auto',
+            display: 'block',
+          }}
+        />
+      </Box>
     </Box>
   );
-};
-
-export default RegisterHeader;
+}

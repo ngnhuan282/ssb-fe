@@ -1,223 +1,64 @@
-// src/pages/user/RegisterPage.jsx
-import React, { useState } from "react";
-import { Box, Button, Typography, Paper, Alert } from "@mui/material";
-import { useNavigate } from "react-router-dom";
-import { ArrowBack, ArrowForward } from "@mui/icons-material";
+// src/pages/RegisterPage.jsx
+import { Box } from '@mui/material';
+import RegisterHeader from '../../components/user/register/RegisterHeader';
+import RegisterForm from '../../components/user/register/RegisterForm';
 
-import RegisterHeader from "../../components/user/register/RegisterHeader";
-import RegisterStepper from "../../components/user/register/RegisterStepper";
-import ParentInfoForm from "../../components/user/register/ParentInfoForm";
-import StudentInfoForm from "../../components/user/register/StudentInfoForm";
-import PasswordForm from "../../components/user/register/PasswordForm";
-
-const RegisterPage = () => {
-  const navigate = useNavigate();
-  const [activeStep, setActiveStep] = useState(0);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  
-  const [formData, setFormData] = useState({
-    parentName: "",
-    email: "",
-    phone: "",
-    address: "",
-    studentName: "",
-    studentGrade: "",
-    password: "",
-    confirmPassword: "",
-  });
-
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handleNext = () => {
-    // Validate current step
-    if (activeStep === 0) {
-      if (!formData.parentName || !formData.email || !formData.phone || !formData.address) {
-        alert("Vui lòng điền đầy đủ thông tin phụ huynh!");
-        return;
-      }
-    } else if (activeStep === 1) {
-      if (!formData.studentName || !formData.studentGrade) {
-        alert("Vui lòng điền đầy đủ thông tin học sinh!");
-        return;
-      }
-    }
-    setActiveStep((prev) => prev + 1);
-  };
-
-  const handleBack = () => {
-    setActiveStep((prev) => prev - 1);
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    
-    if (formData.password !== formData.confirmPassword) {
-      alert("Mật khẩu xác nhận không khớp!");
-      return;
-    }
-
-    if (formData.password.length < 6) {
-      alert("Mật khẩu phải có ít nhất 6 ký tự!");
-      return;
-    }
-    
-    console.log("Register parent with:", formData);
-    alert("Đăng ký thành công! Vui lòng liên hệ nhà trường để được gán học sinh vào tuyến xe.");
-    navigate("/login");
-  };
-
-  const getStepContent = (step) => {
-    switch (step) {
-      case 0:
-        return <ParentInfoForm formData={formData} onChange={handleChange} />;
-      case 1:
-        return <StudentInfoForm formData={formData} onChange={handleChange} />;
-      case 2:
-        return (
-          <PasswordForm 
-            formData={formData} 
-            onChange={handleChange}
-            showPassword={showPassword}
-            setShowPassword={setShowPassword}
-            showConfirmPassword={showConfirmPassword}
-            setShowConfirmPassword={setShowConfirmPassword}
-          />
-        );
-      default:
-        return null;
-    }
-  };
-
+export default function RegisterPage() {
   return (
     <Box
       sx={{
-        minHeight: "100vh",
-        background: "linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 50%, #fce4ec 100%)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        py: 4,
-        px: 2,
+        minHeight: '100vh',
+        backgroundColor: '#fff', // Trắng tinh, giống LoginPage
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        py: { xs: 3, md: 5 },
+        px: { xs: 2, md: 3 },
       }}
     >
-      <Paper
-        elevation={8}
+      {/* Card rộng hơn, thoải mái hơn */}
+      <Box
         sx={{
-          p: { xs: 3, sm: 4 },
-          width: "100%",
-          maxWidth: 500,
-          borderRadius: 4,
-          backgroundColor: "#fff",
+          width: '100%',
+          maxWidth: { xs: 380, sm: 800, md: 1000, lg: 1100 }, // Tăng maxWidth
+          backgroundColor: '#fff',
+          borderRadius: 3,
+          overflow: 'hidden',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
+          display: 'flex',
+          flexDirection: { xs: 'column', md: 'row' },
         }}
       >
-        <RegisterHeader />
-        <RegisterStepper activeStep={activeStep} />
-
-        {/* Alert */}
-        {activeStep === 0 && (
-          <Alert severity="info" sx={{ mb: 3, borderRadius: 2, fontSize: 12 }}>
-            Sau khi đăng ký, liên hệ nhà trường để gán học sinh vào tuyến xe.
-          </Alert>
-        )}
-
-        <Box component="form" onSubmit={handleSubmit}>
-          <Box sx={{ minHeight: 200 }}>
-            {getStepContent(activeStep)}
-          </Box>
-
-          {/* Navigation Buttons */}
-          <Box sx={{ display: "flex", gap: 2, mt: 4 }}>
-            {activeStep > 0 && (
-              <Button
-                onClick={handleBack}
-                variant="outlined"
-                startIcon={<ArrowBack />}
-                sx={{
-                  flex: 1,
-                  py: 1.2,
-                  borderRadius: 2,
-                  textTransform: "none",
-                  borderColor: "#64b5f6",
-                  color: "#64b5f6",
-                  "&:hover": {
-                    borderColor: "#42a5f5",
-                    backgroundColor: "rgba(100, 181, 246, 0.05)",
-                  },
-                }}
-              >
-                Quay lại
-              </Button>
-            )}
-
-            {activeStep < 2 ? (
-              <Button
-                onClick={handleNext}
-                variant="contained"
-                endIcon={<ArrowForward />}
-                sx={{
-                  flex: 1,
-                  py: 1.2,
-                  borderRadius: 2,
-                  background: "linear-gradient(135deg, #64b5f6 0%, #ab47bc 100%)",
-                  textTransform: "none",
-                  "&:hover": {
-                    background: "linear-gradient(135deg, #42a5f5 0%, #9c27b0 100%)",
-                  },
-                }}
-              >
-                Tiếp theo
-              </Button>
-            ) : (
-              <Button
-                type="submit"
-                variant="contained"
-                sx={{
-                  flex: 1,
-                  py: 1.2,
-                  borderRadius: 2,
-                  background: "linear-gradient(135deg, #64b5f6 0%, #ab47bc 100%)",
-                  textTransform: "none",
-                  "&:hover": {
-                    background: "linear-gradient(135deg, #42a5f5 0%, #9c27b0 100%)",
-                  },
-                }}
-              >
-                Đăng ký tài khoản
-              </Button>
-            )}
-          </Box>
+        {/* Cột trái: Logo + Text */}
+        <Box
+          sx={{
+            bgcolor: '#f0f9ff',
+            p: { xs: 4, md: 6 }, // Tăng padding
+            flex: 1,
+            minWidth: { md: 380 }, // Đảm bảo không bị co
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <RegisterHeader />
         </Box>
 
-        {/* Login link */}
-        <Typography sx={{ mt: 3, textAlign: "center", fontSize: 13, color: "#666" }}>
-          Đã có tài khoản?{" "}
-          <Typography
-            component="span"
-            onClick={() => navigate("/login")}
-            sx={{
-              background: "linear-gradient(135deg, #64b5f6 0%, #ab47bc 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-              fontWeight: "bold",
-              cursor: "pointer",
-              "&:hover": {
-                textDecoration: "underline",
-              },
-            }}
-          >
-            Đăng nhập ngay
-          </Typography>
-        </Typography>
-      </Paper>
+        {/* Cột phải: Form */}
+        <Box
+          sx={{
+            bgcolor: '#ffffff',
+            p: { xs: 4, md: 6 }, // Tăng padding
+            flex: 1,
+            minWidth: { md: 400 },
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <RegisterForm />
+        </Box>
+      </Box>
     </Box>
   );
-};
-
-export default RegisterPage;
+}

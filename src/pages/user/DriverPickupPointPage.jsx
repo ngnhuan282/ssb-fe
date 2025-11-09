@@ -6,7 +6,6 @@ import {
 import { Map as MapIcon, List as ListIcon, Refresh } from '@mui/icons-material';
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
 import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
 import StopMarkerCard from '../../components/user/pickup/StopMarkerCard';
 import StudentPickupDetail from '../../components/user/pickup/StudentPickupDetail';
 
