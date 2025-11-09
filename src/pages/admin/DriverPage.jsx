@@ -29,7 +29,7 @@ export default function DriverPage() {
     fullName: "",
     phoneNumber: "",
     email: "",
-    password: "",
+    //password: "",
     licenseNumber: "",
     assignedBus: "",
     status: "active",

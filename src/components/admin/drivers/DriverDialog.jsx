@@ -91,7 +91,7 @@ export default function DriverDialog({
             helperText={errors.email}
           />
 
-          <TextField
+          {/* <TextField
             label="Mật khẩu"
             type="password"
             name="password"
@@ -101,7 +101,7 @@ export default function DriverDialog({
             fullWidth
             error={!!errors.password}
             helperText={errors.password}
-          />
+          /> */}
 
           <TextField
             label="Số bằng lái"
