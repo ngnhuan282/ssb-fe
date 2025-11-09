@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import {
   Box,
+  Stack,
   Typography,
   Button,
   Dialog,
@@ -261,24 +262,32 @@ export default function DriverPage() {
 
   return (
     <Box sx={{ p: 3, overflowY: "auto" }}>
-      <Typography variant="h5" gutterBottom sx={{ textAlign: "center", color: "#007bff" }}>
-        Quản Lý Tài Xế
-      </Typography>
-
-      <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 0 }}>
+      <Stack direction="row" justifyContent="space-between" mb={2} alignItems="center">
+        <h2>Quản lý tài xế</h2>
         <Button
           variant="contained"
           startIcon={<AddIcon />}
           onClick={() => handleOpenForm()}
-          sx={{ backgroundColor: "#007bff", "&:hover": { backgroundColor: "#0056b3" } }}
+          sx={{
+            background: "linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%)",
+            color: "#fff",
+            borderRadius: "12px",
+            minHeight: "50px",
+            textTransform: "none",
+            fontWeight: "600",
+            boxShadow: "0 4px 12px rgba(59, 130, 246, 0.3)",
+            "&:hover": {
+              background: "linear-gradient(135deg, #4338ca 0%, #2563eb 100%)",
+              boxShadow: "0 6px 16px rgba(59, 130, 246, 0.45)",
+            },
+          }}
         >
-          Thêm Tài Xế
+          Thêm tài xế
         </Button>
-      </Box>
+      </Stack>
 
       <Grid container spacing={3} justifyContent="center">
         <Grid item xs={12} md={10}>
-          <Typography variant="h6" sx={{ mb: 2 }}>Danh Sách Tài Xế</Typography>
           <DriverTable
             rows={drivers}
             onEdit={handleOpenForm}
