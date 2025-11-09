@@ -39,11 +39,14 @@ export const scheduleAPI = {
   update: (id, data) => axiosInstance.put(`/schedules/${id}`, data),
   delete: (id) => axiosInstance.delete(`/schedules/${id}`),
   getByDriver: (driverId) => axiosInstance.get(`/schedules/driver/${driverId}`),
-  updateStop: (scheduleId, stopId, data) =>
-    axiosInstance.patch(`/schedules/${scheduleId}/stops/${stopId}`, data),
+  getStopStudents: (scheduleId, stopIndex) =>
+    axios.get(`${API_URL}/schedules/${scheduleId}/stops/${stopIndex}/students`),
 
-  updateStudentInStop: (scheduleId, stopId, studentId, data) =>
-    axiosInstance.patch(`/schedules/${scheduleId}/stops/${stopId}/students/${studentId}`, data),
+  updateStop: (scheduleId, stopIndex, data) =>
+    axios.patch(`${API_URL}/schedules/${scheduleId}/stops/${stopIndex}`, data),
+
+  updateStudentStatus: (scheduleId, stopIndex, studentId, data) =>
+    axios.patch(`${API_URL}/schedules/${scheduleId}/stops/${stopIndex}/students/${studentId}`, data),
 };
 
 export const studentAPI = {

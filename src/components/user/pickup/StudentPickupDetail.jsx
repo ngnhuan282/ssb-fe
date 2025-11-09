@@ -37,39 +37,38 @@ const StudentPickupDetail = ({ open, onClose, stop, onToggleStudent }) => {
             <Typography variant="body2" sx={{ fontWeight: 600, color: '#2c3e50' }}>Tiến độ đón</Typography>
             <Typography variant="body2" sx={{ fontWeight: 600, color: '#27ae60' }}>{boardedCount}/{totalCount}</Typography>
           </Box>
-          <LinearProgress variant="determinate" value={progress} sx={{ height: 8, borderRadius: 1, bgcolor: '#e0e0e0', '& .MuiLinearProgress-bar': { bgcolor: '#27ae60' } }} />
+          <LinearProgress variant="determinate" value={progress} sx={{ height: 8, borderRadius: 4, bgcolor: '#e9ecef', '& .MuiLinearProgress-bar': { bgcolor: '#27ae60' } }} />
         </Box>
 
         {stop.students && stop.students.length > 0 ? (
-          <List sx={{ p: 2, pt: 1 }}>
-            {stop.students.map(student => (
-              <ListItem
-                key={student.id}
-                sx={{
-                  borderRadius: 2, mb: 1, p: 1.5,
-                  border: '2px solid',
-                  borderColor: student.status === 'boarded' ? '#27ae60' : student.status === 'absent' ? '#e74c3c' : '#e0e0e0',
-                  bgcolor: student.status === 'boarded' ? '#d4edda' : student.status === 'absent' ? '#f8d7da' : '#fff',
-                }}
-              >
+          <List sx={{ px: 1 }}>
+            {stop.students.map((student) => (
+              <ListItem key={student._id || student.id} sx={{ px: 1, py: 1.5, borderBottom: '1px solid #f1f3f5', alignItems: 'flex-start' }}>
                 <ListItemAvatar>
-                  <Avatar sx={{
-                    bgcolor: student.status === 'boarded' ? '#27ae60' : student.status === 'absent' ? '#e74c3c' : '#667eea',
-                    width: 45, height: 45,
-                  }}>
-                    {student.status === 'boarded' ? <CheckCircle sx={{ fontSize: 28 }} /> :
-                     student.status === 'absent' ? <Cancel sx={{ fontSize: 28 }} /> : <Person sx={{ fontSize: 28 }} />}
+                  <Avatar src={student.avatar} sx={{ bgcolor: '#bdc3c7', color: '#fff' }}>
+                    <Person />
                   </Avatar>
                 </ListItemAvatar>
 
                 <ListItemText
                   primary={
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-                      <Typography variant="body1" sx={{ fontWeight: 600, color: '#2c3e50' }}>{student.name}</Typography>
-                      <Chip icon={<School sx={{ fontSize: 14 }} />} label={student.class} size="small" sx={{ height: 20, fontSize: '0.7rem', bgcolor: '#e3f2fd', color: '#1565c0' }} />
-                      {student.status === 'boarded' && <Chip label={`Đã đón - ${student.boardedAt}`} size="small" color="success" sx={{ height: 20, fontSize: '0.7rem' }} />}
-                      {student.status === 'absent' && <Chip label="Vắng" size="small" color="error" sx={{ height: 20, fontSize: '0.7rem' }} />}
-                      {student.status === 'waiting' && <Chip label="Chờ đón" size="small" sx={{ height: 20, fontSize: '0.7rem', bgcolor: '#e0e0e0' }} />}
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#2c3e50' }}>{student.name}</Typography>
+                      <Chip
+                        label={student.status === 'boarded' ? 'Đã đón' : student.status === 'absent' ? 'Vắng' : 'Chờ'}
+                        size="small"
+                        icon={
+                          student.status === 'boarded' ? <CheckCircle sx={{ fontSize: 16 }} /> :
+                          student.status === 'absent' ? <Cancel sx={{ fontSize: 16 }} /> :
+                          <RadioButtonUnchecked sx={{ fontSize: 16 }} />
+                        }
+                        sx={{
+                          height: 24,
+                          bgcolor: student.status === 'boarded' ? '#d4edda' : student.status === 'absent' ? '#f8d7da' : '#fff3cd',
+                          color: student.status === 'boarded' ? '#155724' : student.status === 'absent' ? '#721c24' : '#856404',
+                          '& .MuiChip-icon': { color: 'inherit' }
+                        }}
+                      />
                     </Box>
                   }
                   secondary={
@@ -80,20 +79,20 @@ const StudentPickupDetail = ({ open, onClose, stop, onToggleStudent }) => {
                   }
                 />
 
-                {/* Nút hành động */}
+                {/* Action Buttons */}
                 <Box sx={{ display: 'flex', gap: 0.5 }}>
                   {student.status !== 'boarded' && (
-                    <Button size="small" variant="contained" color="success" onClick={() => handleStatusChange(student.id, 'boarded')}>
+                    <Button size="small" variant="contained" color="success" onClick={() => handleStatusChange(student._id || student.id, 'boarded')}>
                       Đón
                     </Button>
                   )}
                   {student.status !== 'absent' && (
-                    <Button size="small" variant="outlined" color="error" onClick={() => handleStatusChange(student.id, 'absent')}>
+                    <Button size="small" variant="outlined" color="error" onClick={() => handleStatusChange(student._id || student.id, 'absent')}>
                       Vắng
                     </Button>
                   )}
                   {student.status === 'boarded' && (
-                    <Button size="small" variant="text" onClick={() => handleStatusChange(student.id, 'waiting')}>
+                    <Button size="small" variant="text" onClick={() => handleStatusChange(student._id || student.id, 'waiting')}>
                       Hủy
                     </Button>
                   )}

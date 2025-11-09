@@ -36,56 +36,50 @@ const StopMarkerCard = ({ stop, onNavigate, onComplete, onSkip, onViewStudents }
             <Avatar sx={{
               bgcolor: stop.status === 'completed' ? '#27ae60' :
                        stop.status === 'current' ? '#f39c12' :
-                       stop.status === 'skipped' ? '#e74c3c' : '#667eea',
-              width: 40, height: 40,
-            }}>{stop.order}</Avatar>
+                       stop.status === 'skipped' ? '#e74c3c' : '#3498db',
+              width: 32, height: 32, fontSize: 16, fontWeight: 600
+            }}>
+              {stop.order}
+            </Avatar>
             <Box>
-              <Typography variant="h6" sx={{ fontWeight: 600, color: '#2c3e50' }}>{stop.name}</Typography>
-              <Typography variant="caption" color="textSecondary">{stop.time}</Typography>
+              <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#2c3e50' }}>{stop.name}</Typography>
+              <Typography variant="caption" color="textSecondary">{stop.address}</Typography>
             </Box>
           </Box>
-          <Chip icon={statusColor.icon} label={
-            stop.status === 'completed' ? 'Đã đến' :
-            stop.status === 'current' ? 'Đang đến' :
-            stop.status === 'skipped' ? 'Đã bỏ qua' : 'Chưa đến'
-          } sx={{ bgcolor: statusColor.bg, color: statusColor.text, fontWeight: 600 }} />
+          <Chip
+            icon={statusColor.icon}
+            label={stop.status === 'completed' ? 'Hoàn thành' :
+                   stop.status === 'current' ? 'Hiện tại' :
+                   stop.status === 'skipped' ? 'Bỏ qua' : 'Chờ'}
+            sx={{
+              height: 28,
+              bgcolor: statusColor.bg,
+              color: statusColor.text,
+              '& .MuiChip-icon': { color: 'inherit', fontSize: 18 }
+            }}
+          />
         </Box>
 
         <Divider sx={{ mb: 2 }} />
 
-        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mb: 2 }}>
-          <LocationOn sx={{ fontSize: 20, color: '#e74c3c', mt: 0.3 }} />
-          <Typography variant="body2" sx={{ color: '#34495e', flex: 1 }}>{stop.address}</Typography>
+        {/* Info */}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <People sx={{ fontSize: 18, color: '#95a5a6' }} />
+            <Typography variant="caption" sx={{ fontWeight: 600, color: '#7f8c8d' }}>{boardedCount}/{stop.students?.length || 0}</Typography>
+            <Button size="small" startIcon={<Visibility />} onClick={() => onViewStudents(stop)} sx={{ minWidth: 'auto', p: 0.5, color: '#3498db' }} />
+          </Box>
+
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <DirectionsWalk sx={{ fontSize: 18, color: '#95a5a6' }} />
+            <Typography variant="caption" sx={{ fontWeight: 600, color: '#7f8c8d' }}>{stop.distance || 'N/A'}</Typography>
+          </Box>
+
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <AccessTime sx={{ fontSize: 18, color: '#95a5a6' }} />
+            <Typography variant="caption" sx={{ fontWeight: 600, color: '#7f8c8d' }}>~{stop.estimatedTime || 'N/A'}</Typography>
+          </Box>
         </Box>
-
-        {/* Students with Eye Icon */}
-        {stop.students && stop.students.length > 0 && (
-          <Box
-            sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2, p: 1.5, bgcolor: '#f8f9fa', borderRadius: 1, cursor: 'pointer', '&:hover': { bgcolor: '#ecf0f1' } }}
-            onClick={() => onViewStudents(stop)}
-          >
-            <People sx={{ fontSize: 20, color: '#3498db' }} />
-            <Typography variant="body2" sx={{ fontWeight: 600, color: '#2c3e50', flex: 1 }}>
-              {stop.students.length} học sinh
-            </Typography>
-            <Chip label={`${boardedCount} đã đón`} size="small" color="success" sx={{ height: 20, fontSize: '0.65rem' }} />
-            <Visibility sx={{ fontSize: 18, color: '#95a5a6', ml: 0.5 }} />
-          </Box>
-        )}
-
-        {/* Distance & Time */}
-        {stop.status !== 'completed' && stop.status !== 'skipped' && stop.distance && (
-          <Box sx={{ bgcolor: '#f8f9fa', p: 1.5, borderRadius: 1, mb: 2, display: 'flex', gap: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <DirectionsWalk sx={{ fontSize: 18, color: '#95a5a6' }} />
-              <Typography variant="caption" sx={{ fontWeight: 600, color: '#7f8c8d' }}>{stop.distance}</Typography>
-            </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <AccessTime sx={{ fontSize: 18, color: '#95a5a6' }} />
-              <Typography variant="caption" sx={{ fontWeight: 600, color: '#7f8c8d' }}>~{stop.estimatedTime}</Typography>
-            </Box>
-          </Box>
-        )}
 
         {stop.status === 'completed' && stop.completedAt && (
           <Box sx={{ bgcolor: '#d4edda', p: 1, borderRadius: 1, mb: 2 }}>
