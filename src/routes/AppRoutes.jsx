@@ -34,14 +34,6 @@ export const router = createBrowserRouter([
         ),
       },
       { 
-        path: "map", 
-        element: (
-          <ProtectedRoute allowedRoles={['parent', 'driver']}>
-            <MapPage />
-          </ProtectedRoute>
-        ),
-      },
-      { 
         path: "bus", 
         element: (
           <ProtectedRoute allowedRoles={['parent']}>

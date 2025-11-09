@@ -75,12 +75,6 @@ const menuItems = [
     allowedRoles: ["driver"],
   },
   {
-    text: "Bản đồ",
-    icon: <Route />,
-    path: "/map",
-    allowedRoles: ["parent", "driver"],
-  },
-  {
     text: "Thông báo",
     icon: <Notifications />,
     path: "/notification",
