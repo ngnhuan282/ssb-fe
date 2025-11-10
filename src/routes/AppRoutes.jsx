@@ -20,6 +20,8 @@ import DriverIncidentReportPage from "../pages/user/DriverIncidentReportPage";
 import DriverPickupPointsPage from "../pages/user/DriverPickupPointPage";
 import DriverTripReportPage from "../pages/user/DriverTripReportPage";
 import IncidentDetailPage from "../pages/user/IncidentDetailPage";
+import TripHistoryPage from "../pages/user/TripHistoryPage";
+import TripDetailPage from "../pages/user/TripDetailPage";
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -75,10 +77,18 @@ export const router = createBrowserRouter([
         ),
       },
       { 
-        path: "trip-report", 
+        path: "trip-history", 
         element: (
           <ProtectedRoute allowedRoles={['driver']}>
-           <DriverTripReportPage />
+           <TripHistoryPage />
+          </ProtectedRoute>
+        ),
+      },
+      { 
+        path: "trip-detail", 
+        element: (
+          <ProtectedRoute allowedRoles={['driver']}>
+           <TripDetailPage />
           </ProtectedRoute>
         ),
       },

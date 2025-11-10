@@ -27,11 +27,13 @@ import {
   ChevronRight,
   LocationOn,
   Warning,
+  Logout as LogoutIcon, // <-- THÊM ICON
 } from "@mui/icons-material";
 import { useAuth } from "../../../context/AuthContext";
 
 // Menu items với allowedRoles
 const menuItems = [
+  // ... (Giữ nguyên mảng menuItems) ...
   {
     text: "Tổng quan",
     icon: <Dashboard />,
@@ -63,9 +65,9 @@ const menuItems = [
     allowedRoles: ["driver"],
   },
   {
-    text: "Báo cáo chuyến đi",
+    text: "Lịch sử chuyến đi",
     icon: <Assessment />,
-    path: "/trip-report",
+    path: "/trip-history",
     allowedRoles: ["driver"],
   },
   {
@@ -98,13 +100,14 @@ const drawerWidthOpen = 260;
 const drawerWidthClosed = 72;
 
 const Sidebar = ({ onToggle }) => {
-  const { user, loading } = useAuth();
+  const { user, loading, logout } = useAuth(); // <-- LẤY HÀM LOGOUT
   const [open, setOpen] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
 
   // Lọc menu chính dựa trên role
   const filteredMainMenuItems = useMemo(() => {
+    // ... (Giữ nguyên) ...
     if (!user || !user.role) return [];
     return mainMenuItemsConfig.filter((item) =>
       item.allowedRoles.includes(user.role)
@@ -113,17 +116,26 @@ const Sidebar = ({ onToggle }) => {
 
   // Kiểm tra xem có hiển thị cài đặt không
   const showSettings = useMemo(() => {
+    // ... (Giữ nguyên) ...
     if (!user || !user.role || !settingsItemConfig) return false;
     return settingsItemConfig.allowedRoles.includes(user.role);
   }, [user, settingsItemConfig]);
 
   const handleToggle = () => {
+    // ... (Giữ nguyên) ...
     const newState = !open;
     setOpen(newState);
     if (onToggle) {
       onToggle(newState);
     }
   };
+  
+  // --- THÊM HÀM XỬ LÝ ĐĂNG XUẤT ---
+  const handleLogout = async () => {
+    await logout();
+    navigate("/login");
+  };
+  // ---------------------------------
 
   // Loading state
   if (loading) {
@@ -136,6 +148,7 @@ const Sidebar = ({ onToggle }) => {
 
   // Check if current path is active
   const isActive = (path) => {
+    // ... (Giữ nguyên) ...
     if (path === "/") {
       return location.pathname === "/";
     }
@@ -143,6 +156,7 @@ const Sidebar = ({ onToggle }) => {
   };
 
   const renderListItem = (item, index) => {
+    // ... (Giữ nguyên) ...
     const active = isActive(item.path);
     return (
       <ListItem key={index} disablePadding sx={{ mb: 0.5 }}>
@@ -162,10 +176,6 @@ const Sidebar = ({ onToggle }) => {
             },
             transition: "all 0.2s ease",
             position: "relative",
-            // *** BỎ VIỀN XANH BÊN TRÁI ***
-            // ...(active && {
-            //   "&::before": { ... },
-            // }),
           }}
         >
           <ListItemIcon
@@ -198,6 +208,7 @@ const Sidebar = ({ onToggle }) => {
     <Drawer
       variant="permanent"
       sx={{
+        // ... (Giữ nguyên sx của Drawer) ...
         width: open ? drawerWidthOpen : drawerWidthClosed,
         flexShrink: 0,
         "& .MuiDrawer-paper": {
@@ -208,7 +219,6 @@ const Sidebar = ({ onToggle }) => {
           borderRight: "1px solid #e5e7eb",
           background: "#ffffff",
           overflowX: "hidden",
-          // Sử dụng flex column để đẩy Cài đặt xuống dưới
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
@@ -217,7 +227,7 @@ const Sidebar = ({ onToggle }) => {
     >
       {/* Phần menu chính (trên) */}
       <Box sx={{ overflowY: "auto", overflowX: "hidden" }}>
-        {/* Toggle Button */}
+        {/* ... (Giữ nguyên Toggle Button và Menu Section Label) ... */}
         <Box
           sx={{
             display: "flex",
@@ -244,7 +254,6 @@ const Sidebar = ({ onToggle }) => {
           </IconButton>
         </Box>
 
-        {/* Menu Section Label */}
         {open && (
           <Box sx={{ px: 3, py: 1.5 }}>
             <Typography
@@ -268,15 +277,58 @@ const Sidebar = ({ onToggle }) => {
         </List>
       </Box>
 
-      {/* Phần Cài đặt (dưới) */}
+      {/* --- CẬP NHẬT PHẦN DƯỚI --- */}
       <Box sx={{ mb: 2 }}>
         <Divider sx={{ my: 1, mx: 3 }} />
-        {showSettings && (
-          <List sx={{ px: 2, py: 0 }}>
-            {renderListItem(settingsItemConfig, "settings")}
-          </List>
-        )}
+        <List sx={{ px: 2, py: 0 }}>
+          {/* Nút Cài đặt */}
+          {showSettings && renderListItem(settingsItemConfig, "settings")}
+          
+          {/* Nút Đăng xuất */}
+          <ListItem key="logout" disablePadding sx={{ mb: 0.5 }}>
+            <ListItemButton
+              onClick={handleLogout}
+              sx={{
+                minHeight: 44,
+                borderRadius: 2,
+                justifyContent: open ? "initial" : "center",
+                px: open ? 2 : 1.5,
+                py: 1.25,
+                bgcolor: "transparent",
+                color: "#6b7280", // Màu xám
+                "&:hover": {
+                  bgcolor: "#f9fafb",
+                  color: "#1f2937",
+                },
+                transition: "all 0.2s ease",
+              }}
+            >
+              <ListItemIcon
+                sx={{
+                  minWidth: 0,
+                  mr: open ? 2 : 0,
+                  justifyContent: "center",
+                  color: "inherit",
+                  fontSize: "1.25rem",
+                }}
+              >
+                <LogoutIcon />
+              </ListItemIcon>
+              {open && (
+                <ListItemText
+                  primary="Đăng xuất"
+                  primaryTypographyProps={{
+                    fontSize: "0.875rem",
+                    fontWeight: 500,
+                    noWrap: true,
+                  }}
+                />
+              )}
+            </ListItemButton>
+          </ListItem>
+        </List>
       </Box>
+      {/* --- HẾT PHẦN CẬP NHẬT --- */}
     </Drawer>
   );
 };
