@@ -19,6 +19,7 @@ import ParentPage from "../pages/user/ParentPage";
 import DriverIncidentReportPage from "../pages/user/DriverIncidentReportPage";
 import DriverPickupPointsPage from "../pages/user/DriverPickupPointPage";
 import DriverTripReportPage from "../pages/user/DriverTripReportPage";
+import IncidentDetailPage from "../pages/user/IncidentDetailPage";
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -62,6 +63,14 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute allowedRoles={['driver']}>
            <DriverIncidentReportPage />
+          </ProtectedRoute>
+        ),
+      },
+      { 
+        path: "incident-detail", 
+        element: (
+          <ProtectedRoute allowedRoles={['driver']}>
+            <IncidentDetailPage />
           </ProtectedRoute>
         ),
       },
