@@ -1,36 +1,15 @@
 // src/components/user/driver/StudentCard.jsx
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Card,
-  CardContent,
   Box,
   Typography,
   Avatar,
-  IconButton,
-  Checkbox,
   Chip,
   Button,
-  Collapse,
 } from '@mui/material';
-import {
-  Phone,
-  LocationOn,
-  ExpandMore,
-  ExpandLess,
-  CheckCircle,
-  Circle,
-} from '@mui/icons-material';
 
-const StudentCard = ({ student, onCheckIn, onCallParent }) => {
-  const [expanded, setExpanded] = useState(false);
-
-  // CONTROLLED: DÙNG TRỰC TIẾP student.status (sync với parent)
-  const isChecked = student.status === 'picked_up';
-
-  const handleCheckChange = (event) => {
-    onCheckIn && onCheckIn(student._id, event.target.checked);
-  };
-
+const StudentCard = ({ student, onCallParent }) => {
   const displayName = student.fullName || 'Chưa có tên';
 
   const getInitials = (name) => {
@@ -45,148 +24,104 @@ const StudentCard = ({ student, onCheckIn, onCallParent }) => {
       .slice(0, 2);
   };
 
-  const getStatusColor = (status) => {
+  // Cập nhật màu sắc và viền cho giống thiết kế
+  const getStatusProps = (status) => {
     switch (status) {
-      case 'picked_up': return { bg: '#e8f5e9', text: '#2e7d32' };
-      case 'dropped_off': return { bg: '#e3f2fd', text: '#1565c0' };
-      default: return { bg: '#f5f5f5', text: '#757575' };
+      case 'picked_up':
+        return {
+          label: 'Đã đón',
+          sx: { bgcolor: '#dcfce7', color: '#16a34a', fontWeight: 600 },
+          borderColor: '#22c55e', // Xanh lá
+        };
+      case 'dropped_off':
+        return {
+          label: 'Đã trả',
+          sx: { bgcolor: '#f3f4f6', color: '#4b5563', fontWeight: 600 },
+          borderColor: '#9ca3af', // Xám
+        };
+      default: // 'pending'
+        return {
+          label: 'Chưa đón',
+          sx: { bgcolor: '#fef3c7', color: '#a16207', fontWeight: 600 }, // Vàng
+          borderColor: '#f59e0b', // Vàng
+        };
     }
   };
 
-  const statusColor = getStatusColor(student.status);
+  const statusProps = getStatusProps(student.status);
 
   return (
     <Card
       sx={{
-        boxShadow: 0,
-        borderRadius: 1,
+        boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+        borderRadius: 2,
+        border: '1px solid #e5e7eb',
+        bgcolor: '#ffffff',
+        // Thêm viền màu bên trái
+        borderLeft: `5px solid ${statusProps.borderColor}`,
         mb: 1.5,
-        border: '1px solid',
-        borderColor: isChecked ? '#1976d2' : '#e0e0e0',
-        transition: 'all 0.2s',
-        '&:hover': {
-          borderColor: '#1976d2',
-          boxShadow: 1,
-        },
       }}
     >
-      <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
-          <Checkbox
-            checked={isChecked}
-            onChange={handleCheckChange}
-            icon={<Circle sx={{ color: '#bdbdbd' }} />}
-            checkedIcon={<CheckCircle sx={{ color: '#4caf50' }} />}
-            sx={{ p: 0, mt: 0.5 }}
-          />
+      <Box sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
+        {/* 1. Avatar */}
+        <Avatar
+          sx={{
+            width: 44,
+            height: 44,
+            bgcolor: '#dbeafe', // Màu xanh nhạt
+            color: '#3b82f6', // Màu xanh đậm
+            fontSize: '1rem',
+            fontWeight: 600,
+          }}
+        >
+          {getInitials(displayName)}
+        </Avatar>
 
-          <Avatar
-            sx={{
-              width: 40,
-              height: 40,
-              bgcolor: isChecked ? '#4caf50' : '#1976d2',
-              fontSize: 14,
-              fontWeight: 600,
-            }}
-          >
-            {getInitials(displayName)}
-          </Avatar>
-
-          <Box sx={{ flex: 1 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-              <Box>
-                <Typography variant="body1" sx={{ fontWeight: 600, color: '#212121', mb: 0.5 }}>
-                  {displayName}
-                </Typography>
-                <Typography variant="caption" sx={{ color: '#757575' }}>
-                  {student.class || 'Chưa có lớp'}
-                </Typography>
-              </Box>
-              <Chip
-                label={
-                  student.status === 'picked_up' ? 'Đã đón' :
-                  student.status === 'dropped_off' ? 'Đã trả' : 'Chưa đón'
-                }
-                size="small"
-                sx={{
-                  bgcolor: statusColor.bg,
-                  color: statusColor.text,
-                  fontWeight: 500,
-                  fontSize: '0.7rem',
-                  height: 22,
-                }}
-              />
-            </Box>
-
-            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.5, mb: 1 }}>
-              <LocationOn sx={{ fontSize: 16, color: '#9e9e9e', mt: 0.2 }} />
-              <Typography variant="body2" color="textSecondary" sx={{ fontSize: '0.875rem' }}>
-                {student.pickupPoint || 'Chưa có điểm đón'}
-              </Typography>
-            </Box>
-
-            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-              <Button
-                size="small"
-                startIcon={<Phone sx={{ fontSize: 16 }} />}
-                onClick={() => onCallParent && onCallParent(student.parent?.user?.phone)}
-                sx={{
-                  textTransform: 'none',
-                  fontSize: '0.75rem',
-                  color: '#1976d2',
-                  minWidth: 'auto',
-                  px: 1,
-                  py: 0.5,
-                  '&:hover': { bgcolor: '#e3f2fd' },
-                }}
-              >
-                Gọi
-              </Button>
-
-              <IconButton
-                size="small"
-                onClick={() => setExpanded(!expanded)}
-                sx={{ ml: 'auto', p: 0.5 }}
-              >
-                {expanded ? <ExpandLess sx={{ fontSize: 20 }} /> : <ExpandMore sx={{ fontSize: 20 }} />}
-              </IconButton>
-            </Box>
-          </Box>
+        {/* 2. Thông tin (Tên, Lớp, Địa chỉ) */}
+        <Box sx={{ flex: 1 }}>
+          <Typography variant="body1" sx={{ fontWeight: 600, color: '#111827' }}>
+            {displayName}
+          </Typography>
+          <Typography variant="body2" sx={{ color: '#6b7280', fontSize: '0.875rem' }}>
+            {student.class || 'Chưa có lớp'}
+          </Typography>
+          <Typography variant="body2" sx={{ color: '#6b7280', fontSize: '0.875rem' }}>
+            {student.pickupPoint || 'Chưa có điểm đón'}
+          </Typography>
         </Box>
 
-        <Collapse in={expanded}>
-          <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid #f5f5f5', ml: 7 }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              <Box>
-                <Typography variant="caption" sx={{ color: '#9e9e9e', display: 'block', mb: 0.5 }}>
-                  Phụ huynh
-                </Typography>
-                <Typography variant="body2" sx={{ color: '#424242' }}>
-                  {student.parent?.user?.username || student.parent?.user?.name || 'Chưa có thông tin'}
-                </Typography>
-              </Box>
-
-              <Box>
-                <Typography variant="caption" sx={{ color: '#9e9e9e', display: 'block', mb: 0.5 }}>
-                  Số điện thoại
-                </Typography>
-                <Typography variant="body2" sx={{ color: '#424242' }}>
-                  {student.parent?.user?.phone || 'Chưa có thông tin'}
-                </Typography>
-              </Box>
-
-              <Box>
-                <Typography variant="caption" sx={{ color: '#9e9e9e', display: 'block', mb: 0.5 }}>
-                  Điểm trả
-                </Typography>
-                <Typography variant="body2" sx={{ color: '#424242' }}>
-                  {student.dropoffPoint || 'Chưa có điểm trả'}
-                </Typography>
-              </Box>
-            </Box>
-          </Box>
-        </Collapse>
-      </CardContent>
+        {/* 3. Hành động (Chip và Nút Gọi) */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, ml: 'auto' }}>
+          {/* Chip trạng thái (chỉ xem) */}
+          <Chip
+            label={statusProps.label}
+            size="small"
+            sx={{
+              ...statusProps.sx,
+              borderRadius: '16px', // Bo tròn
+              height: 24,
+              fontSize: '0.75rem',
+            }}
+          />
+          {/* Nút gọi (đổi thành text) */}
+          <Button
+            variant="text"
+            size="small"
+            onClick={() => onCallParent && onCallParent(student.parent?.user?.phone)}
+            sx={{
+              textTransform: 'none',
+              fontSize: '0.875rem',
+              color: '#3b82f6', // Màu xanh
+              fontWeight: 600,
+              p: '4px 8px',
+              '&:hover': { bgcolor: '#eff6ff' },
+            }}
+          >
+            Gọi
+          </Button>
+        </Box>
+      </Box>
+      {/* Không còn Collapse */}
     </Card>
   );
 };

@@ -9,15 +9,14 @@ import {
   LinearProgress,
   Snackbar,
   Alert,
+  Pagination, // <-- THÊM
 } from '@mui/material';
-import {
-  CheckCircle,
-  Refresh,
-} from '@mui/icons-material';
 import StudentListFilter from '../../components/user/student/StudentListFilter';
 import StudentCard from '../../components/user/student/StudentCard';
 import { studentAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
+
+const ITEMS_PER_PAGE = 5; // Số học sinh trên mỗi trang
 
 const DriverStudentListPage = () => {
   const { user } = useAuth();
@@ -25,10 +24,13 @@ const DriverStudentListPage = () => {
   const [filteredStudents, setFilteredStudents] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('all');
-  const [stats, setStats] = useState({ all: 0, pending: 0, pickedUp: 0, droppedOff: 0 });
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // --- THÊM STATE CHO PHÂN TRANG ---
+  const [page, setPage] = useState(1);
+  const [pageCount, setPageCount] = useState(0);
 
   useEffect(() => {
     fetchStudents();
@@ -41,7 +43,7 @@ const DriverStudentListPage = () => {
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(student => {
-        const name = (student.name || '').toLowerCase();
+        const name = (student.fullName || '').toLowerCase();
         return name.includes(term);
       });
     }
@@ -51,20 +53,20 @@ const DriverStudentListPage = () => {
     }
 
     setFilteredStudents(filtered);
+    // Tính toán số trang
+    setPageCount(Math.ceil(filtered.length / ITEMS_PER_PAGE));
+    // Reset về trang 1 khi filter
+    setPage(1); 
   }, [students, searchTerm, activeTab]);
 
   // LẤY DỮ LIỆU TỪ DB
   const fetchStudents = async () => {
+    // ... (Giữ nguyên logic fetchStudents) ...
     setLoading(true);
     try {
       const response = await studentAPI.getAll();
       const data = response.data.data;
-
-      console.log('DB Students:', data.map(s => ({ id: s._id, name: s.name, status: s.status })));
-
       setStudents(data);
-      updateStats(data);
-      setSnackbar({ open: true, message: 'Tải từ DB thành công', severity: 'success' });
     } catch (err) {
       setError('Lỗi kết nối DB');
       setSnackbar({ open: true, message: 'Không tải được', severity: 'error' });
@@ -73,83 +75,9 @@ const DriverStudentListPage = () => {
     }
   };
 
-  // CẬP NHẬT THỐNG KÊ
-  const updateStats = (data) => {
-    const pending = data.filter(s => s.status === 'pending').length;
-    const pickedUp = data.filter(s => s.status === 'picked_up').length;
-    const droppedOff = data.filter(s => s.status === 'dropped_off').length;
-    setStats({
-      all: data.length,
-      pending,
-      pickedUp,
-      droppedOff,
-    });
-  };
-
-  // CHECK-IN 1 HỌC SINH
-  const handleCheckIn = async (studentId, checked) => {
-    const newStatus = checked ? 'picked_up' : 'pending';
-
-    try {
-      const response = await studentAPI.update(studentId, { status: newStatus });
-
-      if (response.data.message !== "Student updated successfully") {
-        throw new Error('Backend không xác nhận');
-      }
-
-      const updated = students.map(s =>
-        s._id === studentId ? { ...s, status: newStatus } : s
-      );
-      setStudents(updated);
-      updateStats(updated);
-    } catch (err) {
-      console.error('Lỗi check-in:', err.response?.data);
-      setSnackbar({ open: true, message: 'Không lưu được', severity: 'error' });
-    }
-  };
-
-  // HOÀN TẤT TẤT CẢ – CẬP NHẬT DB + UI
-  const handleCompleteAll = async () => {
-    if (stats.pickedUp + stats.droppedOff === stats.all) {
-      setSnackbar({ open: true, message: 'Đã hoàn tất tất cả!', severity: 'info' });
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const pendingStudents = students.filter(s => s.status === 'pending');
-
-      // GỌI API CHO TỪNG HỌC SINH
-      const responses = await Promise.all(
-        pendingStudents.map(s =>
-          studentAPI.update(s._id, { status: 'picked_up' })
-        )
-      );
-
-      // KIỂM TRA TỪNG RESPONSE
-      responses.forEach((res, index) => {
-        if (res.data.message !== "Student updated successfully") {
-          throw new Error(`Học sinh ${pendingStudents[index].name} không cập nhật`);
-        }
-      });
-
-      // CẬP NHẬT LOCAL STATE
-      const updated = students.map(s =>
-        s.status === 'pending' ? { ...s, status: 'picked_up' } : s
-      );
-      setStudents(updated);
-      updateStats(updated);
-
-      setSnackbar({ open: true, message: 'Đã hoàn tất tất cả học sinh!', severity: 'success' });
-    } catch (err) {
-      console.error('Hoàn tất lỗi:', err);
-      setSnackbar({ open: true, message: 'Lỗi khi hoàn tất', severity: 'error' });
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // HÀM GỌI ĐIỆN
   const handleCallParent = (phone) => {
+    // ... (Giữ nguyên) ...
     if (phone) {
       window.location.href = `tel:${phone}`;
     } else {
@@ -157,8 +85,18 @@ const DriverStudentListPage = () => {
     }
   };
 
-  const progress = stats.all > 0 ? ((stats.pickedUp + stats.droppedOff) / stats.all) * 100 : 0;
+  // --- THÊM HÀM THAY ĐỔI TRANG ---
+  const handlePageChange = (event, newPage) => {
+    setPage(newPage);
+  };
 
+  // --- TÍNH TOÁN HỌC SINH CHO TRANG HIỆN TẠI ---
+  const paginatedStudents = filteredStudents.slice(
+    (page - 1) * ITEMS_PER_PAGE,
+    page * ITEMS_PER_PAGE
+  );
+
+  // ... (Giữ nguyên logic loading và error) ...
   if (loading && students.length === 0) {
     return (
       <Box sx={{ p: 3, textAlign: 'center' }}>
@@ -179,63 +117,19 @@ const DriverStudentListPage = () => {
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: '#f5f7fa', pt: 3, pb: 10 }}>
-      <Container maxWidth="md">
-        {/* Progress Bar */}
-        <Paper sx={{ p: 2, mb: 3, borderRadius: 1, boxShadow: 1 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-              Tiến độ: {stats.pickedUp + stats.droppedOff}/{stats.all}
-            </Typography>
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              <Button
-                variant="contained"
-                color="success"
-                size="small"
-                startIcon={<CheckCircle />}
-                onClick={handleCompleteAll}
-                disabled={loading || stats.pickedUp + stats.droppedOff === stats.all}
-                sx={{ textTransform: 'none', fontWeight: 500, borderRadius: 1 }}
-              >
-                Hoàn tất tất cả
-              </Button>
-              <Button
-                variant="outlined"
-                size="small"
-                startIcon={<Refresh />}
-                onClick={fetchStudents}
-                disabled={loading}
-                sx={{ textTransform: 'none', fontWeight: 500, borderRadius: 1 }}
-              >
-                Làm mới
-              </Button>
-            </Box>
-          </Box>
+      <Container maxWidth="xl">
+        
+        <Typography variant="h4" sx={{ fontWeight: 700, color: '#111827', mb: 3 }}>
+          Danh sách học sinh
+        </Typography>
 
-          <LinearProgress
-            variant="determinate"
-            value={progress}
-            sx={{
-              height: 6,
-              borderRadius: 1,
-              bgcolor: '#f5f5f5',
-              '& .MuiLinearProgress-bar': {
-                bgcolor: '#4caf50',
-                borderRadius: 1,
-              }
-            }}
-          />
-        </Paper>
-
-        {/* Filter */}
         <StudentListFilter
           searchTerm={searchTerm}
           onSearchChange={(e) => setSearchTerm(e.target.value)}
           activeTab={activeTab}
           onTabChange={(e, newValue) => setActiveTab(newValue)}
-          stats={stats}
         />
 
-        {/* Loading */}
         {loading && students.length > 0 && (
           <Box sx={{ mb: 2 }}>
             <LinearProgress />
@@ -244,25 +138,48 @@ const DriverStudentListPage = () => {
 
         {/* Student List */}
         {filteredStudents.length === 0 ? (
-          <Paper sx={{ p: 6, textAlign: 'center', borderRadius: 1, border: '1px solid #e0e0e0' }}>
+          <Paper sx={{ p: 6, textAlign: 'center', borderRadius: 3, border: '1px solid #e5e7eb', bgcolor: '#fff' }}>
             <Typography variant="body1" color="textSecondary">
               Không tìm thấy học sinh nào
             </Typography>
           </Paper>
         ) : (
-          <Box>
-            {filteredStudents.map((student) => (
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            {/* SỬ DỤNG paginatedStudents ĐỂ MAP */}
+            {paginatedStudents.map((student) => (
               <StudentCard
                 key={student._id}
                 student={student}
-                onCheckIn={handleCheckIn}
                 onCallParent={() => handleCallParent(student.parent?.user?.phone)}
               />
             ))}
           </Box>
         )}
 
-        {/* Snackbar */}
+        {/* --- THÊM COMPONENT PHÂN TRANG --- */}
+        {pageCount > 1 && (
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+            <Pagination
+              count={pageCount}
+              page={page}
+              onChange={handlePageChange}
+              color="primary"
+              sx={{
+                '& .Mui-selected': {
+                  bgcolor: '#3b82f6 !important',
+                  color: '#fff',
+                },
+                '& .MuiPaginationItem-root': {
+                  '&:hover': {
+                    bgcolor: '#eff6ff',
+                  },
+                },
+              }}
+            />
+          </Box>
+        )}
+
+        {/* Snackbar (Giữ nguyên) */}
         <Snackbar
           open={snackbar.open}
           autoHideDuration={3000}

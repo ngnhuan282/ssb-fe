@@ -5,9 +5,7 @@ import {
   TextField,
   Tabs,
   Tab,
-  Paper,
   InputAdornment,
-  Badge,
 } from '@mui/material';
 import { Search } from '@mui/icons-material';
 
@@ -16,84 +14,75 @@ const StudentListFilter = ({
   onSearchChange,
   activeTab,
   onTabChange,
-  stats = { all: 0, pending: 0, pickedUp: 0, droppedOff: 0 }
 }) => {
+  // Bỏ 'count' khỏi tabs
   const tabs = [
-    { label: 'Tất cả', value: 'all', count: stats.all },
-    { label: 'Chưa đón', value: 'pending', count: stats.pending },
-    { label: 'Đã đón', value: 'picked_up', count: stats.pickedUp },
-    { label: 'Đã trả', value: 'dropped_off', count: stats.droppedOff },
+    { label: 'Tất cả', value: 'all' },
+    { label: 'Chưa đón', value: 'pending' },
+    { label: 'Đã đón', value: 'picked_up' },
+    { label: 'Đã trả', value: 'dropped_off' },
   ];
 
   return (
     <Box sx={{ mb: 3 }}>
+      {/* Thanh tìm kiếm (style mới) */}
       <TextField
         fullWidth
         placeholder="Tìm kiếm học sinh..."
         value={searchTerm}
         onChange={onSearchChange}
-        size="small"
         sx={{
           mb: 2,
           '& .MuiOutlinedInput-root': {
+            borderRadius: 2,
             bgcolor: '#fff',
-            '& fieldset': { borderColor: '#e0e0e0' },
-            '&:hover fieldset': { borderColor: '#1976d2' },
+            border: '1px solid #e5e7eb',
+            boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+            '& fieldset': { border: 'none' }, // Ẩn viền
           },
         }}
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">
-              <Search sx={{ color: '#9e9e9e', fontSize: 20 }} />
+              <Search sx={{ color: '#9ca3af', fontSize: 20 }} />
             </InputAdornment>
           ),
         }}
       />
 
-      <Paper sx={{ borderRadius: 1, boxShadow: 0, border: '1px solid #e0e0e0' }}>
-        <Tabs
-          value={activeTab}
-          onChange={onTabChange}
-          variant="fullWidth"
-          sx={{
-            minHeight: 48,
-            '& .MuiTab-root': {
-              textTransform: 'none',
-              fontWeight: 500,
-              fontSize: '0.875rem',
-              minHeight: 48,
-              color: '#757575',
-            },
-            '& .Mui-selected': { color: '#1976d2' },
-            '& .MuiTabs-indicator': { backgroundColor: '#1976d2', height: 2 },
-          }}
-        >
-          {tabs.map((tab) => (
-            <Tab
-              key={tab.value}
-              value={tab.value}
-              label={
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <span>{tab.label}</span>
-                  <Badge
-                    badgeContent={tab.count}
-                    sx={{
-                      '& .MuiBadge-badge': {
-                        bgcolor: activeTab === tab.value ? '#1976d2' : '#e0e0e0',
-                        color: activeTab === tab.value ? '#fff' : '#757575',
-                        fontSize: '0.7rem',
-                        height: 18,
-                        minWidth: 18,
-                        fontWeight: 600,
-                      },
-                    }}
-                  />
-                </Box>
-              }
-            />
-          ))}
-        </Tabs>
-      </Paper>
+      {/* Tabs (style mới, không Paper, không Badge) */}
+      <Tabs
+        value={activeTab}
+        onChange={onTabChange}
+        variant="standard" // Đổi sang standard
+        sx={{
+          minHeight: 40,
+          '& .MuiTab-root': {
+            textTransform: 'none',
+            fontWeight: 600,
+            fontSize: '0.9rem',
+            minHeight: 40,
+            color: '#6b7280',
+            mr: 3, // Khoảng cách giữa các tab
+          },
+          '& .Mui-selected': {
+            color: '#3b82f6', // Màu xanh
+          },
+          '& .MuiTabs-indicator': {
+            backgroundColor: '#3b82f6', // Màu xanh
+            height: 3,
+            borderRadius: '3px 3px 0 0',
+          },
+        }}
+      >
+        {tabs.map((tab) => (
+          <Tab
+            key={tab.value}
+            value={tab.value}
+            label={tab.label} // Chỉ dùng label
+          />
+        ))}
+      </Tabs>
     </Box>
   );
 };
