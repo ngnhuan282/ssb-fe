@@ -14,7 +14,6 @@ import {
 } from "@mui/material";
 import {
   Notifications,
-  Search,
   Menu as MenuIcon,
   Logout as LogoutIcon,
   Person as PersonIcon,
@@ -51,8 +50,11 @@ const Header = ({ onMenuClick }) => {
     <AppBar
       position="fixed"
       sx={{
-        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-        boxShadow: "0 4px 12px rgba(102, 126, 234, 0.15)",
+        // Thay đổi nền sang màu trắng và thêm viền dưới
+        background: "#ffffff",
+        color: "text.primary",
+        boxShadow: "none",
+        borderBottom: "1px solid #e5e7eb", // Viền dưới mỏng
         zIndex: (theme) => theme.zIndex.drawer + 1,
       }}
     >
@@ -68,7 +70,7 @@ const Header = ({ onMenuClick }) => {
           <IconButton
             sx={{
               display: { xs: "flex", md: "none" },
-              color: "#fff",
+              color: "text.secondary", // Đổi màu icon
             }}
             onClick={onMenuClick}
           >
@@ -80,8 +82,8 @@ const Header = ({ onMenuClick }) => {
               display: "flex",
               alignItems: "center",
               gap: 1.5,
-              background: "rgba(255, 255, 255, 0.15)",
-              backdropFilter: "blur(10px)",
+              // Bỏ nền và hiệu ứng
+              background: "transparent",
               px: 2,
               py: 1,
               borderRadius: 3,
@@ -96,12 +98,14 @@ const Header = ({ onMenuClick }) => {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
+                // Thêm viền nhẹ cho giống thiết kế
+                border: "1px solid #e5e7eb",
               }}
             >
               <DirectionsBusIcon
                 sx={{
                   fontSize: 24,
-                  color: "#667eea",
+                  color: "#667eea", // Giữ màu icon logo
                 }}
               />
             </Box>
@@ -110,7 +114,7 @@ const Header = ({ onMenuClick }) => {
                 variant="h6"
                 sx={{
                   fontWeight: 700,
-                  color: "#fff",
+                  color: "text.primary", // Đổi màu text
                   lineHeight: 1.2,
                   fontSize: { xs: "1rem", sm: "1.25rem" },
                 }}
@@ -120,7 +124,7 @@ const Header = ({ onMenuClick }) => {
               <Typography
                 variant="caption"
                 sx={{
-                  color: "rgba(255, 255, 255, 0.9)",
+                  color: "text.secondary", // Đổi màu text
                   fontSize: "11px",
                   display: { xs: "none", sm: "block" },
                 }}
@@ -133,31 +137,17 @@ const Header = ({ onMenuClick }) => {
 
         {/* Right Side - Actions */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-          {/* Search Button */}
-          <IconButton
-            sx={{
-              color: "#fff",
-              background: "rgba(255, 255, 255, 0.1)",
-              "&:hover": {
-                background: "rgba(255, 255, 255, 0.2)",
-              },
-            }}
-          >
-            <Search />
-          </IconButton>
+          {/* Search Button - Đã bị loại bỏ theo thiết kế */}
 
           {/* Notifications */}
           <IconButton
             sx={{
-              color: "#fff",
-              background: "rgba(255, 255, 255, 0.1)",
-              "&:hover": {
-                background: "rgba(255, 255, 255, 0.2)",
-              },
+              color: "text.secondary", // Đổi màu icon
+              // Bỏ nền
             }}
           >
             <Badge
-              badgeContent={3}
+              variant="dot" // Đổi thành dấu chấm đỏ
               sx={{
                 "& .MuiBadge-badge": {
                   background: "#ff5252",
@@ -175,15 +165,12 @@ const Header = ({ onMenuClick }) => {
               display: "flex",
               alignItems: "center",
               gap: 1,
-              background: "rgba(255, 255, 255, 0.15)",
-              backdropFilter: "blur(10px)",
+              // Bỏ nền và hiệu ứng
+              background: "transparent",
               px: 1.5,
               py: 0.5,
               borderRadius: 3,
               cursor: "pointer",
-              "&:hover": {
-                background: "rgba(255, 255, 255, 0.25)",
-              },
             }}
             onClick={handleMenu}
           >
@@ -195,25 +182,27 @@ const Header = ({ onMenuClick }) => {
                 color: "#667eea",
                 fontSize: "14px",
                 fontWeight: 600,
+                // Thêm viền
+                border: "1px solid #e0e0e0",
               }}
             >
-              {user?.username?.[0]?.toUpperCase() || 'A'}
+              {user?.username?.[0]?.toUpperCase() || "A"}
             </Avatar>
             <Box sx={{ display: { xs: "none", sm: "block" } }}>
               <Typography
                 variant="body2"
-                sx={{ color: "#fff", fontWeight: 600, lineHeight: 1.2 }}
+                sx={{ color: "text.primary", fontWeight: 600, lineHeight: 1.2 }}
               >
-                {user?.username || 'Nguyễn Văn A'}
+                {user?.username || "Nguyễn Văn A"}
               </Typography>
               <Chip
-                label={user?.role?.toUpperCase() || 'ADMIN'}
+                label={user?.role?.toUpperCase() || "ADMIN"}
                 size="small"
                 sx={{
                   height: 18,
                   fontSize: "10px",
-                  background: "rgba(255, 255, 255, 0.3)",
-                  color: "#fff",
+                  background: "#f3f4f6", // Đổi màu nền chip
+                  color: "#6b7280", // Đổi màu text chip
                   fontWeight: 500,
                 }}
               />
@@ -224,13 +213,13 @@ const Header = ({ onMenuClick }) => {
             id="menu-appbar"
             anchorEl={anchorEl}
             anchorOrigin={{
-              vertical: 'bottom',
-              horizontal: 'right',
+              vertical: "bottom",
+              horizontal: "right",
             }}
             keepMounted
             transformOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
+              vertical: "top",
+              horizontal: "right",
             }}
             open={Boolean(anchorEl)}
             onClose={handleClose}

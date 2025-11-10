@@ -1,4 +1,4 @@
-// src/components/user/driver/ScheduleCalendar.jsx
+// src/components/user/schedule/ScheduleCalendar.jsx
 import React, { useState } from 'react';
 import {
   Box,
@@ -6,148 +6,141 @@ import {
   CardContent,
   Typography,
   IconButton,
-  Chip,
   Grid,
 } from '@mui/material';
-import {
-  ChevronLeft,
-  ChevronRight,
-  Circle,
-} from '@mui/icons-material';
+import { ChevronLeft, ChevronRight, Circle } from '@mui/icons-material';
 
-const ScheduleCalendar = ({ schedules = [], onDateSelect }) => {
+const ScheduleCalendar = ({ schedules = [], onDateSelect, selectedSchedule }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
 
-  const getDaysInMonth = (date) => {
+  // Tạo 42 ô (6 hàng x 7 cột) để luôn hiển thị 6 hàng
+  const getCalendarGrid = (date) => {
     const year = date.getFullYear();
     const month = date.getMonth();
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const daysInMonth = lastDay.getDate();
-    const startingDayOfWeek = firstDay.getDay();
+    const firstDay = new Date(year, month, 1).getDay(); // 0 = CN
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
 
     const days = [];
-    
-    for (let i = 0; i < startingDayOfWeek; i++) {
+
+    // Ô trống trước ngày 1
+    for (let i = 0; i < firstDay; i++) {
       days.push(null);
     }
-    
+
+    // Các ngày trong tháng
     for (let i = 1; i <= daysInMonth; i++) {
       days.push(new Date(year, month, i));
     }
-    
+
+    // Điền đủ 42 ô (6x7)
+    const remaining = 42 - days.length;
+    for (let i = 0; i < remaining; i++) {
+      days.push(null);
+    }
+
     return days;
   };
 
   const hasSchedule = (date) => {
     if (!date) return null;
-    return schedules.find(schedule => {
-      const scheduleDate = new Date(schedule.date);
-      return scheduleDate.toDateString() === date.toDateString();
-    });
+    return schedules.find(s => new Date(s.date).toDateString() === date.toDateString());
   };
 
-  const changeMonth = (direction) => {
+  const changeMonth = (dir) => {
     setCurrentDate(prev => {
-      const newDate = new Date(prev);
-      newDate.setMonth(newDate.getMonth() + direction);
-      return newDate;
+      const d = new Date(prev);
+      d.setMonth(d.getMonth() + dir);
+      return d;
     });
   };
 
-  const monthNames = [
-    'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
-    'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'
-  ];
-  
-  const dayNames = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
-
-  const days = getDaysInMonth(currentDate);
+  const monthNames = ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
+                     'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'];
+  const dayNames = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+  const days = getCalendarGrid(currentDate);
   const today = new Date();
 
   return (
-    <Card sx={{ boxShadow: 1, borderRadius: 1, border: '1px solid #e0e0e0' }}>
+    <Card sx={{ borderRadius: 3, boxShadow: '0 4px 12px rgba(0,0,0,0.05)', border: '1px solid #e0e0e0' }}>
       <CardContent sx={{ p: 3 }}>
         {/* Header */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-          <Typography variant="h6" sx={{ fontWeight: 600, color: '#212121' }}>
-            {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
+          <Typography variant="h6" sx={{ fontWeight: 600, color: '#1e293b' }}>
+            {monthNames[currentDate.getMonth()]}, {currentDate.getFullYear()}
           </Typography>
           <Box>
-            <IconButton onClick={() => changeMonth(-1)} size="small" sx={{ color: '#424242' }}>
+            <IconButton onClick={() => changeMonth(-1)} size="small">
               <ChevronLeft />
             </IconButton>
-            <IconButton onClick={() => changeMonth(1)} size="small" sx={{ color: '#424242' }}>
+            <IconButton onClick={() => changeMonth(1)} size="small">
               <ChevronRight />
             </IconButton>
           </Box>
         </Box>
 
-        {/* Day Names */}
-        <Grid container spacing={0.5} sx={{ mb: 1 }}>
-          {dayNames.map((day) => (
-            <Grid item xs={12/7} key={day}>
-              <Box sx={{ textAlign: 'center', py: 1 }}>
-                <Typography variant="caption" sx={{ fontWeight: 600, color: '#757575', fontSize: '0.75rem' }}>
-                  {day}
-                </Typography>
-              </Box>
+        {/* Day Headers */}
+        {/* *** THÊM columns={7} VÀO ĐÂY *** */}
+        <Grid container spacing={0.5} sx={{ mb: 1 }} columns={7}>
+          {dayNames.map(day => (
+            // *** ĐỔI xs={12/7} THÀNH xs={1} ***
+            <Grid item xs={1} key={day}>
+              <Typography variant="caption" sx={{ fontWeight: 600, color: '#64748b', fontSize: '0.75rem', textAlign: 'center', display: 'block' }}>
+                {day}
+              </Typography>
             </Grid>
           ))}
         </Grid>
 
-        {/* Calendar Days */}
-        <Grid container spacing={0.5}>
-          {days.map((date, index) => {
+        {/* Calendar Grid - Luôn 6 hàng */}
+        {/* *** THÊM columns={7} VÀO ĐÂY *** */}
+        <Grid container spacing={0.5} columns={7}>
+          {days.map((date, i) => {
             const schedule = hasSchedule(date);
             const isToday = date && date.toDateString() === today.toDateString();
-            
+            const isSelected = selectedSchedule && date && 
+              new Date(selectedSchedule.date).toDateString() === date.toDateString();
+
             return (
-              <Grid item xs={12/7} key={index}>
+              // *** ĐỔI xs={12/7} THÀNH xs={1} ***
+              <Grid item xs={1} key={i}>
                 <Box
-                  onClick={() => date && onDateSelect && onDateSelect(date, schedule)}
+                  onClick={() => date && onDateSelect(date, schedule)}
                   sx={{
-                    height: 60,
-                    border: '1px solid',
-                    borderColor: isToday ? '#1976d2' : '#e0e0e0',
-                    borderRadius: 0.5,
+                    minHeight: 48,
+                    borderRadius: 2,
+                    border: isSelected ? '2px solid #3b82f6' : '1px solid #e2e8f0',
+                    bgcolor: isSelected ? '#dbeafe' : isToday ? '#eff6ff' : schedule ? '#f8fafc' : '#fff',
                     cursor: date ? 'pointer' : 'default',
-                    bgcolor: date ? (isToday ? '#e3f2fd' : schedule ? '#f5f5f5' : '#fff') : '#fafafa',
-                    transition: 'all 0.2s',
-                    '&:hover': {
-                      bgcolor: date && !isToday ? (schedule ? '#eeeeee' : '#fafafa') : undefined,
-                      borderColor: date ? '#1976d2' : '#e0e0e0',
-                    },
-                    position: 'relative',
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    p: 0.5,
+                    transition: 'all 0.2s',
+                    '&:hover': {
+                      bgcolor: date && !isSelected ? '#f1f5f9' : undefined,
+                      borderColor: date ? '#94a3b8' : '#e2e8f0' // Sửa: chỉ hiện border hover khi có date
+                    },
+                    p: 0.5
                   }}
                 >
                   {date && (
                     <>
                       <Typography
-                        variant="body2"
                         sx={{
-                          fontWeight: isToday ? 600 : 400,
-                          color: isToday ? '#1976d2' : '#424242',
                           fontSize: '0.875rem',
+                          fontWeight: isToday || isSelected ? 600 : 400,
+                          color: isSelected ? '#1d4ed8' : isToday ? '#1d4ed8' : '#1e293b'
                         }}
                       >
                         {date.getDate()}
                       </Typography>
-                      
                       {schedule && (
-                        <Circle 
-                          sx={{ 
-                            fontSize: 6, 
-                            color: schedule.status === 'completed' ? '#4caf50' : 
-                                   schedule.status === 'in_progress' ? '#ff9800' : '#1976d2',
-                            mt: 0.5 
-                          }} 
-                        />
+                        <Circle sx={{
+                          fontSize: 6,
+                          color: schedule.status === 'completed' ? '#10b981' :
+                                 schedule.status === 'in_progress' ? '#f59e0b' : '#3b82f6',
+                          mt: 0.5
+                        }} />
                       )}
                     </>
                   )}
@@ -156,28 +149,6 @@ const ScheduleCalendar = ({ schedules = [], onDateSelect }) => {
             );
           })}
         </Grid>
-
-        {/* Legend */}
-        <Box sx={{ display: 'flex', gap: 2, mt: 3, justifyContent: 'center', alignItems: 'center' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <Circle sx={{ fontSize: 8, color: '#1976d2' }} />
-            <Typography variant="caption" sx={{ color: '#757575' }}>
-              Đã lên lịch
-            </Typography>
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <Circle sx={{ fontSize: 8, color: '#ff9800' }} />
-            <Typography variant="caption" sx={{ color: '#757575' }}>
-              Đang thực hiện
-            </Typography>
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <Circle sx={{ fontSize: 8, color: '#4caf50' }} />
-            <Typography variant="caption" sx={{ color: '#757575' }}>
-              Hoàn thành
-            </Typography>
-          </Box>
-        </Box>
       </CardContent>
     </Card>
   );

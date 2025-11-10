@@ -10,52 +10,80 @@ import {
   IconButton,
   Snackbar,
   Alert,
+  Grid,
 } from "@mui/material";
-import {
-  Edit,
-  Save,
-  Cancel,
-  PhotoCamera,
-} from "@mui/icons-material";
+import { Edit, PhotoCamera } from "@mui/icons-material";
 import { useAuth } from "../../context/AuthContext";
 
 const Profile = () => {
   const { user } = useAuth();
-  const [isEditing, setIsEditing] = useState(false);
-  const [snackbar, setSnackbar] = useState({ 
-    open: false, 
-    message: "", 
-    severity: "success" 
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
   });
 
-  // Form data
-  const [formData, setFormData] = useState({
-    username: user?.username || "",
-    email: user?.email || "",
+  // Form data cho hồ sơ và liên hệ
+  const [profileData, setProfileData] = useState({
+    username: user?.username || "Nguyễn Văn A",
+    email: user?.email || "email@example.com",
     phone: user?.phone || "",
     address: "",
-    studentName: "",
-    studentClass: "",
-    emergencyContact: "",
   });
 
-  const handleInputChange = (e) => {
-    setFormData({
-      ...formData,
+  // Form data cho mật khẩu
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+
+  const handleProfileChange = (e) => {
+    setProfileData({
+      ...profileData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handlePasswordChange = (e) => {
+    setPasswordData({
+      ...passwordData,
       [e.target.name]: e.target.value,
     });
   };
 
   const handleSave = async () => {
+    if (passwordData.newPassword || passwordData.confirmPassword) {
+      if (passwordData.newPassword !== passwordData.confirmPassword) {
+        setSnackbar({
+          open: true,
+          message: "Mật khẩu mới không khớp!",
+          severity: "error",
+        });
+        return;
+      }
+      if (!passwordData.currentPassword) {
+        setSnackbar({
+          open: true,
+          message: "Vui lòng nhập mật khẩu hiện tại!",
+          severity: "error",
+        });
+        return;
+      }
+      console.log("Đang đổi mật khẩu:", passwordData);
+    }
     try {
-      // Call API to update profile
-      // await updateProfile(formData);
+      console.log("Đang lưu thông tin:", profileData);
       setSnackbar({
         open: true,
         message: "Cập nhật thông tin thành công!",
         severity: "success",
       });
-      setIsEditing(false);
+      setPasswordData({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
     } catch (error) {
       setSnackbar({
         open: true,
@@ -65,289 +93,216 @@ const Profile = () => {
     }
   };
 
-  const handleCancel = () => {
-    setFormData({
-      username: user?.username || "",
-      email: user?.email || "",
-      phone: user?.phone || "",
-      address: "",
-      studentName: "",
-      studentClass: "",
-      emergencyContact: "",
-    });
-    setIsEditing(false);
-  };
-
   const handleAvatarClick = () => {
-    // Trigger file input
-    document.getElementById('avatar-upload').click();
+    document.getElementById("avatar-upload").click();
   };
 
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Handle avatar upload
-      console.log('Selected file:', file);
-      setSnackbar({
-        open: true,
-        message: "Đang cập nhật ảnh đại diện...",
-        severity: "info",
-      });
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        // Cập nhật avatar nếu cần (hiện tại chỉ log)
+        console.log("Avatar mới:", reader.result);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
+  const cardStyles = {
+    p: 3,
+    borderRadius: 3,
+    boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+    border: "1px solid #e0e0e0",
+    background: "#ffffff",
+  };
+
   return (
-    <Box sx={{ p: 3 }}>
+    <Box sx={{ p: { xs: 2, md: 4 } }}>
       {/* Header */}
       <Box sx={{ mb: 3 }}>
-        <Typography variant="h4" sx={{ fontWeight: 700, color: "#2c3e50", mb: 1 }}>
-          Thông tin phụ huynh
-        </Typography>
-        <Typography variant="body2" sx={{ color: "#7f8c8d" }}>
-          Quản lý thông tin cá nhân của bạn
+        <Typography variant="h4" sx={{ fontWeight: 700, color: "#111827" }}>
+          Chỉnh sửa hồ sơ cá nhân
         </Typography>
       </Box>
 
       {/* Main Content */}
-      <Paper 
-        elevation={0} 
-        sx={{ 
-          p: 4, 
-          borderRadius: 3,
-          border: '1px solid #e0e0e0'
-        }}
-      >
-        <Box sx={{ display: 'flex', gap: 4 }}>
-          {/* Left - Avatar */}
-          <Box 
-            sx={{ 
-              display: 'flex', 
-              flexDirection: 'column', 
-              alignItems: 'center',
-              minWidth: 200,
-              flexShrink: 0
-            }}
-          >
-            <Box sx={{ position: 'relative', mb: 2 }}>
+      <Grid container spacing={3} sx={{ alignItems: "stretch" }}>
+        {/* Left Column - Profile Card */}
+        <Grid item xs={12} md={4}>
+          <Paper sx={{ ...cardStyles, textAlign: "center", height: "100%" }}>
+            <Box sx={{ position: "relative", mb: 2, display: "inline-block" }}>
               <Avatar
                 sx={{
-                  width: 160,
-                  height: 160,
-                  fontSize: 64,
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  color: '#fff',
-                  border: '4px solid #f8f9fa',
-                  boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)',
-                  cursor: 'pointer',
-                  transition: 'transform 0.2s',
-                  '&:hover': {
-                    transform: 'scale(1.05)',
-                  }
+                  width: 120,
+                  height: 120,
+                  fontSize: 48,
+                  background: "#e0e7ff",
+                  color: "#4f46e5",
                 }}
-                onClick={handleAvatarClick}
               >
-                {user?.username?.[0]?.toUpperCase() || "P"}
+                {profileData.username?.[0]?.toUpperCase() || "A"}
               </Avatar>
               <IconButton
                 onClick={handleAvatarClick}
+                size="small"
                 sx={{
-                  position: 'absolute',
-                  bottom: 5,
-                  right: 5,
-                  background: '#fff',
-                  width: 40,
-                  height: 40,
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                  '&:hover': { 
-                    background: '#667eea',
-                    '& svg': { color: '#fff' }
+                  position: "absolute",
+                  bottom: 0,
+                  right: 0,
+                  background: "#3b82f6",
+                  color: "#fff",
+                  "&:hover": {
+                    background: "#2563eb",
                   },
                 }}
               >
-                <PhotoCamera sx={{ fontSize: 20, color: '#667eea' }} />
+                <Edit sx={{ fontSize: 16 }} />
               </IconButton>
               <input
                 id="avatar-upload"
                 type="file"
                 accept="image/*"
-                style={{ display: 'none' }}
+                style={{ display: "none" }}
                 onChange={handleAvatarChange}
               />
             </Box>
-            <Typography variant="h6" sx={{ fontWeight: 700, color: '#2c3e50', mb: 0.5 }}>
-              {user?.username || "Phụ huynh"}
+            <Typography variant="h6" sx={{ fontWeight: 600, color: "#111827" }}>
+              {profileData.username}
             </Typography>
-            <Box
-              sx={{
-                px: 2,
-                py: 0.5,
-                borderRadius: 2,
-                background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-                color: '#fff',
-                fontSize: 12,
-                fontWeight: 600,
-              }}
-            >
-              PHỤ HUYNH
-            </Box>
-          </Box>
+            <Typography variant="body2" sx={{ color: "#6b7280", mb: 3 }}>
+              {profileData.email}
+            </Typography>
 
-          {/* Right - Form */}
-          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-            {/* Edit Button - Top Right of Form */}
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
-              {!isEditing && (
-                <IconButton
-                  onClick={() => setIsEditing(true)}
-                  sx={{
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                    color: '#fff',
-                    width: 48,
-                    height: 48,
-                    '&:hover': {
-                      background: 'linear-gradient(135deg, #5568d3 0%, #653a8b 100%)',
-                    },
-                  }}
-                >
-                  <Edit />
-                </IconButton>
-              )}
-            </Box>
+            <TextField
+              fullWidth
+              label="Họ và tên"
+              name="username"
+              value={profileData.username}
+              onChange={handleProfileChange}
+              variant="outlined"
+              sx={{ mb: 2 }}
+            />
+            <TextField
+              fullWidth
+              label="Email"
+              name="email"
+              value={profileData.email}
+              onChange={handleProfileChange}
+              variant="outlined"
+            />
+          </Paper>
+        </Grid>
 
-            {/* Form Fields */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-              {/* Row 1 */}
-              <Box sx={{ display: 'flex', gap: 2 }}>
-                <TextField
-                  fullWidth
-                  label="Họ và tên"
-                  name="username"
-                  value={formData.username}
-                  onChange={handleInputChange}
-                  disabled={!isEditing}
-                  variant="outlined"
-                />
+        {/* Right Column - Info & Password */}
+        <Grid
+          item
+          xs={12}
+          md={8}
+          sx={{ display: "flex", flexDirection: "column" }}
+        >
+          {/* Contact Info Card */}
+          <Paper sx={cardStyles}>
+            <Typography variant="h6" sx={{ fontWeight: 600, mb: 2.5 }}>
+              Thông tin liên hệ
+            </Typography>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
                   label="Số điện thoại"
                   name="phone"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  disabled={!isEditing}
+                  value={profileData.phone}
+                  onChange={handleProfileChange}
                   variant="outlined"
                 />
-              </Box>
-
-              {/* Row 2 */}
-              <Box sx={{ display: 'flex', gap: 2 }}>
+              </Grid>
+              <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
-                  label="Email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  disabled={!isEditing}
+                  label="Địa chỉ"
+                  name="address"
+                  value={profileData.address}
+                  onChange={handleProfileChange}
                   variant="outlined"
                 />
+              </Grid>
+            </Grid>
+          </Paper>
+
+          {/* Change Password Card */}
+          <Paper sx={{ ...cardStyles, mt: 3 }}>
+            <Typography variant="h6" sx={{ fontWeight: 600, mb: 2.5 }}>
+              Thay đổi mật khẩu
+            </Typography>
+            <TextField
+              fullWidth
+              label="Mật khẩu hiện tại"
+              name="currentPassword"
+              type="password"
+              value={passwordData.currentPassword}
+              onChange={handlePasswordChange}
+              variant="outlined"
+              sx={{ mb: 2 }}
+            />
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
-                  label="Số điện thoại khẩn cấp"
-                  name="emergencyContact"
-                  value={formData.emergencyContact}
-                  onChange={handleInputChange}
-                  disabled={!isEditing}
+                  label="Mật khẩu mới"
+                  name="newPassword"
+                  type="password"
+                  value={passwordData.newPassword}
+                  onChange={handlePasswordChange}
                   variant="outlined"
                 />
-              </Box>
-
-              {/* Row 3 - Địa chỉ */}
-              <TextField
-                fullWidth
-                label="Địa chỉ"
-                name="address"
-                value={formData.address}
-                onChange={handleInputChange}
-                disabled={!isEditing}
-                variant="outlined"
-              />
-
-              {/* Row 4 */}
-              <Box sx={{ display: 'flex', gap: 2 }}>
+              </Grid>
+              <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
-                  label="Tên học sinh"
-                  name="studentName"
-                  value={formData.studentName}
-                  onChange={handleInputChange}
-                  disabled={!isEditing}
+                  label="Xác nhận mật khẩu mới"
+                  name="confirmPassword"
+                  type="password"
+                  value={passwordData.confirmPassword}
+                  onChange={handlePasswordChange}
                   variant="outlined"
                 />
-                <TextField
-                  fullWidth
-                  label="Lớp"
-                  name="studentClass"
-                  value={formData.studentClass}
-                  onChange={handleInputChange}
-                  disabled={!isEditing}
-                  variant="outlined"
-                />
-              </Box>
-            </Box>
+              </Grid>
+            </Grid>
+          </Paper>
 
-            {/* Action Buttons - Below Form */}
-            {isEditing && (
-              <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 3, pt: 3, borderTop: '1px solid #e0e0e0' }}>
-                <Button
-                  variant="outlined"
-                  startIcon={<Cancel />}
-                  onClick={handleCancel}
-                  sx={{
-                    textTransform: 'none',
-                    borderRadius: 2,
-                    px: 4,
-                    py: 1,
-                    borderColor: '#7f8c8d',
-                    color: '#7f8c8d',
-                    '&:hover': {
-                      borderColor: '#5a6c7d',
-                      background: '#f8f9fa',
-                    },
-                  }}
-                >
-                  Hủy
-                </Button>
-                <Button
-                  variant="contained"
-                  startIcon={<Save />}
-                  onClick={handleSave}
-                  sx={{
-                    textTransform: 'none',
-                    borderRadius: 2,
-                    px: 4,
-                    py: 1,
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                    '&:hover': {
-                      background: 'linear-gradient(135deg, #5568d3 0%, #653a8b 100%)',
-                    },
-                  }}
-                >
-                  Lưu
-                </Button>
-              </Box>
-            )}
+          {/* Save Button - Đẩy xuống dưới cùng */}
+          <Box sx={{ display: "flex", justifyContent: "flex-end", mt: "auto", pt: 3 }}>
+            <Button
+              variant="contained"
+              onClick={handleSave}
+              sx={{
+                textTransform: "none",
+                borderRadius: 2,
+                px: 4,
+                py: 1.25,
+                fontSize: "1rem",
+                background: "#3b82f6",
+                "&:hover": {
+                  background: "#2563eb",
+                },
+              }}
+            >
+              Lưu thay đổi
+            </Button>
           </Box>
-        </Box>
-      </Paper>
+        </Grid>
+      </Grid>
 
       {/* Snackbar for notifications */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={3000}
         onClose={() => setSnackbar({ ...snackbar, open: false })}
-        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >
-        <Alert 
-          severity={snackbar.severity} 
+        <Alert
+          severity={snackbar.severity}
           sx={{ borderRadius: 2 }}
           onClose={() => setSnackbar({ ...snackbar, open: false })}
         >

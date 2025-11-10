@@ -1,17 +1,16 @@
+// src/pages/user/DriverSchedulePage.jsx
 import React, { useState, useEffect } from 'react';
 import {
   Box,
   Container,
   Grid,
   Typography,
-  Snackbar, 
-  Alert,
   ToggleButtonGroup,
   ToggleButton,
-  CircularProgress,
   Paper,
+  CircularProgress,
 } from '@mui/material';
-import { CalendarMonth, ViewWeek, DirectionsBus } from '@mui/icons-material';
+import { CalendarMonth, ViewWeek } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
 // Components
@@ -22,25 +21,20 @@ import RouteStopsList from '../../components/user/schedule/RouteStopsList.jsx';
 
 // APIs
 import { scheduleAPI, driverAPI } from '../../services/api.js';
-
-// Auth
 import { useAuth } from '../../context/AuthContext';
 
 const DriverSchedulePage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  // States
   const [viewMode, setViewMode] = useState('month');
-  const [selectedSchedule, setSelectedSchedule] = useState(null); // Đổi từ todaySchedule
+  const [selectedSchedule, setSelectedSchedule] = useState(null);
   const [monthSchedules, setMonthSchedules] = useState([]);
   const [weekSchedules, setWeekSchedules] = useState([]);
   const [currentWeekStart, setCurrentWeekStart] = useState(() => getMonday(new Date()));
-  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
-  const [driver, setDriver] = useState(null);
   const [loadingSchedules, setLoadingSchedules] = useState(false);
+  const [driver, setDriver] = useState(null);
 
-  // Helpers
   function getMonday(d) {
     const date = new Date(d);
     const day = date.getDay();
@@ -50,33 +44,21 @@ const DriverSchedulePage = () => {
     return monday;
   }
 
-  const showSnackbar = (msg, sev = 'info') => {
-    setSnackbar({ open: true, message: msg, severity: sev });
-  };
-
-  // Redirect nếu chưa login
   useEffect(() => {
-    if (!user) {
-      navigate('/login');
-    }
+    if (!user) navigate('/login');
   }, [user, navigate]);
 
-  // Fetch driver
   const fetchDriver = async () => {
     if (!user) return;
     try {
       const { data: { data: drivers } } = await driverAPI.getAll();
-      
       const myDriver = drivers.find(d => {
         const driverUserId = d.user?._id?.toString() || d.user?.toString();
-        const currentUserId = user._id?.toString();
-        return driverUserId === currentUserId;
+        return driverUserId === user._id?.toString();
       });
-      
       setDriver(myDriver);
     } catch (err) {
       console.error('Fetch driver error:', err);
-      showSnackbar('Lỗi tải thông tin tài xế', 'error');
     }
   };
 
@@ -84,52 +66,30 @@ const DriverSchedulePage = () => {
     fetchDriver();
   }, [user]);
 
-  // Fetch all schedules by driver
   const fetchSchedulesByDriver = async () => {
     if (!driver || !user) return;
-
     setLoadingSchedules(true);
     try {
-      const userId = user._id;
-      const { data: { data: allSchedules } } = await scheduleAPI.getByDriver(userId);
-
-      if (allSchedules.length === 0) {
-        showSnackbar('Không có lịch trình nào cho tài xế này', 'info');
-        setLoadingSchedules(false);
-        return;
-      }
-
+      const { data: { data: allSchedules } } = await scheduleAPI.getByDriver(user._id);
       allSchedules.sort((a, b) => new Date(b.date) - new Date(a.date));
       setMonthSchedules(allSchedules);
 
-      // Tự động chọn lịch hôm nay (nếu có)
-      const today = new Date(); 
-      today.setHours(0, 0, 0, 0);
-      
+      const today = new Date(); today.setHours(0, 0, 0, 0);
       const todaySch = allSchedules.find(s => {
-        const d = new Date(s.date); 
-        d.setHours(0, 0, 0, 0);
+        const d = new Date(s.date); d.setHours(0, 0, 0, 0);
         return d.getTime() === today.getTime();
       });
-      
-      // Nếu có lịch hôm nay thì hiển thị, không thì hiển thị lịch đầu tiên
       setSelectedSchedule(todaySch || allSchedules[0]);
 
-      // Week schedules
       const weekStart = currentWeekStart.getTime();
-      const weekEnd = new Date(currentWeekStart);
-      weekEnd.setDate(weekEnd.getDate() + 7);
-      
+      const weekEnd = new Date(currentWeekStart); weekEnd.setDate(weekEnd.getDate() + 7);
       const weekSch = allSchedules.filter(s => {
         const d = new Date(s.date).getTime();
         return d >= weekStart && d < weekEnd.getTime();
       });
-      
       setWeekSchedules(weekSch.length > 0 ? weekSch : allSchedules.slice(0, 7));
-
     } catch (err) {
       console.error('Fetch schedules error:', err);
-      showSnackbar('Lỗi tải lịch trình', 'error');
     } finally {
       setLoadingSchedules(false);
     }
@@ -140,133 +100,129 @@ const DriverSchedulePage = () => {
   }, [driver, currentWeekStart, user]);
 
   const handleWeekChange = (direction) => {
-    if (!currentWeekStart) return;
     const newStart = new Date(currentWeekStart);
     newStart.setDate(newStart.getDate() + (direction === 'next' ? 7 : -7));
     setCurrentWeekStart(newStart);
   };
 
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
+  const handleScheduleSelect = (date, schedule) => {
+    setSelectedSchedule(schedule);
   };
 
-  // ✨ Handler khi click vào lịch trong calendar
-  const handleScheduleSelect = (date, schedule) => {
-    if (schedule) {
-      setSelectedSchedule(schedule);
-    }
+  const formatSelectedDate = (date) => {
+    if (!date) return '';
+    return new Intl.DateTimeFormat('vi-VN', {
+      weekday: 'long',
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    }).format(date);
   };
 
   return (
-    <Box sx={{ bgcolor: '#f5f5f5', minHeight: '100vh', py: 4 }}>
+    <Box sx={{ bgcolor: '#f8fafc', minHeight: '100vh', py: 4 }}>
       <Container maxWidth="xl">
         {/* Header */}
         <Box sx={{ mb: 4 }}>
-          <Typography variant="h4" fontWeight="bold" gutterBottom>
-            📅 Lịch làm việc
+          <Typography variant="h4" sx={{ fontWeight: 700, color: '#1e293b' }}>
+            Lịch làm việc
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            Xem lịch trình được phân công
+            Xem lịch trình hàng tháng và hàng tuần của bạn.
           </Typography>
         </Box>
 
-        {/* View Mode Toggle */}
-        <Box sx={{ mb: 3, display: 'flex', justifyContent: 'center' }}>
+        {/* View Toggle */}
+        <Box sx={{ mb: 4, display: 'flex', justifyContent: 'center' }}>
           <ToggleButtonGroup
             value={viewMode}
             exclusive
-            onChange={(e, newMode) => newMode && setViewMode(newMode)}
-            sx={{ bgcolor: 'white', boxShadow: 1 }}
+            onChange={(e, v) => v && setViewMode(v)}
+            sx={{
+              bgcolor: 'white',
+              border: '1px solid #e2e8f0',
+              borderRadius: 2,
+              overflow: 'hidden',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+            }}
           >
-            <ToggleButton value="month">
-              <CalendarMonth sx={{ mr: 1 }} />
-              Tháng
+            <ToggleButton value="month" sx={{ px: 3, py: 1.5, textTransform: 'none', fontWeight: 500 }}>
+              <CalendarMonth sx={{ mr: 1, fontSize: 18 }} /> Xem theo tháng
             </ToggleButton>
-            <ToggleButton value="week">
-              <ViewWeek sx={{ mr: 1 }} />
-              Tuần
+            <ToggleButton value="week" sx={{ px: 3, py: 1.5, textTransform: 'none', fontWeight: 500 }}>
+              <ViewWeek sx={{ mr: 1, fontSize: 18 }} /> Xem theo tuần
             </ToggleButton>
           </ToggleButtonGroup>
         </Box>
 
-        {/* Loading State */}
-        {loadingSchedules && (
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', p: 4 }}>
-            <CircularProgress size={28} />
-            <Typography ml={2}>Đang tải lịch trình...</Typography>
-          </Box>
-        )}
-
-        {/* Empty State */}
-        {!loadingSchedules && monthSchedules.length === 0 && (
-          <Paper sx={{ p: 3, textAlign: 'center', bgcolor: '#fff', mb: 3 }}>
-            <DirectionsBus sx={{ fontSize: 48, color: '#ccc', mb: 1 }} />
-            <Typography color="textSecondary">
+        {loadingSchedules ? (
+          <Paper sx={{ p: 6, textAlign: 'center', borderRadius: 3 }}>
+            <CircularProgress size={32} />
+            <Typography mt={2} color="text.secondary">Đang tải lịch trình...</Typography>
+          </Paper>
+        ) : monthSchedules.length === 0 ? (
+          <Paper sx={{ p: 6, textAlign: 'center', borderRadius: 3, bgcolor: '#fff' }}>
+            <Typography color="text.secondary">
               Không có lịch trình nào. Hãy liên hệ admin để tạo lịch.
             </Typography>
           </Paper>
-        )}
-
-        {/* Main Content */}
-        {!loadingSchedules && monthSchedules.length > 0 && (
+        ) : (
           <Grid container spacing={3}>
-            {/* Left Column - Calendar/Week View */}
+            {/* Left: Calendar / Week */}
             <Grid item xs={12} lg={8}>
               {viewMode === 'month' ? (
                 <ScheduleCalendar
                   schedules={monthSchedules}
                   onDateSelect={handleScheduleSelect}
+                  selectedSchedule={selectedSchedule}
                 />
-              ) : currentWeekStart ? (
+              ) : (
                 <WeeklyScheduleView
                   weekSchedules={weekSchedules}
                   weekStart={currentWeekStart}
                   onWeekChange={handleWeekChange}
-                  onScheduleClick={(schedule) => setSelectedSchedule(schedule)}
+                  onScheduleClick={setSelectedSchedule}
                 />
-              ) : (
-                <Paper sx={{ p: 4, textAlign: 'center' }}>
-                  <CircularProgress size={24} />
-                  <Typography mt={2}>Đang tải tuần...</Typography>
-                </Paper>
               )}
             </Grid>
 
-            {/* Right Column - Selected Schedule Details */}
+            {/* Right: Schedule Details */}
             <Grid item xs={12} lg={4}>
               <Box sx={{ position: 'sticky', top: 24 }}>
-                {selectedSchedule && (
+                {selectedSchedule ? (
                   <>
-                    <TodayScheduleCard
-                      schedule={selectedSchedule}
-                      onStartTrip={null} 
-                      liveLocation={null} 
-                    />
-                    <Box sx={{ mt: 2 }}>
-                      <RouteStopsList
-                        route={selectedSchedule.route}
-                        currentStopIndex={-1} 
-                        studentsPerStop={{}} 
-                      />
+                    {/* Ngày lớn */}
+                    <Typography
+                      variant="h5"
+                      sx={{
+                        fontWeight: 600,
+                        color: '#1e293b',
+                        mb: 1,
+                        textAlign: { xs: 'center', lg: 'left' }
+                      }}
+                    >
+                      {formatSelectedDate(new Date(selectedSchedule.date))}
+                    </Typography>
+
+                    {/* Card chi tiết */}
+                    <TodayScheduleCard schedule={selectedSchedule} />
+
+                    {/* Danh sách điểm dừng */}
+                    <Box sx={{ mt: 3 }}>
+                      <RouteStopsList route={selectedSchedule.route} />
                     </Box>
                   </>
+                ) : (
+                  <Paper sx={{ p: 4, textAlign: 'center', borderRadius: 3 }}>
+                    <Typography color="text.secondary">
+                      Chọn một ngày để xem chi tiết
+                    </Typography>
+                  </Paper>
                 )}
               </Box>
             </Grid>
           </Grid>
         )}
-
-        {/* Snackbar */}
-        <Snackbar
-          open={snackbar.open}
-          autoHideDuration={4000}
-          onClose={handleCloseSnackbar}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-        >
-          <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
-            {snackbar.message}
-          </Alert>
-        </Snackbar>
       </Container>
     </Box>
   );
