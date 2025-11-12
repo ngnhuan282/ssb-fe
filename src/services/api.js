@@ -71,6 +71,8 @@ export const notificationAPI = {
   create: (data) => axiosInstance.post("/notifications", data),
   update: (id, data) => axiosInstance.put(`/notifications/${id}`, data),
   delete: (id) => axiosInstance.delete(`/notifications/${id}`),
+
+  getEmergency: () => axiosInstance.get("/notifications/incidents"),
 };
 
 export const userAPI = {
