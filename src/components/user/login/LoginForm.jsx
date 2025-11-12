@@ -13,11 +13,13 @@ import {
 import { Visibility, VisibilityOff, Email, Lock } from '@mui/icons-material';
 import GoogleIcon from '@mui/icons-material/Google';
 import FacebookIcon from '@mui/icons-material/Facebook';
+import { useNavigate } from 'react-router-dom';
 
 export default function LoginForm({ onSubmit, error }) {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -177,7 +179,7 @@ export default function LoginForm({ onSubmit, error }) {
               cursor: 'pointer',
               '&:hover': { textDecoration: 'underline' },
             }}
-            onClick={() => window.location.href = '/register'}
+            onClick={() => navigate('/register')}
           >
             Đăng ký ngay
           </Typography>

@@ -86,6 +86,9 @@ export const authAPI = {
   login: (credentials) =>
     axiosInstance.post("/auth/login", credentials),
 
+  register: (data) =>
+    axiosInstance.post("/auth/register", data),
+
   // Đăng xuất
   logout: () =>
     axiosInstance.post("/auth/logout"),
@@ -97,4 +100,5 @@ export const authAPI = {
   // Lấy thông tin user hiện tại
   getCurrentUser: () =>
     axiosInstance.get("/auth/me"),
+
 }
