@@ -49,9 +49,9 @@ const IncidentFilter = ({ filters, onFilterChange, onClearFilters }) => (
         sx={{ borderRadius: 2, bgcolor: '#ffffff' }}
       >
         <MenuItem value=""><em>Trạng thái</em></MenuItem>
+        <MenuItem value="resolved">Đã giải quyết</MenuItem>
         <MenuItem value="pending">Đang xử lý</MenuItem>
         <MenuItem value="urgent">Khẩn cấp</MenuItem>
-        <MenuItem value="resolved">Đã hoàn thành</MenuItem>
       </Select>
     </FormControl>
 
@@ -80,7 +80,7 @@ const IncidentFilter = ({ filters, onFilterChange, onClearFilters }) => (
 // ====================== CHIP TRẠNG THÁI ======================
 const StatusChip = ({ status }) => {
   const props = {
-    resolved: { label: 'Đã hoàn thành', sx: { bgcolor: '#d1fae5', color: '#059669', fontWeight: 600 } },
+    resolved: { label: 'Đã giải quyết', sx: { bgcolor: '#dcfce7', color: '#16a34a', fontWeight: 600 } },
     pending: { label: 'Đang xử lý', sx: { bgcolor: '#fef3c7', color: '#d97706', fontWeight: 600 } },
     urgent: { label: 'Khẩn cấp', sx: { bgcolor: '#fee2e2', color: '#ef4444', fontWeight: 600 } },
   };
@@ -95,28 +95,12 @@ const IncidentHistory = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Hàm xác định status của mỗi bản ghi
-  const getStatus = (item) => {
-    if (item.type === 'resolved') return 'resolved';
-    if (item.status) return item.status;
-    return item.type === 'emergency' ? 'urgent' : 'pending';
-  };
-
-  // Fetch dữ liệu sự cố
+  // Fetch dữ liệu sự cố (emergency)
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await notificationAPI.getEmergency(); // trả về emergency từ backend
-        const emergencyData = res.data.data || [];
-
-        // Thêm giả lập no_emergency nếu có trong DB
-        const noEmergencyData = emergencyData
-          .filter(n => n.type === 'no_emergency')
-          .map(n => ({ ...n, status: 'pending' }));
-
-        // Kết hợp cả hai loại
-        const allData = [...emergencyData, ...noEmergencyData];
-        setIncidents(allData);
+        const res = await notificationAPI.getEmergency();
+        setIncidents(res.data.data || []);
       } catch (err) {
         console.error(err);
         setError('Không thể tải dữ liệu sự cố.');
@@ -128,7 +112,7 @@ const IncidentHistory = () => {
   }, []);
 
   const handleFilterChange = (key, value) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
+    setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
   const handleClearFilters = () => {
@@ -139,25 +123,26 @@ const IncidentHistory = () => {
     navigate(`/reports/${id}`);
   };
 
-  // Bộ lọc
-  const filteredIncidents = incidents.filter((item) => {
-    const itemType = item.emergency_type || item.type;
+  // Bộ lọc (hiện tạm thời filter local)
+const filteredIncidents = incidents.filter((item) => {
+  const itemType = item.emergency_type || item.type;
+  
+  // Filter theo type
+  if (filters.type && itemType !== filters.type) return false;
 
-    // Filter type
-    if (filters.type && itemType !== filters.type) return false;
+  // Filter theo status
+  if (filters.status && (item.status || (item.type === 'emergency' ? 'urgent' : 'pending')) !== filters.status) return false;
 
-    // Filter status
-    if (filters.status && getStatus(item) !== filters.status) return false;
+  // Filter theo thời gian
+  if (filters.time === 'today') {
+    const today = new Date();
+    const created = new Date(item.createdAt);
+    if (created.toDateString() !== today.toDateString()) return false;
+  }
 
-    // Filter time
-    if (filters.time === 'today') {
-      const today = new Date();
-      const created = new Date(item.createdAt);
-      if (created.toDateString() !== today.toDateString()) return false;
-    }
+  return true;
+});
 
-    return true;
-  });
 
   return (
     <Box>
@@ -207,18 +192,18 @@ const IncidentHistory = () => {
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredIncidents.map(item => (
+                filteredIncidents.map((item) => (
                   <TableRow key={item._id} sx={{ '&:hover': { bgcolor: '#f9fafb' } }}>
                     <TableCell sx={{ fontWeight: 500, color: '#111827' }}>
                       {item._id.slice(-6).toUpperCase()}
                     </TableCell>
-                    <TableCell sx={{ textTransform: 'capitalize' }}>{item.emergency_type || item.type}</TableCell>
+                    <TableCell sx={{ textTransform: 'capitalize' }}>{item.emergency_type}</TableCell>
                     <TableCell sx={{ maxWidth: 260, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {item.message}
                     </TableCell>
                     <TableCell>{new Date(item.createdAt).toLocaleString('vi-VN')}</TableCell>
                     <TableCell>
-                      <StatusChip status={getStatus(item)} />
+                      <StatusChip status={item.status ?? (item.type === 'emergency' ? 'urgent' : 'pending')} />
                     </TableCell>
                     <TableCell>
                       <Link
@@ -242,7 +227,7 @@ const IncidentHistory = () => {
         </TableContainer>
       )}
 
-      {/* Pagination */}
+      {/* Phân trang */}
       {!loading && !error && filteredIncidents.length > 0 && (
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
           <Pagination
