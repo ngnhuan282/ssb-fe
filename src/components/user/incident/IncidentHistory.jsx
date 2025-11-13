@@ -208,7 +208,7 @@ const filteredIncidents = incidents.filter((item) => {
                     <TableCell>
                       <Link
                         component="button"
-                        onClick={() => handleViewDetails(item._id)}
+                        onClick={() => navigate(`/incident-detail/${item._id}`)}
                         sx={{
                           fontWeight: 600,
                           color: '#ef4444',
