@@ -261,7 +261,7 @@ export default function DriverPage() {
 
 
   return (
-    <Box sx={{ p: 3, overflowY: "auto" }}>
+    <Box sx={{ height: 500, width: "100%", p: 2 }}>
       <Stack direction="row" justifyContent="space-between" mb={2} alignItems="center">
         <h2>Quản lý tài xế</h2>
         <Button
@@ -286,15 +286,11 @@ export default function DriverPage() {
         </Button>
       </Stack>
 
-      <Grid container spacing={3} justifyContent="center">
-        <Grid item xs={12} md={10}>
-          <DriverTable
-            rows={drivers}
-            onEdit={handleOpenForm}
-            onDelete={handleDeleteClick}
-          />
-        </Grid>
-      </Grid>
+      <DriverTable
+        rows={drivers}
+        onEdit={handleOpenForm}
+        onDelete={handleDeleteClick}
+      />
 
       {/* Dialog Thêm/Sửa */}
       <Dialog open={openForm} onClose={handleCloseForm} fullWidth maxWidth="sm">
