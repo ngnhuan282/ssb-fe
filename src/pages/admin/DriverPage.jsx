@@ -19,6 +19,7 @@ import DriverTable from "../../components/admin/drivers/DriverTable";
 // import DriverForm from "../../components/admin/drivers/DriverForm";
 import DriverDeleteDialog from "../../components/admin/drivers/DriverDeleteDialog";
 import DriverDialog from "../../components/admin/drivers/DriverDialog";
+import Notification from "../../components/admin/layout/AdminNotification";
 
 export default function DriverPage() {
   const [drivers, setDrivers] = useState([]);
@@ -85,6 +86,14 @@ export default function DriverPage() {
     // fetchBuses();
   }, []);
 
+  const showNotification = (message, type = "success") => {
+    setSnackbar({ open: true, message, type });
+  };
+
+  const handleCloseNotification = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
+
   // ===== Form Thêm/Sửa =====
   const handleOpenForm = (driver = null) => {
 
@@ -139,19 +148,10 @@ export default function DriverPage() {
 
       setDrivers((prev) => prev.filter((d) => d._id !== deleteConfirm._id));
       // setLastDeleteData({ ...deleteConfirm });
-
-      setSnackbar({
-        open: true,
-        message: 'Xóa tài xế thành công!',
-        severity: 'success',
-      });
+      showNotification("Xoá tài xế thành công", "success");
     } catch (err) {
       console.error("❌ Delete driver error:", err);
-      setSnackbar({
-        open: true,
-        message: 'Xóa tài xế thất bại!',
-        severity: 'error',
-      });
+      showNotification("Xoá tài xế thất bại", "error");
     } finally {
       setDeleteConfirm(null);
     }
@@ -228,11 +228,7 @@ export default function DriverPage() {
           updatedAt: res.data.data.updatedAt ? new Date(res.data.data.updatedAt).toLocaleDateString() : "",
         } : d
       );
-      setSnackbar({
-        open: true,
-        message: "Cập nhật tài xế thành công!",
-        severity: "success",
-      });
+      showNotification("Cập nhật tài xế thành công", "success");
     } else {
       console.log("Creating new driver with data:", formData);
       const res = await driverAPI.create(formData);
@@ -249,11 +245,7 @@ export default function DriverPage() {
         updatedAt: res.data.data.updatedAt ? new Date(res.data.data.updatedAt).toLocaleDateString() : "",
       }];
       console.log("Updated drivers list:", updatedDrivers);
-      setSnackbar({
-        open: true,
-        message: "Thêm tài xế thành công!",
-        severity: "success",
-      });
+      showNotification("Thêm tài xế thành công", "success");
     }
     setDrivers(updatedDrivers);
     handleCloseForm();
@@ -349,6 +341,13 @@ export default function DriverPage() {
         errors={errors}
         editing={!!editingDriver}
         buses={buses}
+      />
+
+      <Notification
+        open={snackbar.open}
+        message={snackbar.message}
+        type={snackbar.type}
+        onClose={handleCloseNotification}
       />
 
     </Box>

@@ -104,6 +104,7 @@ export default function ScheduleDialog({
                             value={form.route}
                             onChange={onChange}
                             label="Tuyến"
+                            disabled={form.status === "in_progress" || form.status === "completed" || form.status === "delayed"}
                         >
                             {routes.map((r) => (
                                 <MenuItem key={r._id} value={r._id}>
@@ -183,6 +184,7 @@ export default function ScheduleDialog({
                             textTransform: "none",
                             py: 1.2,
                         }}
+                        disabled={form.status === "in_progress" || form.status === "completed" || form.status === "delayed"}
                     >
                         Chọn học sinh ({selectedStudents.length})
                     </Button>
@@ -256,6 +258,6 @@ export default function ScheduleDialog({
                     Lưu
                 </Button>
             </DialogActions>
-        </Dialog>
+        </Dialog >
     );
 }
