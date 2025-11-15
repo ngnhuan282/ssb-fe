@@ -17,50 +17,26 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [redirectAfterLogin, setRedirectAfterLogin] = useState(null); // THÊM
+  const [redirectAfterLogin, setRedirectAfterLogin] = useState(null);
 
-  useEffect(() => {
-    const loadAuth = async () => {
-      try {
-        const storedUser = localStorage.getItem('user');
-        const accessToken = localStorage.getItem('accessToken');
-
-        if (storedUser && accessToken) {
-          const parsedUser = JSON.parse(storedUser);
-          setUser(parsedUser);
-          setIsAuthenticated(true);
-
-          // Lưu đường dẫn cần redirect
-          if (window.location.pathname === '/login' || window.location.pathname === '/register') {
-            const redirectTo = parsedUser.role === 'admin' ? '/admin' : '/';
-            setRedirectAfterLogin(redirectTo);
-          }
-        } else if (auth0Authenticated) {
-          const claims = await getIdTokenClaims();
-          if (claims?.__raw) {
-            await handleSocialCallback(claims.__raw);
-          }
-        }
-      } catch (error) {
-        console.error('Error loading auth:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadAuth();
-  }, [auth0Authenticated, getIdTokenClaims]);
-
+  // === XỬ LÝ SOCIAL CALLBACK ===
   const handleSocialCallback = async (idToken) => {
     try {
+      // BƯỚC 1: XÓA LOCALSTORAGE CŨ (TRÁNH FLASH ROLE)
+      localStorage.removeItem('user');
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+
       const response = await axiosInstance.post('/auth/social-callback', { idToken });
-      const { user, accessToken, refreshToken } = response.data.data;
+      const { user: apiUser, accessToken, refreshToken } = response.data.data;
 
       const userData = {
-        ...user,
-        _id: user._id || user.id,
-        id: user.id || user._id,
+        ...apiUser,
+        _id: apiUser._id || apiUser.id,
+        id: apiUser.id || apiUser._id,
       };
 
+      // BƯỚC 2: LƯU MỚI
       localStorage.setItem('user', JSON.stringify(userData));
       localStorage.setItem('accessToken', accessToken);
       localStorage.setItem('refreshToken', refreshToken);
@@ -68,7 +44,7 @@ export const AuthProvider = ({ children }) => {
       setUser(userData);
       setIsAuthenticated(true);
 
-      // Lưu redirect
+      // BƯỚC 3: SET REDIRECT
       const redirectTo = userData.role === 'admin' ? '/admin' : '/';
       setRedirectAfterLogin(redirectTo);
 
@@ -80,14 +56,20 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // === ĐĂNG NHẬP EMAIL/PASSWORD ===
   const login = async (email, password) => {
     try {
+      // XÓA CŨ
+      localStorage.removeItem('user');
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+
       const response = await authAPI.login({ email, password });
-      const { user, accessToken, refreshToken } = response.data.data;
+      const { user: apiUser, accessToken, refreshToken } = response.data.data;
 
       const userData = {
-        ...user,
-        _id: user._id || user.id,
+        ...apiUser,
+        _id: apiUser._id || apiUser.id,
       };
 
       localStorage.setItem('user', JSON.stringify(userData));
@@ -109,6 +91,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // === SOCIAL LOGIN ===
   const socialLogin = (provider) => {
     loginWithRedirect({
       authorizationParams: {
@@ -117,15 +100,14 @@ export const AuthProvider = ({ children }) => {
     });
   };
 
+  // === LOGOUT ===
   const logout = async () => {
     try {
       await authAPI.logout();
     } catch (error) {
       console.error('Logout API failed:', error);
     } finally {
-      localStorage.removeItem('user');
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
+      localStorage.clear();
       setUser(null);
       setIsAuthenticated(false);
       setRedirectAfterLogin(null);
@@ -133,12 +115,50 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // === CẬP NHẬT USER ===
   const updateUser = (data) => {
     if (!user) return;
     const newUser = { ...user, ...data };
     setUser(newUser);
     localStorage.setItem('user', JSON.stringify(newUser));
   };
+
+  // === LOAD AUTH KHI TẢI TRANG ===
+  useEffect(() => {
+    const loadAuth = async () => {
+      try {
+        // NẾU ĐANG SOCIAL LOGIN → KHÔNG ĐỌC LOCALSTORAGE
+        if (auth0Authenticated) {
+          const claims = await getIdTokenClaims();
+          if (claims?.__raw) {
+            await handleSocialCallback(claims.__raw);
+            return; // DỪNG, KHÔNG ĐỌC LOCALSTORAGE
+          }
+        }
+
+        // CHỈ ĐỌC LOCALSTORAGE NẾU KHÔNG PHẢI SOCIAL LOGIN
+        const storedUser = localStorage.getItem('user');
+        const accessToken = localStorage.getItem('accessToken');
+
+        if (storedUser && accessToken) {
+          const parsedUser = JSON.parse(storedUser);
+          setUser(parsedUser);
+          setIsAuthenticated(true);
+
+          // Redirect nếu đang ở login/register
+          if (window.location.pathname === '/login' || window.location.pathname === '/register') {
+            const redirectTo = parsedUser.role === 'admin' ? '/admin' : '/';
+            setRedirectAfterLogin(redirectTo);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading auth:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadAuth();
+  }, [auth0Authenticated, getIdTokenClaims]);
 
   return (
     <AuthContext.Provider value={{
@@ -149,8 +169,8 @@ export const AuthProvider = ({ children }) => {
       logout,
       updateUser,
       socialLogin,
-      redirectAfterLogin,     // THÊM
-      setRedirectAfterLogin,  // THÊM
+      redirectAfterLogin,
+      setRedirectAfterLogin,
     }}>
       {children}
     </AuthContext.Provider>

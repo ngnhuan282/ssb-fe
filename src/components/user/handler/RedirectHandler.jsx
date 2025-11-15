@@ -1,20 +1,21 @@
-// src/components/user/handler/RedirectHandler.jsx
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext'; 
 
 const RedirectHandler = () => {
-  const { redirectAfterLogin, setRedirectAfterLogin } = useAuth();
+  const { pendingRedirect, clearPendingRedirect } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
-    if (redirectAfterLogin) {
-      navigate(redirectAfterLogin, { replace: true });
-      setRedirectAfterLogin(null);
+    if (pendingRedirect && pendingRedirect !== location.pathname) {
+      console.log('🚀 Redirecting to:', pendingRedirect);
+      navigate(pendingRedirect, { replace: true });
+      clearPendingRedirect();
     }
-  }, [redirectAfterLogin, navigate, setRedirectAfterLogin]);
+  }, [pendingRedirect, navigate, clearPendingRedirect, location.pathname]);
 
   return null;
 };
 
-export default RedirectHandler; 
+export default RedirectHandler;
