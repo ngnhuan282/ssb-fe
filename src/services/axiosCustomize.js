@@ -1,3 +1,4 @@
+// src/services/axiosCustomize.js
 import axios from "axios";
 
 const axiosInstance = axios.create({
@@ -6,54 +7,60 @@ const axiosInstance = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
-  withCredentials: true, 
 });
 
-// Request interceptor
+// Gắn token vào request
 axiosInstance.interceptors.request.use(
   (config) => {
-    // console.log('Request URL:', config.baseURL + config.url);
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// Response interceptor
+// Xử lý lỗi 401/410 → refresh token
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    // Bỏ qua retry cho /auth/me để tránh vòng lặp
-    if (originalRequest.url.includes('/auth/me')) {
+    // BỎ QUA LOGIN VÀ REFRESH TOKEN
+    if (
+      originalRequest.url.includes('/auth/login') ||
+      originalRequest.url.includes('/auth/refresh-token')
+    ) {
       return Promise.reject(error);
     }
 
-    // Nếu token hết hạn (410 GONE) và chưa retry
-    if (error.response?.status === 410 && !originalRequest._retry) {
+    if (
+      (error.response?.status === 401 || error.response?.status === 410) &&
+      !originalRequest._retry
+    ) {
       originalRequest._retry = true;
 
       try {
-        // Gọi API refresh token
-        await axiosInstance.post("/auth/refresh-token");
-        
-        // Retry request ban đầu
+        const refreshToken = localStorage.getItem('refreshToken');
+        if (!refreshToken) throw new Error('No refresh token');
+
+        const res = await axiosInstance.post("/auth/refresh-token", { refreshToken });
+        const { accessToken, refreshToken: newRefreshToken } = res.data.data;
+
+        localStorage.setItem('accessToken', accessToken);
+        localStorage.setItem('refreshToken', newRefreshToken);
+
+        originalRequest.headers.Authorization = `Bearer ${accessToken}`;
         return axiosInstance(originalRequest);
       } catch (refreshError) {
-        // Nếu refresh token cũng hết hạn, chuyển về login
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('user');
         if (window.location.pathname !== "/login") {
           window.location.href = "/login";
         }
         return Promise.reject(refreshError);
-      }
-    }
-
-    // Nếu unauthorized (401), chỉ redirect nếu không ở login page
-    if (error.response?.status === 401) {
-      if (window.location.pathname !== "/login") {
-        window.location.href = "/login";
       }
     }
 

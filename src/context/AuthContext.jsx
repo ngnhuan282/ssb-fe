@@ -1,108 +1,157 @@
 // src/context/AuthContext.jsx
 import React, { createContext, useState, useEffect, useContext } from 'react';
+import { useAuth0 } from '@auth0/auth0-react';
 import { authAPI } from '../services/api.js';
+import axiosInstance from '../services/axiosCustomize';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
+  const { 
+    isAuthenticated: auth0Authenticated, 
+    getIdTokenClaims, 
+    loginWithRedirect, 
+    logout: auth0Logout 
+  } = useAuth0();
+
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [redirectAfterLogin, setRedirectAfterLogin] = useState(null); // THÊM
 
-  // KHI APP LOAD: Kiểm tra localStorage thay vì gọi API
   useEffect(() => {
-    const checkAuth = () => {
+    const loadAuth = async () => {
       try {
         const storedUser = localStorage.getItem('user');
-        
-        if (storedUser) {
-          const userData = JSON.parse(storedUser);
-          setUser(userData);
+        const accessToken = localStorage.getItem('accessToken');
+
+        if (storedUser && accessToken) {
+          const parsedUser = JSON.parse(storedUser);
+          setUser(parsedUser);
           setIsAuthenticated(true);
-          console.log('User loaded from localStorage:', userData.email);
-        } else {
-          console.log('No user in localStorage');
-          setUser(null);
-          setIsAuthenticated(false);
+
+          // Lưu đường dẫn cần redirect
+          if (window.location.pathname === '/login' || window.location.pathname === '/register') {
+            const redirectTo = parsedUser.role === 'admin' ? '/admin' : '/';
+            setRedirectAfterLogin(redirectTo);
+          }
+        } else if (auth0Authenticated) {
+          const claims = await getIdTokenClaims();
+          if (claims?.__raw) {
+            await handleSocialCallback(claims.__raw);
+          }
         }
       } catch (error) {
-        console.error('Error loading user from localStorage:', error);
-        setUser(null);
-        setIsAuthenticated(false);
+        console.error('Error loading auth:', error);
       } finally {
         setLoading(false);
       }
     };
+    loadAuth();
+  }, [auth0Authenticated, getIdTokenClaims]);
 
-    checkAuth();
-  }, []);
+  const handleSocialCallback = async (idToken) => {
+    try {
+      const response = await axiosInstance.post('/auth/social-callback', { idToken });
+      const { user, accessToken, refreshToken } = response.data.data;
 
-  // LOGIN: Lưu user vào localStorage
+      const userData = {
+        ...user,
+        _id: user._id || user.id,
+        id: user.id || user._id,
+      };
+
+      localStorage.setItem('user', JSON.stringify(userData));
+      localStorage.setItem('accessToken', accessToken);
+      localStorage.setItem('refreshToken', refreshToken);
+
+      setUser(userData);
+      setIsAuthenticated(true);
+
+      // Lưu redirect
+      const redirectTo = userData.role === 'admin' ? '/admin' : '/';
+      setRedirectAfterLogin(redirectTo);
+
+    } catch (error) {
+      console.error('Social callback failed:', error);
+      localStorage.clear();
+      setIsAuthenticated(false);
+      setRedirectAfterLogin('/login');
+    }
+  };
+
   const login = async (email, password) => {
     try {
       const response = await authAPI.login({ email, password });
-      const userData = response.data.data.user;
+      const { user, accessToken, refreshToken } = response.data.data;
 
-      if (userData.id && !userData._id) {
-      userData._id = userData.id;
-      delete userData.id; // optional
-    }
+      const userData = {
+        ...user,
+        _id: user._id || user.id,
+      };
 
-      // Lưu vào state
+      localStorage.setItem('user', JSON.stringify(userData));
+      localStorage.setItem('accessToken', accessToken);
+      localStorage.setItem('refreshToken', refreshToken);
+
       setUser(userData);
       setIsAuthenticated(true);
-      
-      // LƯU VÀO LOCALSTORAGE
-      localStorage.setItem('user', JSON.stringify(userData));
-      
+
+      const redirectTo = userData.role === 'admin' ? '/admin' : '/';
+      setRedirectAfterLogin(redirectTo);
+
       return { success: true, user: userData };
     } catch (error) {
-      setUser(null);
-      setIsAuthenticated(false);
-      localStorage.removeItem('user');
-      
-      return { 
-        success: false, 
-        error: error.response?.data?.message || 'Login failed' 
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Login failed',
       };
     }
   };
 
-  // LOGOUT: Xóa localStorage
+  const socialLogin = (provider) => {
+    loginWithRedirect({
+      authorizationParams: {
+        connection: provider,
+      },
+    });
+  };
+
   const logout = async () => {
     try {
       await authAPI.logout();
     } catch (error) {
       console.error('Logout API failed:', error);
     } finally {
+      localStorage.removeItem('user');
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
       setUser(null);
       setIsAuthenticated(false);
-      
-      // XÓA KHỎI LOCALSTORAGE
-      localStorage.removeItem('user');
-      console.log('User removed from localStorage');
+      setRedirectAfterLogin(null);
+      auth0Logout({ logoutParams: { returnTo: window.location.origin } });
     }
   };
 
-  // UPDATE USER: Cập nhật thông tin user (nếu cần)
-  const updateUser = (updatedData) => {
-    const newUserData = { ...user, ...updatedData };
-    setUser(newUserData);
-    localStorage.setItem('user', JSON.stringify(newUserData));
-    console.log('User updated in localStorage');
+  const updateUser = (data) => {
+    if (!user) return;
+    const newUser = { ...user, ...data };
+    setUser(newUser);
+    localStorage.setItem('user', JSON.stringify(newUser));
   };
 
   return (
-    <AuthContext.Provider 
-      value={{ 
-        user, 
-        loading, 
-        isAuthenticated, 
-        login, 
-        logout,
-        updateUser 
-      }}
-    >
+    <AuthContext.Provider value={{
+      user,
+      loading,
+      isAuthenticated,
+      login,
+      logout,
+      updateUser,
+      socialLogin,
+      redirectAfterLogin,     // THÊM
+      setRedirectAfterLogin,  // THÊM
+    }}>
       {children}
     </AuthContext.Provider>
   );
@@ -110,8 +159,6 @@ export const AuthProvider = ({ children }) => {
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within AuthProvider');
   return context;
 };
