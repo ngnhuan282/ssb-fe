@@ -73,7 +73,12 @@ export const notificationAPI = {
   delete: (id) => axiosInstance.delete(`/notifications/${id}`),
 
   getEmergency: () => axiosInstance.get("/notifications/incidents"),
-  createIncident: (data) => axiosInstance.post("/notifications/incident", data),
+  createIncident: (data) =>
+  axiosInstance.post("/notifications/incident", data, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  }),
 };
 
 export const userAPI = {

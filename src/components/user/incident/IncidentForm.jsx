@@ -29,27 +29,35 @@ const IncidentForm = () => {
 
 const handleSubmit = async (isEmergency = false) => {
   try {
-    const payload = {
-      user: "6910388ff1c1fce244797451", // ID user hợp lệ
-      type: isEmergency ? "emergency" : "no_emergency",
-      message: description,            // Nội dung báo cáo
-      busId: "6910388ff1c1fce244797465", // Nếu có bus liên quan
-      scheduleId: "6910388ff1c1fce2447974cc", // Nếu có schedule
-      read: false,
-      location : location,
-      dateTime : dateTime.toISOString(),
-      emergency_type: incidentType, // thêm để backend biết loại sự cố
-    };
+    const formData = new FormData();
 
-    console.log("Payload gửi lên backend:", payload); // <-- thêm dòng này
+    // append các field text
+    formData.append("user", "6910388ff1c1fce244797451");
+    formData.append("type", isEmergency ? "emergency" : "no_emergency");
+    formData.append("message", description);
+    formData.append("busId", "6910388ff1c1fce244797465");
+    formData.append("scheduleId", "6910388ff1c1fce2447974cc");
+    formData.append("read", "false");
+    formData.append("location", location);
+    formData.append("dateTime", dateTime.toISOString());
+    formData.append("emergency_type", incidentType);
 
-    await notificationAPI.createIncident(payload)
+    // append file nếu có
+    if (image) {
+      formData.append("image", image);
+    }
+
+    console.log("FormData sending...");
+
+    await notificationAPI.createIncident(formData);
+
     alert(isEmergency ? "Đã gửi báo cáo KHẨN CẤP!" : "Đã gửi báo cáo thường!");
   } catch (error) {
     console.error("Lỗi gửi sự cố:", error);
     alert("Không gửi được sự cố!");
   }
 };
+
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];

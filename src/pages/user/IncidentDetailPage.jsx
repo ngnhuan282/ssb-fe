@@ -8,12 +8,12 @@ import {
   Chip,
   Link,
   CircularProgress,
+  Button,
+  Modal
 } from '@mui/material';
-import { ArrowBack } from '@mui/icons-material';
+import { ArrowBack, Delete, CheckCircle } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
-import { notificationAPI } from '../../services/api'; // <-- API call
-
-
+import { notificationAPI } from '../../services/api';
 
 // Component con cho chip trạng thái
 const StatusChip = ({ status }) => {
@@ -43,21 +43,20 @@ const IncidentDetailPage = () => {
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [openImage, setOpenImage] = useState(null);
 
   // Hàm xác định status
   const getStatus = (item) => {
-  if (item.type === 'emergency') return 'urgent';
-  else if (item.type === 'resolved_emergency') return 'resolved';
-  return 'pending';
-};
-
-
+    if (item.status === 'resolved') return 'resolved';
+    if (item.type === 'emergency') return 'urgent';
+    return 'pending';
+  };
 
 
   useEffect(() => {
     const fetchReport = async () => {
       try {
-        const res = await notificationAPI.getById(id); // gọi API backend lấy 1 report theo id
+        const res = await notificationAPI.getById(id);
         setReport(res.data.data);
       } catch (err) {
         console.error(err);
@@ -68,6 +67,37 @@ const IncidentDetailPage = () => {
     };
     fetchReport();
   }, [id]);
+
+  const handleDelete = async () => {
+    if (!window.confirm('Bạn có chắc chắn muốn xóa báo cáo này?')) return;
+    try {
+      await notificationAPI.delete(id);
+      alert('Đã xóa báo cáo!');
+      navigate('/incident', { state: { tab: 'history' } });
+    } catch (err) {
+      console.error(err);
+      alert('Xóa không thành công!');
+    }
+  };
+
+// Thêm function đánh dấu hoàn thành
+const handleMarkResolved = async () => {
+  if (!report) return;
+  try {
+    await notificationAPI.update(report._id, {
+      status: 'resolved', // chỉ gửi status
+      type: 'resolved_emergency',
+    });
+
+    setReport(prev => ({ ...prev, status: 'resolved' }));
+    alert('Báo cáo đã được đánh dấu hoàn thành!');
+  } catch (err) {
+    console.error('Lỗi đánh dấu hoàn thành:', err);
+    alert('Không thể đánh dấu hoàn thành!');
+  }
+};
+
+
 
   if (loading) {
     return (
@@ -177,20 +207,63 @@ const IncidentDetailPage = () => {
                 <Grid item xs={12} sm={4} key={index}>
                   <Box
                     component="img"
-                    src={img}
+                    src={`http://localhost:5000${img}`}
                     alt={`Incident image ${index + 1}`}
                     sx={{
                       width: '100%',
                       height: 180,
                       objectFit: 'cover',
                       borderRadius: 2,
+                      cursor: 'pointer'
                     }}
+                    onClick={() => setOpenImage(`http://localhost:5000${img}`)}
                   />
                 </Grid>
               ))}
             </Grid>
           </Box>
         )}
+
+        {/* Nút hành động ở dưới cùng */}
+        <Box sx={{ mt: 4, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+          <Button
+            variant="contained"
+            color="error"
+            startIcon={<Delete />}
+            onClick={handleDelete}
+          >
+            Xóa
+          </Button>
+          {getStatus(report) !== 'resolved' && (
+            <Button
+              variant="contained"
+              color="success"
+              startIcon={<CheckCircle />}
+              onClick={handleMarkResolved}
+            >
+              Hoàn thành
+            </Button>
+          )}
+        </Box>
+
+        {/* Modal phóng to ảnh */}
+        <Modal
+          open={!!openImage}
+          onClose={() => setOpenImage(null)}
+          sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        >
+          <Box
+            component="img"
+            src={openImage}
+            alt="Zoomed"
+            sx={{
+              maxWidth: '90%',
+              maxHeight: '90%',
+              borderRadius: 2,
+              boxShadow: 24
+            }}
+          />
+        </Modal>
       </Paper>
     </Box>
   );
