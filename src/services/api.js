@@ -73,6 +73,7 @@ export const notificationAPI = {
   delete: (id) => axiosInstance.delete(`/notifications/${id}`),
 
   getEmergency: () => axiosInstance.get("/notifications/incidents"),
+  createIncident: (data) => axiosInstance.post("/notifications/incident", data),
 };
 
 export const userAPI = {
