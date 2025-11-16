@@ -1,18 +1,21 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   MapContainer as LeafletMapContainer,
   TileLayer,
   Marker,
   Popup,
+  Polyline,
+  CircleMarker,
 } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Box, Typography, CircularProgress, Alert, Chip } from "@mui/material";
-
-const center = { lat: 10.760650, lng: 106.682057 };
+import busSimulationService from "../../../services/busSimulationService";
+const center = { lat: 10.76065, lng: 106.682057 };
 
 const createBusIcon = (status) => {
-  const color = status === "running" ? "#28a745" : "#ffc107";
+  const isRunning = status === "active" || status === "running";
+  const color = isRunning ? "#28a745" : "#ffc107";
 
   return L.divIcon({
     html: `
@@ -39,21 +42,51 @@ const createBusIcon = (status) => {
   });
 };
 
-const MapContainer = ({buses, loading , error}) => {
+const MapContainer = ({ buses, loading, error }) => {
+  const [routePaths, setRoutePaths] = useState({});
+
   const busesWithLocations = buses.map((bus) => {
-    const lat = bus.latitude ?? center.lat;
-    const lng = bus.longitude ?? center.lng;
+    const lat = bus.latitude || bus.position?.lat || center.lat;
+    const lng = bus.longitude || bus.position?.lng || center.lng;
+    const status =
+      bus.status === "active" || bus.status === "running"
+        ? "running"
+        : "stopped";
+
     return {
-      id: bus._id,
-      name: bus.name || `Xe ${bus.licensePlate}`,
-      plate: bus.licensePlate,
-      driver: bus.driverId?.name || "Chưa phân công",
-      route: bus.routeId?.name || "Chưa có tuyến",
-      students: bus.students?.length || 0,
-      status: bus.status === "active" ? "running" : "stopped",
-      position: { lat, lng }
+      id: bus.id || bus._id,
+      name: bus.name || `Xe ${bus.licensePlate || bus.plate}`,
+      plate: bus.licensePlate || bus.plate,
+      driver: bus.driverId?.name || bus.driver || "Chưa phân công",
+      route: bus.routeId?.name || bus.route?.name || "Chưa có tuyến",
+      students: bus.students?.length || bus.students || 0,
+      status: status,
+      position: { lat, lng },
+      stops: bus.route?.stops || [],
     };
   });
+
+  useEffect(() => {
+    const fetchRoutes = async () => {
+      for (const bus of busesWithLocations) {
+        if (bus.stops && bus.stops.length > 1) {
+          try {
+            const path = await busSimulationService.buildFullRoute(bus.stops);
+            setRoutePaths((prev) => ({
+              ...prev,
+              [bus.id]: path,
+            }));
+          } catch (err) {
+            console.error("Error building route:", err);
+          }
+        }
+      }
+    };
+
+    if (busesWithLocations.length > 0) {
+      fetchRoutes();
+    }
+  }, [buses.length]);
 
   if (error) {
     return (
@@ -93,13 +126,88 @@ const MapContainer = ({buses, loading , error}) => {
       style={{ width: "100%", height: "100%" }}
       zoomControl={true}
     >
-      {/* Tile Layer - OpenStreetMap (miễn phí) */}
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
 
-      {/* Hiển thị marker cho mỗi xe bus */}
+      {/* Vẽ route cho mỗi xe */}
+      {busesWithLocations.map((bus) => {
+        const path = routePaths[bus.id];
+        if (path && path.length > 0) {
+          return (
+            <Polyline
+              key={`route-${bus.id}`}
+              positions={path.map((p) => [p.lat, p.lng])}
+              color="#2196F3"
+              weight={4}
+              opacity={0.7}
+            />
+          );
+        }
+        return null;
+      })}
+
+      {/* Hiển thị các điểm đón */}
+      {busesWithLocations.map((bus) =>
+        bus.stops.map((stop) => {
+          if (!stop.position) return null;
+
+          const fillColor =
+            stop.status === "completed"
+              ? "#28a745"
+              : stop.status === "current"
+              ? "#ffc107"
+              : "#6c757d";
+
+          return (
+            <CircleMarker
+              key={`stop-${stop.id}`}
+              center={[stop.position.lat, stop.position.lng]}
+              radius={8}
+              fillColor={fillColor}
+              color="#fff"
+              weight={2}
+              opacity={1}
+              fillOpacity={0.8}
+            >
+              // Trong Popup của Marker
+              <Popup>
+                <Box sx={{ minWidth: 200 }}>
+                  <Typography
+                    variant="subtitle2"
+                    sx={{ fontWeight: 600, mb: 1 }}
+                  >
+                    {bus.name} - {bus.plate}
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 0.5 }}>
+                    👤 Tài xế: {bus.driver}
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 0.5 }}>
+                    🛣️ Tuyến: {bus.route}
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 0.5 }}>
+                    ⚡ Tốc độ: {bus.speed || 40} km/h
+                  </Typography>
+                  <Chip
+                    label={bus.status === "running" ? "Đang chạy" : "Đang dừng"}
+                    size="small"
+                    sx={{
+                      mt: 1,
+                      backgroundColor:
+                        bus.status === "running" ? "#28a745" : "#ffc107",
+                      color: "#fff",
+                      fontWeight: 600,
+                    }}
+                  />
+                </Box>
+              </Popup>
+            </CircleMarker>
+          );
+        })
+      )}
+
+      {/* Hiển thị xe buýt */}
       {busesWithLocations.map((bus) => (
         <Marker
           key={bus.id}

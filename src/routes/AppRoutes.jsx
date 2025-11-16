@@ -22,88 +22,98 @@ import DriverTripReportPage from "../pages/user/DriverTripReportPage";
 import IncidentDetailPage from "../pages/user/IncidentDetailPage";
 import TripHistoryPage from "../pages/user/TripHistoryPage";
 import TripDetailPage from "../pages/user/TripDetailPage";
+import NotificationPage from "../pages/user/NotificationPage";
+
 export const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
     errorElement: <ErrorPage />,
     children: [
-      { 
-        index: true, 
+      {
+        index: true,
         element: (
-          <ProtectedRoute allowedRoles={['parent', 'driver']}>
+          <ProtectedRoute allowedRoles={["parent", "driver"]}>
             <UserDashboardPage />
           </ProtectedRoute>
         ),
       },
-      { 
-        path: "bus", 
+      {
+        path: "bus",
         element: (
-          <ProtectedRoute allowedRoles={['parent']}>
-            <BusPage />
+          <ProtectedRoute allowedRoles={["parent"]}>
+            <MapPage />
           </ProtectedRoute>
         ),
       },
-      { 
-        path: "schedule", 
+      {
+        path: "schedule",
         element: (
-          <ProtectedRoute allowedRoles={['driver']}>
+          <ProtectedRoute allowedRoles={["driver"]}>
             <DriverSchedulePage />
           </ProtectedRoute>
         ),
       },
-      { 
-        path: "pickup-points", 
+      {
+        path: "pickup-points",
         element: (
-          <ProtectedRoute allowedRoles={['driver']}>
-           <DriverPickupPointsPage />
+          <ProtectedRoute allowedRoles={["driver"]}>
+            <DriverPickupPointsPage />
           </ProtectedRoute>
         ),
       },
-      { 
-        path: "incident", 
+      {
+        path: "incident",
         element: (
-          <ProtectedRoute allowedRoles={['driver']}>
-           <DriverIncidentReportPage />
+          <ProtectedRoute allowedRoles={["driver"]}>
+            <DriverIncidentReportPage />
           </ProtectedRoute>
         ),
       },
-      { 
-        path: "incident-detail", 
+      {
+        path: "incident-detail",
         element: (
-          <ProtectedRoute allowedRoles={['driver']}>
+          <ProtectedRoute allowedRoles={["driver"]}>
             <IncidentDetailPage />
           </ProtectedRoute>
         ),
       },
-      { 
-        path: "trip-history", 
+      {
+        path: "trip-history",
         element: (
-          <ProtectedRoute allowedRoles={['driver']}>
-           <TripHistoryPage />
+          <ProtectedRoute allowedRoles={["driver"]}>
+            <TripHistoryPage />
           </ProtectedRoute>
         ),
       },
-      { 
-        path: "trip-detail", 
+      {
+        path: "trip-detail",
         element: (
-          <ProtectedRoute allowedRoles={['driver']}>
-           <TripDetailPage />
+          <ProtectedRoute allowedRoles={["driver"]}>
+            <TripDetailPage />
           </ProtectedRoute>
         ),
       },
-      { 
-        path: "students", 
+      {
+        path: "students",
         element: (
-          <ProtectedRoute allowedRoles={['driver']}>
+          <ProtectedRoute allowedRoles={["driver"]}>
             <DriverStudentListPage />
           </ProtectedRoute>
         ),
       },
-      { 
-        path: "profile", 
+      {
+        path: "notification",
         element: (
-          <ProtectedRoute allowedRoles={['parent', 'driver']}>
+          <ProtectedRoute allowedRoles={["parent", "driver"]}>
+            <NotificationPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "profile",
+        element: (
+          <ProtectedRoute allowedRoles={["parent", "driver"]}>
             <ProfilePage />
           </ProtectedRoute>
         ),
@@ -127,5 +137,6 @@ export const router = createBrowserRouter([
       </PublicRoute>
     ),
   },
+
   ...adminRoutes,
 ]);
