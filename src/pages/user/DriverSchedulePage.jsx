@@ -12,7 +12,7 @@ import {
 } from '@mui/material';
 import { CalendarMonth, ViewWeek } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-
+import { useTranslation } from 'react-i18next';
 // Components
 import ScheduleCalendar from '../../components/user/schedule/ScheduleCalendar.jsx';
 import WeeklyScheduleView from '../../components/user/schedule/WeeklyScheduleView.jsx';
@@ -26,7 +26,7 @@ import { useAuth } from '../../context/AuthContext';
 const DriverSchedulePage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-
+  const { t } = useTranslation();
   const [viewMode, setViewMode] = useState('month');
   const [selectedSchedule, setSelectedSchedule] = useState(null);
   const [monthSchedules, setMonthSchedules] = useState([]);
@@ -158,12 +158,12 @@ const DriverSchedulePage = () => {
         {loadingSchedules ? (
           <Paper sx={{ p: 6, textAlign: 'center', borderRadius: 3 }}>
             <CircularProgress size={32} />
-            <Typography mt={2} color="text.secondary">Đang tải lịch trình...</Typography>
+            <Typography mt={2} color="text.secondary">{t("schedule.loading")}</Typography>
           </Paper>
         ) : monthSchedules.length === 0 ? (
           <Paper sx={{ p: 6, textAlign: 'center', borderRadius: 3, bgcolor: '#fff' }}>
             <Typography color="text.secondary">
-              Không có lịch trình nào. Hãy liên hệ admin để tạo lịch.
+              {t("schedule.noSchedule")}  
             </Typography>
           </Paper>
         ) : (
@@ -215,7 +215,7 @@ const DriverSchedulePage = () => {
                 ) : (
                   <Paper sx={{ p: 4, textAlign: 'center', borderRadius: 3 }}>
                     <Typography color="text.secondary">
-                      Chọn một ngày để xem chi tiết
+                      {t("schedule.selectDate")}
                     </Typography>
                   </Paper>
                 )}

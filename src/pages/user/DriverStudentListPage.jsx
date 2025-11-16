@@ -15,7 +15,7 @@ import StudentListFilter from '../../components/user/student/StudentListFilter';
 import StudentCard from '../../components/user/student/StudentCard';
 import { studentAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
-
+import { useTranslation } from "react-i18next";
 const ITEMS_PER_PAGE = 5; // Số học sinh trên mỗi trang
 
 const DriverStudentListPage = () => {
@@ -27,7 +27,7 @@ const DriverStudentListPage = () => {
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
+  const { t } = useTranslation();
   // --- THÊM STATE CHO PHÂN TRANG ---
   const [page, setPage] = useState(1);
   const [pageCount, setPageCount] = useState(0);
@@ -140,7 +140,7 @@ const DriverStudentListPage = () => {
         {filteredStudents.length === 0 ? (
           <Paper sx={{ p: 6, textAlign: 'center', borderRadius: 3, border: '1px solid #e5e7eb', bgcolor: '#fff' }}>
             <Typography variant="body1" color="textSecondary">
-              Không tìm thấy học sinh nào
+              {t("studentList.noResults")}
             </Typography>
           </Paper>
         ) : (

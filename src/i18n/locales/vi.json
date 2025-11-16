@@ -29,5 +29,59 @@
     "loading": "Đang tải...",
     "login": "Đăng nhập",
     "register": "Đăng ký"
+  },
+  "studentList": {
+    "searchPlaceholder": "Tìm kiếm học sinh...",
+    "tabs": {
+      "all": "Tất cả",
+      "pending": "Chưa đón",
+      "picked_up": "Đã đón",
+      "dropped_off": "Đã trả"
+    },
+    "noResults": "Không tìm thấy học sinh nào"
+  },
+  "studentCard": {
+    "noName": "Chưa có tên",
+    "noClass": "Chưa có lớp",
+    "noPickup": "Chưa có điểm đón",
+    "call": "Gọi",
+    "status": {
+      "pending": "Chưa đón",
+      "picked_up": "Đã đón",
+      "dropped_off": "Đã trả"
+    }
+  },
+  "schedule": {
+    "loading": "Đang tải lịch trình...",
+    "noSchedule": "Không có lịch trình nào. Hãy liên hệ admin để tạo lịch.",
+    "selectDate": "Chọn một ngày để xem chi tiết"
+  },
+  "routeStops": {
+    "title": "Danh sách điểm dừng",
+    "noStops": "Không có thông tin điểm dừng",
+    "noTime": "Chưa có giờ",
+    "infoTitle": "THÔNG TIN TUYẾN ĐƯỜNG",
+    "distance": "Tổng quãng đường",
+    "estimatedTime": "Thời gian ước tính"
+  },
+  "calendar": {
+    "months": [
+      "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",
+      "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"
+    ],
+    "days": ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"]
+  },
+  "weeklySchedule": {
+    "title": "Lịch tuần",
+    "status": {
+      "completed": "Hoàn thành",
+      "in_progress": "Đang thực hiện",
+      "delayed": "Trễ",
+      "scheduled": "Đã lên lịch"
+    }
+  },
+  "todaySchedule": {
+    "noRoute": "Chưa có tuyến",
+    "busPlate": "Biển số xe"
   }
 }

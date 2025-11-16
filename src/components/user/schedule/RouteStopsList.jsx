@@ -16,14 +16,17 @@ import {
   ArrowUpward,
   ArrowDownward,
 } from '@mui/icons-material';
+import { useTranslation } from 'react-i18next';
 
 const RouteStopsList = ({ route }) => {
+  const { t } = useTranslation();
+
   if (!route || !route.stops || route.stops.length === 0) {
     return (
       <Card sx={{ boxShadow: 1, borderRadius: 1, border: '1px solid #e0e0e0' }}>
         <CardContent sx={{ textAlign: 'center', py: 4 }}>
           <Typography variant="body2" color="textSecondary">
-            Không có thông tin điểm dừng
+            {t("routeStops.noStops")}
           </Typography>
         </CardContent>
       </Card>
@@ -46,7 +49,7 @@ const RouteStopsList = ({ route }) => {
     <Card sx={{ boxShadow: 1, borderRadius: 1, border: '1px solid #e0e0e0' }}>
       <CardContent sx={{ p: 3 }}>
         <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: '#212121' }}>
-          Danh sách điểm dừng
+          {t("routeStops.title")}
         </Typography>
 
         <List sx={{ p: 0 }}>
@@ -148,7 +151,7 @@ const RouteStopsList = ({ route }) => {
                   }
                   secondary={
                     <Typography variant="caption" sx={{ color: '#9e9e9e' }}>
-                      {formatTime(stop.time) || 'Chưa có giờ'}
+                      {formatTime(stop.time) || t("routeStops.noTime")}
                       {stop.lat && stop.lng && (
                         <span style={{ marginLeft: 8, color: '#bdbdbd' }}>
                           • {stop.lat.toFixed(4)}, {stop.lng.toFixed(4)}
@@ -166,11 +169,11 @@ const RouteStopsList = ({ route }) => {
         {(route.distance || route.estimatedTime) && (
           <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid #f5f5f5' }}>
             <Typography variant="caption" sx={{ color: '#757575', fontWeight: 600, display: 'block', mb: 1 }}>
-              THÔNG TIN TUYẾN ĐƯỜNG
+              {t("routeStops.infoTitle")}
             </Typography>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
               <Typography variant="caption" color="textSecondary">
-                Tổng quãng đường
+                {t("routeStops.distance")}
               </Typography>
               <Typography variant="caption" sx={{ fontWeight: 500, color: '#424242' }}>
                 {route.distance} km
@@ -179,7 +182,7 @@ const RouteStopsList = ({ route }) => {
             {route.estimatedTime && (
               <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                 <Typography variant="caption" color="textSecondary">
-                  Thời gian ước tính
+                  {t("routeStops.estimatedTime")}
                 </Typography>
                 <Typography variant="caption" sx={{ fontWeight: 500, color: '#424242' }}>
                   {route.estimatedTime} phút

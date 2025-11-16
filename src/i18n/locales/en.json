@@ -29,5 +29,59 @@
     "loading": "Loading...",
     "login": "Login",
     "register": "Register"
+  },
+  "studentList": {
+    "searchPlaceholder": "Search students...",
+    "tabs": {
+      "all": "All",
+      "pending": "Pending",
+      "picked_up": "Picked Up",
+      "dropped_off": "Dropped Off"
+    },
+    "noResults": "No students found"
+  },
+  "studentCard": {
+    "noName": "No name",
+    "noClass": "No class",
+    "noPickup": "No pickup point",
+    "call": "Call",
+    "status": {
+      "pending": "Pending",
+      "picked_up": "Picked Up",
+      "dropped_off": "Dropped Off"
+    }
+  },
+  "schedule": {
+    "loading": "Loading schedule...",
+    "noSchedule": "No schedule available. Please contact admin to create one.",
+    "selectDate": "Select a date to view details"
+  },
+  "routeStops": {
+    "title": "List of Stops",
+    "noStops": "No stop information",
+    "noTime": "No time set",
+    "infoTitle": "ROUTE INFORMATION",
+    "distance": "Total distance",
+    "estimatedTime": "Estimated time"
+  },
+  "calendar": {
+    "months": [
+      "January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December"
+    ],
+    "days": ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"]
+  },
+  "weeklySchedule": {
+    "title": "Weekly Schedule",
+    "status": {
+      "completed": "Completed",
+      "in_progress": "In Progress",
+      "delayed": "Delayed",
+      "scheduled": "Scheduled"
+    }
+  },
+  "todaySchedule": {
+    "noRoute": "No route",
+    "busPlate": "License plate"
   }
 }

@@ -20,8 +20,9 @@ import {
   ChevronRight,
   Circle,
 } from '@mui/icons-material';
-
+import { useTranslation } from 'react-i18next';
 const WeeklyScheduleView = ({ weekSchedules = [], weekStart, onWeekChange }) => {
+  const { t } = useTranslation();
   // Sửa: Kiểm tra weekStart trước khi xử lý
   if (!weekStart) {
     return (
@@ -79,7 +80,7 @@ const WeeklyScheduleView = ({ weekSchedules = [], weekStart, onWeekChange }) => 
         {/* Header */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Typography variant="h6" sx={{ fontWeight: 600, color: '#212121' }}>
-            Lịch tuần
+            {t("weeklySchedule.title")}
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <IconButton size="small" onClick={() => onWeekChange('prev')} sx={{ color: '#424242' }}>

@@ -8,6 +8,7 @@ import {
   InputAdornment,
 } from '@mui/material';
 import { Search } from '@mui/icons-material';
+import { useTranslation } from "react-i18next";
 
 const StudentListFilter = ({
   searchTerm,
@@ -15,12 +16,12 @@ const StudentListFilter = ({
   activeTab,
   onTabChange,
 }) => {
-  // Bỏ 'count' khỏi tabs
+  const { t } = useTranslation();
   const tabs = [
-    { label: 'Tất cả', value: 'all' },
-    { label: 'Chưa đón', value: 'pending' },
-    { label: 'Đã đón', value: 'picked_up' },
-    { label: 'Đã trả', value: 'dropped_off' },
+    { label: t("studentList.tabs.all"), value: 'all' },
+    { label: t("studentList.tabs.pending"), value: 'pending' },
+    { label: t("studentList.tabs.picked_up"), value: 'picked_up' },
+    { label: t("studentList.tabs.dropped_off"), value: 'dropped_off' },
   ];
 
   return (

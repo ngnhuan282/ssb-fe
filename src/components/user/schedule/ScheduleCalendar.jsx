@@ -9,10 +9,10 @@ import {
   Grid,
 } from '@mui/material';
 import { ChevronLeft, ChevronRight, Circle } from '@mui/icons-material';
-
+import { useTranslation } from 'react-i18next';
 const ScheduleCalendar = ({ schedules = [], onDateSelect, selectedSchedule }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
-
+  const { t } = useTranslation();
   // Tạo 42 ô (6 hàng x 7 cột) để luôn hiển thị 6 hàng
   const getCalendarGrid = (date) => {
     const year = date.getFullYear();
@@ -54,9 +54,8 @@ const ScheduleCalendar = ({ schedules = [], onDateSelect, selectedSchedule }) =>
     });
   };
 
-  const monthNames = ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
-                     'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'];
-  const dayNames = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+  const monthNames = t("calendar.months", { returnObjects: true });
+  const dayNames = t("calendar.days", { returnObjects: true });
   const days = getCalendarGrid(currentDate);
   const today = new Date();
 
