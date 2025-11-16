@@ -1,0 +1,33 @@
+{
+  "app": {
+    "title": "SSB 1.0",
+    "subtitle": "Smart School Bus"
+  },
+  "header": {
+    "notifications": "Thông báo",
+    "profile": "Thông tin cá nhân",
+    "logout": "Đăng xuất"
+  },
+  "sidebar": {
+    "mainMenu": "Menu chính",
+    "dashboard": "Tổng quan",
+    "busTracking": "Theo dõi xe buýt",
+    "studentList": "Danh sách học sinh",
+    "schedule": "Lịch làm việc",
+    "pickupPoints": "Điểm đón/trả",
+    "tripHistory": "Lịch sử chuyến đi",
+    "incident": "Cảnh báo sự cố",
+    "notifications": "Thông báo",
+    "settings": "Cài đặt",
+    "logout": "Đăng xuất"
+  },
+  "auth": {
+    "accessDenied": "Truy cập bị từ chối",
+    "noPermission": "Bạn không có quyền truy cập trang này"
+  },
+  "common": {
+    "loading": "Đang tải...",
+    "login": "Đăng nhập",
+    "register": "Đăng ký"
+  }
+}

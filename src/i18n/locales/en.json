@@ -1,0 +1,33 @@
+{
+  "app": {
+    "title": "SSB 1.0",
+    "subtitle": "Smart School Bus"
+  },
+  "header": {
+    "notifications": "Notifications",
+    "profile": "Profile",
+    "logout": "Logout"
+  },
+  "sidebar": {
+    "mainMenu": "Main Menu",
+    "dashboard": "Dashboard",
+    "busTracking": "Bus Tracking",
+    "studentList": "Student List",
+    "schedule": "Schedule",
+    "pickupPoints": "Pickup/Drop-off Points",
+    "tripHistory": "Trip History",
+    "incident": "Incident Alerts",
+    "notifications": "Notifications",
+    "settings": "Settings",
+    "logout": "Logout"
+  },
+  "auth": {
+    "accessDenied": "Access Denied",
+    "noPermission": "You don't have permission to access this page"
+  },
+  "common": {
+    "loading": "Loading...",
+    "login": "Login",
+    "register": "Register"
+  }
+}

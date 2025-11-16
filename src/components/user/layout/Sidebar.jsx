@@ -1,5 +1,6 @@
 // src/components/user/layout/Sidebar.jsx
 import React, { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   Drawer,
@@ -20,143 +21,126 @@ import {
   Schedule,
   Assessment,
   Person,
-  Route,
+  LocationOn,
+  Warning,
   Notifications,
   Settings,
   ChevronLeft,
   ChevronRight,
-  LocationOn,
-  Warning,
-  Logout as LogoutIcon, // <-- THÊM ICON
+  Logout as LogoutIcon,
 } from "@mui/icons-material";
 import { useAuth } from "../../../context/AuthContext";
-
-// Menu items với allowedRoles
-const menuItems = [
-  // ... (Giữ nguyên mảng menuItems) ...
-  {
-    text: "Tổng quan",
-    icon: <Dashboard />,
-    path: "/",
-    allowedRoles: ["parent", "driver"],
-  },
-  {
-    text: "Theo dõi xe buýt",
-    icon: <DirectionsBus />,
-    path: "/bus",
-    allowedRoles: ["parent"],
-  },
-  {
-    text: "Danh sách học sinh",
-    icon: <Person />,
-    path: "/students",
-    allowedRoles: ["driver"],
-  },
-  {
-    text: "Lịch làm việc",
-    icon: <Schedule />,
-    path: "/schedule",
-    allowedRoles: ["driver"],
-  },
-  {
-    text: "Điểm đón/trả",
-    icon: <LocationOn />,
-    path: "/pickup-points",
-    allowedRoles: ["driver"],
-  },
-  {
-    text: "Lịch sử chuyến đi",
-    icon: <Assessment />,
-    path: "/trip-history",
-    allowedRoles: ["driver"],
-  },
-  {
-    text: "Cảnh báo sự cố",
-    icon: <Warning />,
-    path: "/incident",
-    allowedRoles: ["driver"],
-  },
-  {
-    text: "Thông báo",
-    icon: <Notifications />,
-    path: "/notification",
-    allowedRoles: ["parent", "driver"],
-  },
-  {
-    text: "Cài đặt",
-    icon: <Settings />,
-    path: "/profile",
-    allowedRoles: ["parent", "driver"],
-  },
-];
-
-// Tách menu chính và menu cài đặt
-const mainMenuItemsConfig = menuItems.filter(
-  (item) => item.path !== "/profile"
-);
-const settingsItemConfig = menuItems.find((item) => item.path === "/profile");
 
 const drawerWidthOpen = 260;
 const drawerWidthClosed = 72;
 
 const Sidebar = ({ onToggle }) => {
-  const { user, loading, logout } = useAuth(); // <-- LẤY HÀM LOGOUT
+  const { t } = useTranslation(); // Dùng ở đây
+  const { user, loading, logout } = useAuth();
   const [open, setOpen] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Lọc menu chính dựa trên role
+  // ĐỔI: Đưa menuItems vào trong component
+  const menuItems = [
+    {
+      text: t("sidebar.dashboard"),
+      icon: <Dashboard />,
+      path: "/",
+      allowedRoles: ["parent", "driver"],
+    },
+    {
+      text: t("sidebar.busTracking"),
+      icon: <DirectionsBus />,
+      path: "/bus",
+      allowedRoles: ["parent"],
+    },
+    {
+      text: t("sidebar.studentList"),
+      icon: <Person />,
+      path: "/students",
+      allowedRoles: ["driver"],
+    },
+    {
+      text: t("sidebar.schedule"),
+      icon: <Schedule />,
+      path: "/schedule",
+      allowedRoles: ["driver"],
+    },
+    {
+      text: t("sidebar.pickupPoints"),
+      icon: <LocationOn />,
+      path: "/pickup-points",
+      allowedRoles: ["driver"],
+    },
+    {
+      text: t("sidebar.tripHistory"),
+      icon: <Assessment />,
+      path: "/trip-history",
+      allowedRoles: ["driver"],
+    },
+    {
+      text: t("sidebar.incident"),
+      icon: <Warning />,
+      path: "/incident",
+      allowedRoles: ["driver"],
+    },
+    {
+      text: t("sidebar.notifications"),
+      icon: <Notifications />,
+      path: "/notification",
+      allowedRoles: ["parent", "driver"],
+    },
+    {
+      text: t("sidebar.settings"),
+      icon: <Settings />,
+      path: "/profile",
+      allowedRoles: ["parent", "driver"],
+    },
+  ];
+
+  const mainMenuItemsConfig = menuItems.filter((item) => item.path !== "/profile");
+  const settingsItemConfig = menuItems.find((item) => item.path === "/profile");
+
   const filteredMainMenuItems = useMemo(() => {
-    // ... (Giữ nguyên) ...
     if (!user || !user.role) return [];
     return mainMenuItemsConfig.filter((item) =>
       item.allowedRoles.includes(user.role)
     );
-  }, [user]);
+  }, [user, mainMenuItemsConfig]);
 
-  // Kiểm tra xem có hiển thị cài đặt không
   const showSettings = useMemo(() => {
-    // ... (Giữ nguyên) ...
     if (!user || !user.role || !settingsItemConfig) return false;
     return settingsItemConfig.allowedRoles.includes(user.role);
   }, [user, settingsItemConfig]);
 
   const handleToggle = () => {
-    // ... (Giữ nguyên) ...
     const newState = !open;
     setOpen(newState);
-    if (onToggle) {
-      onToggle(newState);
-    }
+    onToggle?.(newState);
   };
-  
-  // --- THÊM HÀM XỬ LÝ ĐĂNG XUẤT ---
+
   const handleLogout = async () => {
     await logout();
     navigate("/login");
   };
-  // ---------------------------------
 
-  // Loading state
   if (loading) {
-    // ... (Giữ nguyên)
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", p: 3 }}>
+        <CircularProgress />
+      </Box>
+    );
   }
 
-  if (!user) {
-    return null;
-  }
+  if (!user) return null;
 
-  // Check if current path is active
   const isActive = (path) => {
-    // ... (Giữ nguyên) ...
-    if (path === "/") {
-      return location.pathname === "/";
-    }
+    if (path === "/") return location.pathname === "/";
     return location.pathname.startsWith(path);
   };
 
   const renderListItem = (item, index) => {
-    // ... (Giữ nguyên) ...
     const active = isActive(item.path);
     return (
       <ListItem key={index} disablePadding sx={{ mb: 0.5 }}>
@@ -175,7 +159,6 @@ const Sidebar = ({ onToggle }) => {
               color: active ? "#1d4ed8" : "#1f2937",
             },
             transition: "all 0.2s ease",
-            position: "relative",
           }}
         >
           <ListItemIcon
@@ -208,7 +191,6 @@ const Sidebar = ({ onToggle }) => {
     <Drawer
       variant="permanent"
       sx={{
-        // ... (Giữ nguyên sx của Drawer) ...
         width: open ? drawerWidthOpen : drawerWidthClosed,
         flexShrink: 0,
         "& .MuiDrawer-paper": {
@@ -225,17 +207,8 @@ const Sidebar = ({ onToggle }) => {
         },
       }}
     >
-      {/* Phần menu chính (trên) */}
       <Box sx={{ overflowY: "auto", overflowX: "hidden" }}>
-        {/* ... (Giữ nguyên Toggle Button và Menu Section Label) ... */}
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: open ? "flex-end" : "center",
-            p: 2,
-            pb: 1,
-          }}
-        >
+        <Box sx={{ display: "flex", justifyContent: open ? "flex-end" : "center", p: 2, pb: 1 }}>
           <IconButton
             onClick={handleToggle}
             sx={{
@@ -243,11 +216,7 @@ const Sidebar = ({ onToggle }) => {
               height: 36,
               bgcolor: "#f3f4f6",
               color: "#6b7280",
-              "&:hover": {
-                bgcolor: "#e5e7eb",
-                color: "#1f2937",
-              },
-              transition: "all 0.2s",
+              "&:hover": { bgcolor: "#e5e7eb", color: "#1f2937" },
             }}
           >
             {open ? <ChevronLeft fontSize="small" /> : <ChevronRight fontSize="small" />}
@@ -266,26 +235,21 @@ const Sidebar = ({ onToggle }) => {
                 letterSpacing: "0.5px",
               }}
             >
-              Menu chính
+              {t("sidebar.mainMenu")}
             </Typography>
           </Box>
         )}
 
-        {/* Menu Items */}
         <List sx={{ px: 2, py: 0 }}>
           {filteredMainMenuItems.map(renderListItem)}
         </List>
       </Box>
 
-      {/* --- CẬP NHẬT PHẦN DƯỚI --- */}
       <Box sx={{ mb: 2 }}>
         <Divider sx={{ my: 1, mx: 3 }} />
         <List sx={{ px: 2, py: 0 }}>
-          {/* Nút Cài đặt */}
           {showSettings && renderListItem(settingsItemConfig, "settings")}
-          
-          {/* Nút Đăng xuất */}
-          <ListItem key="logout" disablePadding sx={{ mb: 0.5 }}>
+          <ListItem disablePadding sx={{ mb: 0.5 }}>
             <ListItemButton
               onClick={handleLogout}
               sx={{
@@ -295,11 +259,8 @@ const Sidebar = ({ onToggle }) => {
                 px: open ? 2 : 1.5,
                 py: 1.25,
                 bgcolor: "transparent",
-                color: "#6b7280", // Màu xám
-                "&:hover": {
-                  bgcolor: "#f9fafb",
-                  color: "#1f2937",
-                },
+                color: "#6b7280",
+                "&:hover": { bgcolor: "#f9fafb", color: "#1f2937" },
                 transition: "all 0.2s ease",
               }}
             >
@@ -316,7 +277,7 @@ const Sidebar = ({ onToggle }) => {
               </ListItemIcon>
               {open && (
                 <ListItemText
-                  primary="Đăng xuất"
+                  primary={t("sidebar.logout")}
                   primaryTypographyProps={{
                     fontSize: "0.875rem",
                     fontWeight: 500,
@@ -328,7 +289,6 @@ const Sidebar = ({ onToggle }) => {
           </ListItem>
         </List>
       </Box>
-      {/* --- HẾT PHẦN CẬP NHẬT --- */}
     </Drawer>
   );
 };

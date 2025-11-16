@@ -9,7 +9,7 @@ import { AuthProvider } from "./context/AuthContext";
 import { Auth0Provider } from "@auth0/auth0-react";
 import RedirectHandler from "./components/user/handler/RedirectHandler";
 import "./index.css";
-
+import "./i18n";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>

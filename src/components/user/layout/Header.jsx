@@ -1,5 +1,6 @@
 // src/components/user/layout/Header.jsx
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   AppBar,
   Toolbar,
@@ -21,25 +22,20 @@ import {
 import DirectionsBusIcon from "@mui/icons-material/DirectionsBus";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
+import LanguageSwitcher from "./LanguageSwitcher"; 
 
 const Header = ({ onMenuClick }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState(null);
+  const { t } = useTranslation();
 
-  const handleMenu = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
+  const handleMenu = (event) => setAnchorEl(event.currentTarget);
+  const handleClose = () => setAnchorEl(null);
   const handleProfile = () => {
     handleClose();
     navigate("/profile");
   };
-
   const handleLogout = async () => {
     handleClose();
     await logout();
@@ -50,11 +46,10 @@ const Header = ({ onMenuClick }) => {
     <AppBar
       position="fixed"
       sx={{
-        // Thay đổi nền sang màu trắng và thêm viền dưới
         background: "#ffffff",
         color: "text.primary",
         boxShadow: "none",
-        borderBottom: "1px solid #e5e7eb", // Viền dưới mỏng
+        borderBottom: "1px solid #e5e7eb",
         zIndex: (theme) => theme.zIndex.drawer + 1,
       }}
     >
@@ -68,10 +63,7 @@ const Header = ({ onMenuClick }) => {
         {/* Left Side - Logo & Title */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
           <IconButton
-            sx={{
-              display: { xs: "flex", md: "none" },
-              color: "text.secondary", // Đổi màu icon
-            }}
+            sx={{ display: { xs: "flex", md: "none" }, color: "text.secondary" }}
             onClick={onMenuClick}
           >
             <MenuIcon />
@@ -82,7 +74,6 @@ const Header = ({ onMenuClick }) => {
               display: "flex",
               alignItems: "center",
               gap: 1.5,
-              // Bỏ nền và hiệu ứng
               background: "transparent",
               px: 2,
               py: 1,
@@ -98,38 +89,32 @@ const Header = ({ onMenuClick }) => {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                // Thêm viền nhẹ cho giống thiết kế
                 border: "1px solid #e5e7eb",
               }}
             >
-              <DirectionsBusIcon
-                sx={{
-                  fontSize: 24,
-                  color: "#667eea", // Giữ màu icon logo
-                }}
-              />
+              <DirectionsBusIcon sx={{ fontSize: 24, color: "#667eea" }} />
             </Box>
             <Box>
               <Typography
                 variant="h6"
                 sx={{
                   fontWeight: 700,
-                  color: "text.primary", // Đổi màu text
+                  color: "text.primary",
                   lineHeight: 1.2,
                   fontSize: { xs: "1rem", sm: "1.25rem" },
                 }}
               >
-                SSB 1.0
+                {t("app.title")}
               </Typography>
               <Typography
                 variant="caption"
                 sx={{
-                  color: "text.secondary", // Đổi màu text
+                  color: "text.secondary",
                   fontSize: "11px",
                   display: { xs: "none", sm: "block" },
                 }}
               >
-                Smart School Bus
+                {t("app.subtitle")}
               </Typography>
             </Box>
           </Box>
@@ -137,35 +122,27 @@ const Header = ({ onMenuClick }) => {
 
         {/* Right Side - Actions */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-          {/* Search Button - Đã bị loại bỏ theo thiết kế */}
-
           {/* Notifications */}
-          <IconButton
-            sx={{
-              color: "text.secondary", // Đổi màu icon
-              // Bỏ nền
-            }}
-          >
+          <IconButton sx={{ color: "text.secondary" }}>
             <Badge
-              variant="dot" // Đổi thành dấu chấm đỏ
+              variant="dot"
               sx={{
-                "& .MuiBadge-badge": {
-                  background: "#ff5252",
-                  color: "#fff",
-                },
+                "& .MuiBadge-badge": { background: "#ff5252", color: "#fff" },
               }}
             >
               <Notifications />
             </Badge>
           </IconButton>
 
-          {/* User Avatar */}
+          {/* Language Switcher - Thêm ở đây */}
+          <LanguageSwitcher />
+
+          {/* User Avatar & Menu */}
           <Box
             sx={{
               display: "flex",
               alignItems: "center",
               gap: 1,
-              // Bỏ nền và hiệu ứng
               background: "transparent",
               px: 1.5,
               py: 0.5,
@@ -182,7 +159,6 @@ const Header = ({ onMenuClick }) => {
                 color: "#667eea",
                 fontSize: "14px",
                 fontWeight: 600,
-                // Thêm viền
                 border: "1px solid #e0e0e0",
               }}
             >
@@ -201,8 +177,8 @@ const Header = ({ onMenuClick }) => {
                 sx={{
                   height: 18,
                   fontSize: "10px",
-                  background: "#f3f4f6", // Đổi màu nền chip
-                  color: "#6b7280", // Đổi màu text chip
+                  background: "#f3f4f6",
+                  color: "#6b7280",
                   fontWeight: 500,
                 }}
               />
@@ -212,26 +188,18 @@ const Header = ({ onMenuClick }) => {
           <Menu
             id="menu-appbar"
             anchorEl={anchorEl}
-            anchorOrigin={{
-              vertical: "bottom",
-              horizontal: "right",
-            }}
+            anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
             keepMounted
-            transformOrigin={{
-              vertical: "top",
-              horizontal: "right",
-            }}
+            transformOrigin={{ vertical: "top", horizontal: "right" }}
             open={Boolean(anchorEl)}
             onClose={handleClose}
-            sx={{
-              mt: 1,
-            }}
+            sx={{ mt: 1 }}
           >
             <MenuItem onClick={handleProfile}>
-              <PersonIcon sx={{ mr: 1 }} /> Thông tin cá nhân
+              <PersonIcon sx={{ mr: 1 }} /> {t("header.profile")}
             </MenuItem>
             <MenuItem onClick={handleLogout}>
-              <LogoutIcon sx={{ mr: 1 }} /> Đăng xuất
+              <LogoutIcon sx={{ mr: 1 }} /> {t("header.logout")}
             </MenuItem>
           </Menu>
         </Box>
