@@ -11,10 +11,14 @@ export default function LoginPage() {
   const { login, isAuthenticated, user, loading } = useAuth();
   const [error, setError] = useState(null);
 
+  // LOG ĐỂ DEBUG
   useEffect(() => {
+    // console.log('LoginPage useEffect triggered:', { loading, isAuthenticated, user });
     if (!loading && isAuthenticated && user) {
       const roleRoutes = { admin: '/admin', driver: '/', parent: '/' };
-      navigate(roleRoutes[user.role] || '/');
+      const target = roleRoutes[user.role] || '/';
+      // console.log('Navigating to:', target);
+      navigate(target, { replace: true });
     }
   }, [isAuthenticated, user, loading, navigate]);
 
@@ -22,62 +26,21 @@ export default function LoginPage() {
     setError(null);
     const result = await login(credentials.email, credentials.password);
     if (!result.success) {
-      setError(result.error || 'Đăng nhập thất bại. Vui lòng thử lại.');
+      setError(result.error);
+    } else {
+      // console.log('Login successful, should redirect...');
     }
   };
 
   if (loading) return <Box>Đang tải...</Box>;
 
   return (
-    <Box
-      sx={{
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #f0f9ff 0%, #fafaf9 100%)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        py: { xs: 3, md: 4 },
-        px: { xs: 2, md: 0 },
-      }}
-    >
-      {/* Card nhỏ gọn */}
-      <Box
-        sx={{
-          width: '100%',
-          maxWidth: { xs: 380, sm: 720, md: 800 },
-          backgroundColor: '#fff',
-          borderRadius: 3,
-          overflow: 'hidden',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
-          display: 'flex',
-          flexDirection: { xs: 'column', md: 'row' },
-        }}
-      >
-        {/* Cột trái: Logo + Tiêu đề */}
-        <Box
-          sx={{
-            bgcolor: '#f0f9ff',
-            p: { xs: 3, md: 4 },
-            flex: 1,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
+    <Box sx={{ minHeight: '100vh', background: 'linear-gradient(135deg, #f0f9ff 0%, #fafaf9 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', py: 4 }}>
+      <Box sx={{ maxWidth: 800, width: '100%', backgroundColor: '#fff', borderRadius: 3, overflow: 'hidden', boxShadow: 3, display: 'flex', flexDirection: { xs: 'column', md: 'row' } }}>
+        <Box sx={{ bgcolor: '#f0f9ff', p: 4, flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <LoginHeader />
         </Box>
-
-        {/* Cột phải: Form */}
-        <Box
-          sx={{
-            bgcolor: '#ffffff',
-            p: { xs: 3, md: 4 },
-            flex: 1,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
+        <Box sx={{ bgcolor: '#ffffff', p: 4, flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <LoginForm onSubmit={handleLogin} error={error} />
         </Box>
       </Box>

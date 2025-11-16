@@ -1,4 +1,3 @@
-// src/components/incidents/IncidentTable.jsx
 import React from 'react';
 import {
   Table,
@@ -7,87 +6,77 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  Paper,
   Chip,
   Link,
-  Paper,
 } from '@mui/material';
 
-// Hàm helper để tạo Chip trạng thái
+// Hàm render trạng thái
 const StatusChip = ({ status }) => {
-  const getStatusProps = () => {
-    switch (status) {
-      case 'resolved':
-        return {
-          label: 'Đã giải quyết',
-          sx: { bgcolor: '#dcfce7', color: '#16a34a', fontWeight: 600 },
-        };
-      case 'pending':
-        return {
-          label: 'Đang xử lý',
-          sx: { bgcolor: '#fef3c7', color: '#d97706', fontWeight: 600 },
-        };
-      case 'urgent':
-        return {
-          label: 'Khẩn cấp',
-          sx: { bgcolor: '#fee2e2', color: '#ef4444', fontWeight: 600 },
-        };
-      default:
-        return { label: status, sx: {} };
-    }
+  const props = {
+    resolved: { label: 'Đã hoàn thành', sx: { bgcolor: '#d1fae5', color: '#059669', fontWeight: 600 } },
+    pending: { label: 'Đang xử lý', sx: { bgcolor: '#fef3c7', color: '#d97706', fontWeight: 600 } },
+    urgent: { label: 'Khẩn cấp', sx: { bgcolor: '#fee2e2', color: '#ef4444', fontWeight: 600 } },
   };
-
-  return <Chip size="small" {...getStatusProps()} />;
+  return <Chip size="small" {...(props[status] || { label: status })} />;
 };
 
 const IncidentTable = ({ incidents, onViewDetails }) => {
+  const getStatus = (item) => {
+    if (item.type === 'resolved') return 'resolved';
+    if (item.status) return item.status;
+    return item.type === 'emergency' ? 'urgent' : 'pending';
+  };
+
   return (
-    <TableContainer
-      component={Paper}
-      elevation={0}
-      sx={{ border: '1px solid #e5e7eb', borderRadius: 3, bgcolor: '#ffffff' }}
-    >
-      <Table sx={{ minWidth: 650 }}>
+    <TableContainer component={Paper} sx={{ borderRadius: 2, bgcolor: '#fff' }}>
+      <Table>
         <TableHead sx={{ bgcolor: '#f9fafb' }}>
           <TableRow>
-            <TableCell sx={{ fontWeight: 600, color: '#6b7280' }}>MÃ BÁO CÁO</TableCell>
-            <TableCell sx={{ fontWeight: 600, color: '#6b7280' }}>LOẠI SỰ CỐ</TableCell>
-            <TableCell sx={{ fontWeight: 600, color: '#6b7280' }}>NGÀY GỬI</TableCell>
-            <TableCell sx={{ fontWeight: 600, color: '#6b7280' }}>TRẠNG THÁI</TableCell>
-            <TableCell sx={{ fontWeight: 600, color: '#6b7280' }}>ACTION</TableCell>
+            <TableCell>MÃ BÁO CÁO</TableCell>
+            <TableCell>LOẠI SỰ CỐ</TableCell>
+            <TableCell>NỘI DUNG</TableCell>
+            <TableCell>NGÀY GỬI</TableCell>
+            <TableCell>TRẠNG THÁI</TableCell>
+            <TableCell>ACTION</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {incidents.map((row) => (
-            <TableRow
-              key={row.id}
-              sx={{
-                '&:last-child td, &:last-child th': { border: 0 },
-                '&:hover': { bgcolor: '#f9fafb' },
-              }}
-            >
-              <TableCell sx={{ fontWeight: 500, color: '#111827' }}>{row.id}</TableCell>
-              <TableCell>{row.type}</TableCell>
-              <TableCell>{row.date}</TableCell>
-              <TableCell>
-                <StatusChip status={row.status} />
-              </TableCell>
-              <TableCell>
-                <Link
-                  component="button"
-                  variant="body2"
-                  onClick={() => onViewDetails(row.id)}
-                  sx={{
-                    fontWeight: 600,
-                    color: '#ef4444', // Màu đỏ
-                    textDecoration: 'none',
-                    '&:hover': { textDecoration: 'underline' },
-                  }}
-                >
-                  View Details
-                </Link>
+          {incidents.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={6} align="center">
+                Không có sự cố nào được ghi nhận.
               </TableCell>
             </TableRow>
-          ))}
+          ) : (
+            incidents.map((item) => (
+              <TableRow key={item._id} sx={{ '&:hover': { bgcolor: '#f9fafb' } }}>
+                <TableCell>{item._id.slice(-6).toUpperCase()}</TableCell>
+                <TableCell>{item.emergency_type || item.type}</TableCell>
+                <TableCell sx={{ maxWidth: 260, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {item.message}
+                </TableCell>
+                <TableCell>{new Date(item.createdAt).toLocaleString('vi-VN')}</TableCell>
+                <TableCell>
+                  <StatusChip status={getStatus(item)} />
+                </TableCell>
+                <TableCell>
+                  <Link
+                    component="button"
+                    onClick={() => onViewDetails(item._id)}
+                    sx={{
+                      fontWeight: 600,
+                      color: '#ef4444',
+                      textDecoration: 'none',
+                      '&:hover': { textDecoration: 'underline' },
+                    }}
+                  >
+                    View Details
+                  </Link>
+                </TableCell>
+              </TableRow>
+            ))
+          )}
         </TableBody>
       </Table>
     </TableContainer>

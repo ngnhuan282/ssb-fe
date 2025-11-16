@@ -70,8 +70,8 @@ export const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
-      {
-        path: "incident-detail",
+      { 
+        path: "incident-detail/:id",
         element: (
           <ProtectedRoute allowedRoles={["driver"]}>
             <IncidentDetailPage />

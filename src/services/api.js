@@ -71,6 +71,14 @@ export const notificationAPI = {
   create: (data) => axiosInstance.post("/notifications", data),
   update: (id, data) => axiosInstance.put(`/notifications/${id}`, data),
   delete: (id) => axiosInstance.delete(`/notifications/${id}`),
+
+  getEmergency: () => axiosInstance.get("/notifications/incidents"),
+  createIncident: (data) =>
+  axiosInstance.post("/notifications/incident", data, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  }),
 };
 
 export const userAPI = {
@@ -86,6 +94,9 @@ export const authAPI = {
   login: (credentials) =>
     axiosInstance.post("/auth/login", credentials),
 
+  register: (data) =>
+    axiosInstance.post("/auth/register", data),
+
   // Đăng xuất
   logout: () =>
     axiosInstance.post("/auth/logout"),
@@ -97,4 +108,5 @@ export const authAPI = {
   // Lấy thông tin user hiện tại
   getCurrentUser: () =>
     axiosInstance.get("/auth/me"),
+
 }

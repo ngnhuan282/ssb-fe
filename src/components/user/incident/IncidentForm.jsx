@@ -16,24 +16,60 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import vi from 'date-fns/locale/vi';
+import { notificationAPI } from "../../../services/api";
 
 const IncidentForm = () => {
   const [incidentType, setIncidentType] = useState('');
   const [dateTime, setDateTime] = useState(new Date('2024-05-21T07:30:00'));
   const [location, setLocation] = useState('123 Đường ABC, Quận 1, TP.HCM');
   const [description, setDescription] = useState('');
+  const [image, setImage] = useState(null);
+  const [preview, setPreview] = useState(null);
 
-  const handleSubmit = (isEmergency = false) => {
-    const report = {
-      type: incidentType,
-      time: dateTime,
-      location: location,
-      description: description,
-      isEmergency: isEmergency,
-    };
-    console.log('Đang gửi báo cáo:', report);
-    // TODO: Thêm logic gọi API
+
+const handleSubmit = async (isEmergency = false) => {
+  try {
+    const formData = new FormData();
+
+    // append các field text
+    formData.append("user", "6910388ff1c1fce244797451");
+    formData.append("type", isEmergency ? "emergency" : "no_emergency");
+    formData.append("message", description);
+    formData.append("busId", "6910388ff1c1fce244797465");
+    formData.append("scheduleId", "6910388ff1c1fce2447974cc");
+    formData.append("read", "false");
+    formData.append("location", location);
+    formData.append("dateTime", dateTime.toISOString());
+    formData.append("emergency_type", incidentType);
+
+    // append file nếu có
+    if (image) {
+      formData.append("image", image);
+    }
+
+    console.log("FormData sending...");
+
+    await notificationAPI.createIncident(formData);
+
+    alert(isEmergency ? "Đã gửi báo cáo KHẨN CẤP!" : "Đã gửi báo cáo thường!");
+  } catch (error) {
+    console.error("Lỗi gửi sự cố:", error);
+    alert("Không gửi được sự cố!");
+  }
+};
+
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setImage(file);
+    setPreview(URL.createObjectURL(file));
   };
+
+
+
+
 
   return (
     <Box
@@ -67,11 +103,11 @@ const IncidentForm = () => {
           <MenuItem value="" disabled>
             <em>Chọn loại sự cố</em>
           </MenuItem>
-          <MenuItem value="accident">Tai nạn</MenuItem>
-          <MenuItem value="traffic_jam">Tắc đường</MenuItem>
-          <MenuItem value="vehicle_issue">Hỏng xe</MenuItem>
-          <MenuItem value="student_issue">Sự cố học sinh</MenuItem>
-          <MenuItem value="other">Khác</MenuItem>
+          <MenuItem value="Tai nạn">Tai nạn</MenuItem>
+          <MenuItem value="Tắc đường">Tắc đường</MenuItem>
+          <MenuItem value="Hỏng xe">Hỏng xe</MenuItem>
+          <MenuItem value="Sự cố học sinh">Sự cố học sinh</MenuItem>
+          <MenuItem value="Khác">Khác</MenuItem>
         </Select>
       </FormControl>
 
@@ -148,32 +184,64 @@ const IncidentForm = () => {
 
       {/* Đính kèm hình ảnh */}
       <FormControl fullWidth sx={{ mb: 4 }}>
-        <Typography variant="body1" sx={{ fontWeight: 600, mb: 1, color: '#374151' }}>
-          Đính kèm hình ảnh
+  <Typography variant="body1" sx={{ fontWeight: 600, mb: 1, color: '#374151' }}>
+    Đính kèm hình ảnh
+  </Typography>
+
+  {/* Input file ẩn */}
+  <input
+    id="image-upload"
+    type="file"
+    accept="image/png, image/jpeg, image/jpg"
+    style={{ display: 'none' }}
+    onChange={handleFileChange}
+  />
+
+  {/* Khung upload */}
+  <Box
+    onClick={() => document.getElementById("image-upload").click()}
+    sx={{
+      border: '2px dashed #e5e7eb',
+      borderRadius: 2,
+      p: 4,
+      bgcolor: '#f9fafb',
+      textAlign: 'center',
+      cursor: 'pointer',
+      '&:hover': { borderColor: '#ef4444', bgcolor: '#fef2f2' },
+    }}
+  >
+    {!preview ? (
+      <>
+        <Description sx={{ fontSize: 40, color: '#ef4444' }} />
+        <Typography variant="body1" sx={{ color: '#6b7280', mt: 1 }}>
+          <Typography component="span" sx={{ color: '#ef4444', fontWeight: 600 }}>
+            Tải lên một tệp
+          </Typography>
+          {' '}hoặc kéo và thả
         </Typography>
-        <Box
-          sx={{
-            border: '2px dashed #e5e7eb',
-            borderRadius: 2,
-            p: 4,
-            bgcolor: '#f9fafb',
-            textAlign: 'center',
-            cursor: 'pointer',
-            '&:hover': { borderColor: '#ef4444', bgcolor: '#fef2f2' },
+        <Typography variant="caption" sx={{ color: '#9ca3af' }}>
+          PNG, JPG lên đến 10MB
+        </Typography>
+      </>
+    ) : (
+      <Box>
+        <img
+          src={preview}
+          alt="preview"
+          style={{
+            maxWidth: "100%",
+            borderRadius: 10,
+            maxHeight: 300,
+            objectFit: "contain",
           }}
-        >
-          <Description sx={{ fontSize: 40, color: '#ef4444' }} />
-          <Typography variant="body1" sx={{ color: '#6b7280', mt: 1 }}>
-            <Typography component="span" sx={{ color: '#ef4444', fontWeight: 600 }}>
-              Tải lên một tệp
-            </Typography>
-            {' '}hoặc kéo và thả
-          </Typography>
-          <Typography variant="caption" sx={{ color: '#9ca3af' }}>
-            PNG, JPG, GIF lên đến 10MB
-          </Typography>
-        </Box>
-      </FormControl>
+        />
+        <Typography sx={{ mt: 1, color: '#6b7280' }}>
+          Nhấn để chọn ảnh khác
+        </Typography>
+      </Box>
+    )}
+  </Box>
+</FormControl>
 
       {/* Nút bấm */}
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>

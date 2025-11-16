@@ -3,34 +3,27 @@ import { Box, CircularProgress } from "@mui/material";
 import { useAuth } from "../context/AuthContext";
 
 const PublicRoute = ({ children }) => {
-  const { user, loading, isAuthenticated } = useAuth();
+  const { isAuthenticated, loading, user } = useAuth();
 
-  // Nếu đang load auth, hiển thị spinner
   if (loading) {
     return (
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          minHeight: "100vh",
-          bgcolor: "#f5f7fa",
-        }}
-      >
+      <Box sx={{ 
+        display: "flex", 
+        alignItems: "center", 
+        justifyContent: "center", 
+        minHeight: "100vh" 
+      }}>
         <CircularProgress size={50} />
       </Box>
     );
   }
 
-  // ⚠️ Kiểm tra nếu đã authenticated, redirect ngay
-  // Không cần kiểm tra user, chỉ cần isAuthenticated
+  // CHỈ redirect nếu đã authenticated VÀ không có pending redirect
   if (isAuthenticated) {
-    // Redirect về home hoặc admin tùy theo role
-    const defaultRoute = user?.role === "admin" ? "/admin" : "/";
-    return <Navigate to={defaultRoute} replace />;
+    const redirectTo = user?.role === 'admin' ? '/admin' : '/';
+    return <Navigate to={redirectTo} replace />;
   }
 
-  // Chỉ render login/register khi chưa login
   return children;
 };
 
