@@ -106,8 +106,13 @@ const DriverSchedulePage = () => {
   };
 
   const handleScheduleSelect = (date, schedule) => {
+  if (schedule) {
     setSelectedSchedule(schedule);
-  };
+  } else {
+    // Xóa selection hoặc hiển thị thông báo không có lịch
+    setSelectedSchedule(null);
+  }
+};
 
   const formatSelectedDate = (date) => {
     if (!date) return '';

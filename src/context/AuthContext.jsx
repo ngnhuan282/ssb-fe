@@ -16,13 +16,12 @@ export const AuthProvider = ({ children }) => {
 
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);  // ĐÃ SỬA DÒNG NÀY
   const [redirectAfterLogin, setRedirectAfterLogin] = useState(null);
 
   // === XỬ LÝ SOCIAL CALLBACK ===
   const handleSocialCallback = async (idToken) => {
     try {
-      // BƯỚC 1: XÓA LOCALSTORAGE CŨ (TRÁNH FLASH ROLE)
       localStorage.removeItem('user');
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
@@ -33,10 +32,8 @@ export const AuthProvider = ({ children }) => {
       const userData = {
         ...apiUser,
         _id: apiUser._id || apiUser.id,
-        // id: apiUser.id || apiUser._id,
       };
 
-      // BƯỚC 2: LƯU MỚI
       localStorage.setItem('user', JSON.stringify(userData));
       localStorage.setItem('accessToken', accessToken);
       localStorage.setItem('refreshToken', refreshToken);
@@ -44,10 +41,8 @@ export const AuthProvider = ({ children }) => {
       setUser(userData);
       setIsAuthenticated(true);
 
-      // BƯỚC 3: SET REDIRECT
       const redirectTo = userData.role === 'admin' ? '/admin' : '/';
       setRedirectAfterLogin(redirectTo);
-
     } catch (error) {
       console.error('Social callback failed:', error);
       localStorage.clear();
@@ -56,10 +51,9 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // === ĐĂNG NHẬP EMAIL/PASSWORD ===
+  // === LOGIN EMAIL/PASSWORD ===
   const login = async (email, password) => {
     try {
-      // XÓA CŨ
       localStorage.removeItem('user');
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
@@ -100,19 +94,26 @@ export const AuthProvider = ({ children }) => {
     });
   };
 
-  // === LOGOUT ===
+  // === LOGOUT – FIX HOÀN TOÀN KHÔNG FLASH DASHBOARD ===
   const logout = async () => {
+    // XÓA NGAY LẬP TỨC STATE + LOCALSTORAGE TRƯỚC KHI AUTH0 REDIRECT
+    setUser(null);
+    setIsAuthenticated(false);
+    setRedirectAfterLogin(null);
+    localStorage.clear();
+
     try {
       await authAPI.logout();
     } catch (error) {
       console.error('Logout API failed:', error);
-    } finally {
-      localStorage.clear();
-      setUser(null);
-      setIsAuthenticated(false);
-      setRedirectAfterLogin(null);
-      auth0Logout({ logoutParams: { returnTo: window.location.origin } });
     }
+
+    // Redirect thẳng về /login, không qua root route nữa
+    auth0Logout({
+      logoutParams: {
+        returnTo: window.location.origin + "/login",
+      },
+    });
   };
 
   // === CẬP NHẬT USER ===
@@ -123,20 +124,27 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('user', JSON.stringify(newUser));
   };
 
-  // === LOAD AUTH KHI TẢI TRANG ===
+  // === LOAD AUTH KHI APP KHỞI ĐỘNG ===
   useEffect(() => {
     const loadAuth = async () => {
       try {
-        // NẾU ĐANG SOCIAL LOGIN → KHÔNG ĐỌC LOCALSTORAGE
+        // Nếu URL có dấu hiệu là sau khi logout (có state, error, v.v.) → bỏ qua
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('error') || params.has('state')) {
+          setLoading(false);
+          return;
+        }
+
+        // Xử lý social login callback
         if (auth0Authenticated) {
           const claims = await getIdTokenClaims();
           if (claims?.__raw) {
             await handleSocialCallback(claims.__raw);
-            return; // DỪNG, KHÔNG ĐỌC LOCALSTORAGE
+            return;
           }
         }
 
-        // CHỈ ĐỌC LOCALSTORAGE NẾU KHÔNG PHẢI SOCIAL LOGIN
+        // Đọc từ localStorage (email/password login trước đó)
         const storedUser = localStorage.getItem('user');
         const accessToken = localStorage.getItem('accessToken');
 
@@ -145,8 +153,7 @@ export const AuthProvider = ({ children }) => {
           setUser(parsedUser);
           setIsAuthenticated(true);
 
-          // Redirect nếu đang ở login/register
-          if (window.location.pathname === '/login' || window.location.pathname === '/register') {
+          if (['/login', '/register'].includes(window.location.pathname)) {
             const redirectTo = parsedUser.role === 'admin' ? '/admin' : '/';
             setRedirectAfterLogin(redirectTo);
           }
@@ -157,6 +164,7 @@ export const AuthProvider = ({ children }) => {
         setLoading(false);
       }
     };
+
     loadAuth();
   }, [auth0Authenticated, getIdTokenClaims]);
 
