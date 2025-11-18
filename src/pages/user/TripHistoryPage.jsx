@@ -11,26 +11,91 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import vi from 'date-fns/locale/vi';
 import { useNavigate } from 'react-router-dom';
 import TripHistoryTable from '../../components/user/trip/TripHistoryTable';
-
-// Dữ liệu giả lập
-const mockTrips = [
-  { id: 'T01-2610', date: '26/10/2023', route: 'Tuyến 01', startTime: '06:30 AM', endTime: '07:15 AM', status: 'completed' },
-  { id: 'T02-2510', date: '25/10/2023', route: 'Tuyến 02', startTime: '06:45 AM', endTime: '07:30 AM', status: 'completed' },
-  { id: 'T01-2410', date: '24/10/2023', route: 'Tuyến 01', startTime: '06:30 AM', endTime: '07:20 AM', status: 'delayed' },
-  { id: 'T03-2310', date: '23/10/2023', route: 'Tuyến 03', startTime: '07:00 AM', endTime: '-', status: 'cancelled' },
-  { id: 'T02-2210', date: '22/10/2023', route: 'Tuyến 02', startTime: '06:45 AM', endTime: '07:35 AM', status: 'completed' },
-  { id: 'T01-2110', date: '21/10/2023', route: 'Tuyến 01', startTime: '07:12 AM', endTime: '07:12 AM', status: 'completed' },
-];
+import { scheduleAPI } from '../../services/api';
+import { useEffect } from 'react';
+import { useAuth } from '../../context/AuthContext';
+import { driverAPI } from '../../services/api';
 
 const TripHistoryPage = () => {
   const navigate = useNavigate();
-  const [startDate, setStartDate] = useState(new Date('2023-10-01'));
-  const [endDate, setEndDate] = useState(new Date('2023-10-26'));
+  const [startDate, setStartDate] = useState(new Date('2025-10-01'));
+  const [endDate, setEndDate] = useState(new Date());
+  const [tripHistory, setTripHistory] = useState([]);
+  const { user } = useAuth();
+  const [driver, setDriver] = useState(null);
+  const [filteredTrips, setFilteredTrips] = useState([]);
+
+  const fetchAPI = async () => {
+    if (!user || !driver) return;
+    const schedulesByDriver = await scheduleAPI.getByDriver(driver._id);
+    const tripHistoryData = schedulesByDriver.data.data
+      .filter(schedule => schedule.status === 'completed' || schedule.status === 'delayed')
+      .map(schedule => ({
+        id: schedule._id,
+        rawDate: schedule.date,
+        date: new Date(schedule.date).toLocaleDateString('vi-VN'),
+        route: schedule.route?.name,
+        startTime: schedule.starttime
+          ? new Date(schedule.starttime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+          : "",
+        endTime: schedule.endtime
+          ? new Date(schedule.endtime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+          : "",
+        status: schedule.status === 'completed' ? 'Hoàn thành' : schedule.status === 'delayed' ? 'Trễ giờ' : '',
+      }));
+
+    setTripHistory(tripHistoryData);
+
+  }
+
+  useEffect(() => {
+    if (!user) navigate('/login');
+  }, [user, navigate]);
+
+  useEffect(() => {
+    fetchDriver();
+  }, [user]);
+
+  const fetchDriver = async () => {
+    if (!user) return;
+    try {
+      const { data: { data: drivers } } = await driverAPI.getAll();
+      const myDriver = drivers.find(d => {
+        const driverUserId = d.user?._id?.toString() || d.user?.toString();
+        return driverUserId === user._id?.toString();
+      });
+      setDriver(myDriver);
+    } catch (err) {
+      console.error('Fetch driver error:', err);
+    }
+  };
+
+  useEffect(() => {
+    if (driver) {
+      fetchAPI();
+    }
+  }, [driver]);
+
+  useEffect(() => {
+    if (!tripHistory.length) return;
+
+    startDate.setHours(0, 0, 0, 0);
+    endDate.setHours(23, 59, 59, 999);
+
+    const filtered = tripHistory.filter(trip => {
+      const tripDate = new Date(trip.rawDate);
+      return tripDate >= startDate && tripDate <= endDate;
+    });
+
+    setFilteredTrips(filtered);
+  }, [startDate, endDate, tripHistory]);
 
   const handleViewDetails = (tripId) => {
     // Chuyển hướng đến trang chi tiết
     navigate(`/trip-history/${tripId}`);
   };
+
+
 
   return (
     <Box sx={{ p: 3, flexGrow: 1 }}>
@@ -47,10 +112,10 @@ const TripHistoryPage = () => {
             value={startDate}
             onChange={(newValue) => setStartDate(newValue)}
             renderInput={(params) => (
-              <TextField 
-                {...params} 
-                size="small" 
-                sx={{ bgcolor: '#fff', borderRadius: 2 }} 
+              <TextField
+                {...params}
+                size="small"
+                sx={{ bgcolor: '#fff', borderRadius: 2 }}
               />
             )}
           />
@@ -59,10 +124,10 @@ const TripHistoryPage = () => {
             value={endDate}
             onChange={(newValue) => setEndDate(newValue)}
             renderInput={(params) => (
-              <TextField 
-                {...params} 
-                size="small" 
-                sx={{ bgcolor: '#fff', borderRadius: 2 }} 
+              <TextField
+                {...params}
+                size="small"
+                sx={{ bgcolor: '#fff', borderRadius: 2 }}
               />
             )}
           />
@@ -71,11 +136,12 @@ const TripHistoryPage = () => {
 
       {/* Bảng lịch sử */}
       <TripHistoryTable
-        trips={mockTrips}
+        trips={filteredTrips}
         onViewDetails={handleViewDetails}
       />
 
-      {/* TODO: Thêm Pagination ở đây nếu cần */}
+
+
     </Box>
   );
 };

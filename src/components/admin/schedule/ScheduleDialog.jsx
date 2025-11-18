@@ -184,9 +184,9 @@ export default function ScheduleDialog({
                             textTransform: "none",
                             py: 1.2,
                         }}
-                        disabled={form.status === "in_progress" || form.status === "completed" || form.status === "delayed"}
+                        disabled={(form.status === "in_progress" || form.status === "completed" || form.status === "delayed") || !form.route}
                     >
-                        Chọn học sinh ({selectedStudents.length})
+                        {!form.route ? "Chọn tuyến trước khi chọn học sinh" : selectedStudents.length > 0 ? `Đã chọn ${selectedStudents.length} học sinh` : "Chọn học sinh"}
                     </Button>
                     {errors.students && (
                         <Typography color="error" variant="body2" sx={{ mt: -1 }}>

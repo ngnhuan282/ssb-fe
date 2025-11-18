@@ -70,7 +70,7 @@ export const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
-      { 
+      {
         path: "incident-detail/:id",
         element: (
           <ProtectedRoute allowedRoles={["driver"]}>
@@ -87,7 +87,7 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: "trip-detail",
+        path: "trip-history/:id",
         element: (
           <ProtectedRoute allowedRoles={["driver"]}>
             <TripDetailPage />
