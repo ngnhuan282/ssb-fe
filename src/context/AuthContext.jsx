@@ -33,7 +33,7 @@ export const AuthProvider = ({ children }) => {
       const userData = {
         ...apiUser,
         _id: apiUser._id || apiUser.id,
-        id: apiUser.id || apiUser._id,
+        // id: apiUser.id || apiUser._id,
       };
 
       // BƯỚC 2: LƯU MỚI
