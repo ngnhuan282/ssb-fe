@@ -22,7 +22,7 @@ import {
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 
-const WeeklyScheduleView = ({ weekSchedules = [], weekStart, onWeekChange }) => {
+const WeeklyScheduleView = ({ weekSchedules = [], weekStart, onWeekChange, onScheduleClick }) => {
   const { t, i18n } = useTranslation();
   const locale = i18n.language === 'vi' ? 'vi-VN' : 'en-US';
 
@@ -120,13 +120,22 @@ const WeeklyScheduleView = ({ weekSchedules = [], weekStart, onWeekChange }) => 
                   return hour >= 12;
                 });
                 const todayRow = isToday(day);
+                const hasSchedule = morningSchedule || afternoonSchedule;
 
                 return (
                   <TableRow 
                     key={index}
+                    onClick={() => {
+                      if (hasSchedule && onScheduleClick) {
+                        onScheduleClick(morningSchedule || afternoonSchedule);
+                      }
+                    }}
                     sx={{ 
                       bgcolor: todayRow ? '#e3f2fd' : 'transparent',
-                      '&:hover': { bgcolor: '#f5f5f5' },
+                      cursor: hasSchedule ? 'pointer' : 'default',
+                      '&:hover': { 
+                        bgcolor: hasSchedule ? '#f5f5f5' : (todayRow ? '#e3f2fd' : 'transparent')
+                      },
                     }}
                   >
                     <TableCell>
