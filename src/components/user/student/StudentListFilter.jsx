@@ -29,7 +29,7 @@ const StudentListFilter = ({
       {/* Thanh tìm kiếm (style mới) */}
       <TextField
         fullWidth
-        placeholder="Tìm kiếm học sinh..."
+        placeholder={t("studentList.searchPlaceholder")}
         value={searchTerm}
         onChange={onSearchChange}
         sx={{

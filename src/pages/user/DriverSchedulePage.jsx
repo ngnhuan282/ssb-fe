@@ -15,9 +15,9 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 // Components
 import ScheduleCalendar from '../../components/user/schedule/ScheduleCalendar.jsx';
-import WeeklyScheduleView from '../../components/user/schedule/WeeklyScheduleView.jsx';
+import WeeklyScheduleView from '../../components/user/schedule/WeeklyScheduleView.jsx'; 
 import TodayScheduleCard from '../../components/user/schedule/TodayScheduleCard.jsx';
-import RouteStopsList from '../../components/user/schedule/RouteStopsList.jsx';
+import RouteStopsList from '../../components/user/schedule/RouteStopsList.jsx'; 
 
 // APIs
 import { scheduleAPI, driverAPI } from '../../services/api.js';
@@ -26,7 +26,7 @@ import { useAuth } from '../../context/AuthContext';
 const DriverSchedulePage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [viewMode, setViewMode] = useState('month');
   const [selectedSchedule, setSelectedSchedule] = useState(null);
   const [monthSchedules, setMonthSchedules] = useState([]);
@@ -111,7 +111,8 @@ const DriverSchedulePage = () => {
 
   const formatSelectedDate = (date) => {
     if (!date) return '';
-    return new Intl.DateTimeFormat('vi-VN', {
+    const locale = i18n.language === 'vi' ? 'vi-VN' : 'en-US';
+    return new Intl.DateTimeFormat(locale, {
       weekday: 'long',
       day: '2-digit',
       month: '2-digit',
@@ -125,10 +126,10 @@ const DriverSchedulePage = () => {
         {/* Header */}
         <Box sx={{ mb: 4 }}>
           <Typography variant="h4" sx={{ fontWeight: 700, color: '#1e293b' }}>
-            Lịch làm việc
+            {t("schedule.title")}
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            Xem lịch trình hàng tháng và hàng tuần của bạn.
+            {t("schedule.subtitle")}
           </Typography>
         </Box>
 
@@ -147,10 +148,10 @@ const DriverSchedulePage = () => {
             }}
           >
             <ToggleButton value="month" sx={{ px: 3, py: 1.5, textTransform: 'none', fontWeight: 500 }}>
-              <CalendarMonth sx={{ mr: 1, fontSize: 18 }} /> Xem theo tháng
+              <CalendarMonth sx={{ mr: 1, fontSize: 18 }} /> {t("schedule.views.month")}
             </ToggleButton>
             <ToggleButton value="week" sx={{ px: 3, py: 1.5, textTransform: 'none', fontWeight: 500 }}>
-              <ViewWeek sx={{ mr: 1, fontSize: 18 }} /> Xem theo tuần
+              <ViewWeek sx={{ mr: 1, fontSize: 18 }} /> {t("schedule.views.week")}
             </ToggleButton>
           </ToggleButtonGroup>
         </Box>

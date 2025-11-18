@@ -31,6 +31,7 @@
     "register": "Đăng ký"
   },
   "studentList": {
+    "title": "Danh sách học sinh",
     "searchPlaceholder": "Tìm kiếm học sinh...",
     "tabs": {
       "all": "Tất cả",
@@ -38,7 +39,16 @@
       "picked_up": "Đã đón",
       "dropped_off": "Đã trả"
     },
-    "noResults": "Không tìm thấy học sinh nào"
+    "noResults": "Không tìm thấy học sinh nào",
+    "loadingData": "Đang tải dữ liệu...",
+    "retry": "Thử lại",
+    "errors": {
+      "dbConnection": "Lỗi kết nối cơ sở dữ liệu",
+      "loadFailed": "Không tải được dữ liệu"
+    },
+    "warnings": {
+      "noPhone": "Không có số điện thoại"
+    }
   },
   "studentCard": {
     "noName": "Chưa có tên",
@@ -52,9 +62,21 @@
     }
   },
   "schedule": {
+    "title": "Lịch làm việc",
+    "subtitle": "Xem lịch trình hàng tháng và hàng tuần của bạn.",
     "loading": "Đang tải lịch trình...",
     "noSchedule": "Không có lịch trình nào. Hãy liên hệ admin để tạo lịch.",
-    "selectDate": "Chọn một ngày để xem chi tiết"
+    "selectDate": "Chọn một ngày để xem chi tiết",
+    "views": {
+      "month": "Xem theo tháng",
+      "week": "Xem theo tuần"
+    },
+    "table": {
+      "date": "Ngày",
+      "morning": "Ca sáng",
+      "afternoon": "Ca chiều",
+      "status": "Trạng thái"
+    }
   },
   "routeStops": {
     "title": "Danh sách điểm dừng",
@@ -62,14 +84,22 @@
     "noTime": "Chưa có giờ",
     "infoTitle": "THÔNG TIN TUYẾN ĐƯỜNG",
     "distance": "Tổng quãng đường",
-    "estimatedTime": "Thời gian ước tính"
+    "estimatedTime": "Thời gian ước tính",
+    "types": {
+      "pickup": "Đón",
+      "dropoff": "Trả",
+      "unknown": "Điểm dừng"
+    },
+    "students": "học sinh",
+    "minutes": "phút",
+    "km": "km"
   },
   "calendar": {
     "months": [
       "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",
       "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"
     ],
-    "days": ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"]
+    "days": ["CN", "T2", "T3", "T4", "T5", "T6", "T7"]
   },
   "weeklySchedule": {
     "title": "Lịch tuần",
@@ -83,5 +113,70 @@
   "todaySchedule": {
     "noRoute": "Chưa có tuyến",
     "busPlate": "Biển số xe"
+  },
+
+  "incident": {
+    "pageTitle": "Báo cáo sự cố",
+    "tabNew": "Tạo báo cáo mới",
+    "tabHistory": "Lịch sử báo cáo",
+
+    "form": {
+      "title": "Tạo báo cáo sự cố",
+      "typeLabel": "Loại sự cố",
+      "typePlaceholder": "Chọn loại sự cố",
+      "types": {
+        "traffic_delay": "Tắc đường / Trễ giờ",
+        "student_misconduct": "Học sinh nghịch ngợm / Ốm trên xe",
+        "bus_breakdown": "Hỏng xe / Sự cố kỹ thuật",
+        "minor_accident": "Va chạm nhỏ",
+        "other": "Khác"
+      },
+      "dateTimeLabel": "Thời gian xảy ra",
+      "locationLabel": "Địa điểm",
+      "descriptionLabel": "Mô tả chi tiết sự cố",
+      "descriptionPlaceholder": "Mô tả càng chi tiết càng tốt...",
+      "uploadLabel": "Tải lên ảnh hiện trường (tùy chọn)",
+      "uploadHint": "PNG, JPG lên đến 10MB",
+      "uploadDrag": "Tải lên một tệp hoặc kéo và thả",
+      "btnNormal": "Gửi báo cáo",
+      "btnEmergency": "Gửi báo cáo khẩn cấp"
+    },
+
+    "filter": {
+      "type": "Loại sự cố",
+      "status": "Trạng thái",
+      "timeRange": "Khoảng thời gian",
+      "today": "Hôm nay",
+      "last7days": "7 ngày qua",
+      "last30days": "30 ngày qua",
+      "clearFilters": "Xóa bộ lọc"
+    },
+
+    "table": {
+      "reportId": "MÃ BÁO CÁO",
+      "type": "LOẠI SỰ CỐ",
+      "content": "NỘI DUNG",
+      "date": "NGÀY GỬI",
+      "status": "TRẠNG THÁI",
+      "action": "ACTION",
+      "viewDetails": "Xem chi tiết",
+      "noIncidents": "Không có sự cố nào được ghi nhận."
+    },
+
+    "detail": {
+      "title": "Chi tiết báo cáo sự cố",
+      "reportId": "Mã báo cáo",
+      "type": "Loại sự cố",
+      "dateTime": "Thời gian xảy ra",
+      "location": "Địa điểm",
+      "description": "Mô tả",
+      "status": "Trạng thái",
+      "createdAt": "Ngày gửi",
+      "delete": "Xóa",
+      "markResolved": "Đánh dấu đã giải quyết",
+      "statusResolved": "Đã giải quyết",
+      "pending": "Đang xử lý",
+      "urgent": "Khẩn cấp"
+    }
   }
 }

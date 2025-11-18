@@ -68,8 +68,8 @@ const DriverStudentListPage = () => {
       const data = response.data.data;
       setStudents(data);
     } catch (err) {
-      setError('Lỗi kết nối DB');
-      setSnackbar({ open: true, message: 'Không tải được', severity: 'error' });
+      setError(t("studentList.errors.dbConnection")); 
+      setSnackbar({ open: true, message: t("studentList.errors.loadFailed"), severity: 'error' });
     } finally {
       setLoading(false);
     }
@@ -81,7 +81,7 @@ const DriverStudentListPage = () => {
     if (phone) {
       window.location.href = `tel:${phone}`;
     } else {
-      setSnackbar({ open: true, message: 'Không có số điện thoại', severity: 'warning' });
+      setSnackbar({ open: true, message: t("studentList.warnings.noPhone"), severity: 'warning' });
     }
   };
 
@@ -100,7 +100,7 @@ const DriverStudentListPage = () => {
   if (loading && students.length === 0) {
     return (
       <Box sx={{ p: 3, textAlign: 'center' }}>
-        <Typography>Đang tải dữ liệu...</Typography>
+        <Typography>{t("studentList.loadingData")}</Typography>
         <LinearProgress />
       </Box>
     );
@@ -110,7 +110,7 @@ const DriverStudentListPage = () => {
     return (
       <Box sx={{ p: 3, textAlign: 'center' }}>
         <Typography color="error">{error}</Typography>
-        <Button variant="contained" onClick={fetchStudents} sx={{ mt: 2 }}>Thử lại</Button>
+        <Button variant="contained" onClick={fetchStudents} sx={{ mt: 2 }}>{t("studentList.retry")}</Button>
       </Box>
     );
   }
@@ -120,7 +120,7 @@ const DriverStudentListPage = () => {
       <Container maxWidth="xl">
         
         <Typography variant="h4" sx={{ fontWeight: 700, color: '#111827', mb: 3 }}>
-          Danh sách học sinh
+          {t("studentList.title")}
         </Typography>
 
         <StudentListFilter

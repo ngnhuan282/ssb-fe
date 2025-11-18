@@ -1,4 +1,4 @@
-// src/components/user/driver/RouteStopsList.jsx - READ-ONLY VERSION
+// src/components/user/driver/RouteStopsList.jsx
 import React from 'react';
 import {
   Card,
@@ -19,7 +19,8 @@ import {
 import { useTranslation } from 'react-i18next';
 
 const RouteStopsList = ({ route }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language === 'vi' ? 'vi-VN' : 'en-US';
 
   if (!route || !route.stops || route.stops.length === 0) {
     return (
@@ -36,13 +37,7 @@ const RouteStopsList = ({ route }) => {
   const formatTime = (timeString) => {
     if (!timeString) return '';
     const date = new Date(timeString);
-    return date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-  };
-
-  // ✨ Hàm đếm số học sinh tại mỗi điểm dừng (optional - nếu có data)
-  const getStudentCountAtStop = (stop) => {
-    // Có thể lấy từ stop.studentCount hoặc tính từ students array
-    return stop.studentCount || 0;
+    return date.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
   };
 
   return (
@@ -54,9 +49,8 @@ const RouteStopsList = ({ route }) => {
 
         <List sx={{ p: 0 }}>
           {route.stops.map((stop, index) => {
-            const stopName = stop.name || stop.location || 'Điểm dừng không tên';
+            const stopName = stop.name || stop.location || t("routeStops.types.unknown");
             const stopType = stop.type || 'unknown';
-            const studentCount = getStudentCountAtStop(stop);
 
             return (
               <ListItem
@@ -73,11 +67,10 @@ const RouteStopsList = ({ route }) => {
                     top: 40,
                     bottom: -16,
                     width: 2,
-                    bgcolor: '#e0e0e0', // ✅ Tất cả điểm đều màu xám (không phân biệt trạng thái)
+                    bgcolor: '#e0e0e0',
                   } : {},
                 }}
               >
-                {/* Icon - Tất cả đều giống nhau */}
                 <Box sx={{ mr: 2, display: 'flex', alignItems: 'center' }}>
                   <Circle sx={{ fontSize: 24, color: '#1976d2' }} />
                 </Box>
@@ -95,11 +88,10 @@ const RouteStopsList = ({ route }) => {
                         {stopName}
                       </Typography>
                       
-                      {/* Chip loại điểm dừng */}
                       {stopType === 'pickup' && (
                         <Chip
                           icon={<ArrowUpward sx={{ fontSize: 12 }} />}
-                          label="Đón"
+                          label={t("routeStops.types.pickup")}
                           size="small"
                           sx={{
                             height: 18,
@@ -114,7 +106,7 @@ const RouteStopsList = ({ route }) => {
                       {stopType === 'dropoff' && (
                         <Chip
                           icon={<ArrowDownward sx={{ fontSize: 12 }} />}
-                          label="Trả"
+                          label={t("routeStops.types.dropoff")}
                           size="small"
                           sx={{
                             height: 18,
@@ -127,13 +119,10 @@ const RouteStopsList = ({ route }) => {
                         />
                       )}
                       
-                      {/* ❌ XÓA: Không hiển thị "Hiện tại" */}
-                      
-                      {/* Số học sinh (nếu có) */}
-                      {studentCount > 0 && (
+                      {(stop.studentCount || 0) > 0 && (
                         <Chip
                           icon={<People sx={{ fontSize: 14 }} />}
-                          label={`${studentCount} học sinh`}
+                          label={`${stop.studentCount} ${t("routeStops.students")}`}
                           size="small"
                           sx={{
                             height: 18,
@@ -176,7 +165,7 @@ const RouteStopsList = ({ route }) => {
                 {t("routeStops.distance")}
               </Typography>
               <Typography variant="caption" sx={{ fontWeight: 500, color: '#424242' }}>
-                {route.distance} km
+                {route.distance} {t("routeStops.km")}
               </Typography>
             </Box>
             {route.estimatedTime && (
@@ -185,7 +174,7 @@ const RouteStopsList = ({ route }) => {
                   {t("routeStops.estimatedTime")}
                 </Typography>
                 <Typography variant="caption" sx={{ fontWeight: 500, color: '#424242' }}>
-                  {route.estimatedTime} phút
+                  {route.estimatedTime} {t("routeStops.minutes")}
                 </Typography>
               </Box>
             )}

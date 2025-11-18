@@ -21,14 +21,16 @@ import {
   Circle,
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
+
 const WeeklyScheduleView = ({ weekSchedules = [], weekStart, onWeekChange }) => {
-  const { t } = useTranslation();
-  // Sửa: Kiểm tra weekStart trước khi xử lý
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language === 'vi' ? 'vi-VN' : 'en-US';
+
   if (!weekStart) {
     return (
       <Card sx={{ p: 4, textAlign: 'center' }}>
         <CircularProgress size={24} />
-        <Typography mt={2}>Đang tải lịch tuần...</Typography>
+        <Typography mt={2}>{t("schedule.loading")}</Typography>
       </Card>
     );
   }
@@ -43,10 +45,10 @@ const WeeklyScheduleView = ({ weekSchedules = [], weekStart, onWeekChange }) => 
     return days;
   };
 
-  // Sửa: Dùng useMemo để tránh tính lại không cần thiết
   const weekDays = useMemo(() => getWeekDays(weekStart), [weekStart]);
   
-  const dayNames = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
+  // Lấy tên ngày từ file dịch
+  const dayNames = t("calendar.days", { returnObjects: true });
 
   const getScheduleForDate = (date) => {
     return weekSchedules.filter(schedule => {
@@ -66,7 +68,7 @@ const WeeklyScheduleView = ({ weekSchedules = [], weekStart, onWeekChange }) => 
 
   const formatTime = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
   };
 
   const isToday = (date) => {
@@ -87,7 +89,7 @@ const WeeklyScheduleView = ({ weekSchedules = [], weekStart, onWeekChange }) => 
               <ChevronLeft />
             </IconButton>
             <Typography variant="body2" sx={{ color: '#757575', minWidth: 180, textAlign: 'center' }}>
-              {weekDays[0].toLocaleDateString('vi-VN')} - {weekDays[6].toLocaleDateString('vi-VN')}
+              {weekDays[0].toLocaleDateString(locale)} - {weekDays[6].toLocaleDateString(locale)}
             </Typography>
             <IconButton size="small" onClick={() => onWeekChange('next')} sx={{ color: '#424242' }}>
               <ChevronRight />
@@ -100,10 +102,10 @@ const WeeklyScheduleView = ({ weekSchedules = [], weekStart, onWeekChange }) => 
           <Table size="small">
             <TableHead>
               <TableRow>
-                <TableCell sx={{ fontWeight: 600, color: '#424242', width: 120 }}>Ngày</TableCell>
-                <TableCell sx={{ fontWeight: 600, color: '#424242' }}>Ca sáng</TableCell>
-                <TableCell sx={{ fontWeight: 600, color: '#424242' }}>Ca chiều</TableCell>
-                <TableCell sx={{ fontWeight: 600, color: '#424242', width: 100 }}>Trạng thái</TableCell>
+                <TableCell sx={{ fontWeight: 600, color: '#424242', width: 120 }}>{t("schedule.table.date")}</TableCell>
+                <TableCell sx={{ fontWeight: 600, color: '#424242' }}>{t("schedule.table.morning")}</TableCell>
+                <TableCell sx={{ fontWeight: 600, color: '#424242' }}>{t("schedule.table.afternoon")}</TableCell>
+                <TableCell sx={{ fontWeight: 600, color: '#424242', width: 100 }}>{t("schedule.table.status")}</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -174,15 +176,7 @@ const WeeklyScheduleView = ({ weekSchedules = [], weekStart, onWeekChange }) => 
                     <TableCell>
                       {(morningSchedule || afternoonSchedule) && (
                         <Chip
-                          label={
-                            morningSchedule?.status === 'completed' || afternoonSchedule?.status === 'completed' 
-                              ? 'Hoàn thành'
-                              : morningSchedule?.status === 'in_progress' || afternoonSchedule?.status === 'in_progress'
-                              ? 'Đang thực hiện'
-                              : morningSchedule?.status === 'delayed' || afternoonSchedule?.status === 'delayed'
-                              ? 'Trễ'
-                              : 'Đã lên lịch'
-                          }
+                          label={t(`weeklySchedule.status.${morningSchedule?.status || afternoonSchedule?.status || 'scheduled'}`)}
                           size="small"
                           sx={{
                             ...getStatusColor(morningSchedule?.status || afternoonSchedule?.status || 'scheduled'),
@@ -202,22 +196,17 @@ const WeeklyScheduleView = ({ weekSchedules = [], weekStart, onWeekChange }) => 
 
         {/* Legend */}
         <Box sx={{ display: 'flex', gap: 2, mt: 3, justifyContent: 'center', flexWrap: 'wrap' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <Circle sx={{ fontSize: 8, color: '#1565c0' }} />
-            <Typography variant="caption" sx={{ color: '#757575' }}>Đã lên lịch</Typography>
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <Circle sx={{ fontSize: 8, color: '#e65100' }} />
-            <Typography variant="caption" sx={{ color: '#757575' }}>Đang thực hiện</Typography>
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <Circle sx={{ fontSize: 8, color: '#2e7d32' }} />
-            <Typography variant="caption" sx={{ color: '#757575' }}>Hoàn thành</Typography>
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <Circle sx={{ fontSize: 8, color: '#c62828' }} />
-            <Typography variant="caption" sx={{ color: '#757575' }}>Trễ</Typography>
-          </Box>
+          {['scheduled', 'in_progress', 'completed', 'delayed'].map(status => (
+            <Box key={status} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <Circle sx={{ 
+                fontSize: 8, 
+                color: status === 'completed' ? '#2e7d32' : status === 'in_progress' ? '#e65100' : status === 'delayed' ? '#c62828' : '#1565c0' 
+              }} />
+              <Typography variant="caption" sx={{ color: '#757575' }}>
+                {t(`weeklySchedule.status.${status}`)}
+              </Typography>
+            </Box>
+          ))}
         </Box>
       </CardContent>
     </Card>
