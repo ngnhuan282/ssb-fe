@@ -22,6 +22,7 @@ export const locationAPI = {
   create: (data) => axiosInstance.post("/location", data),
   update: (id, data) => axiosInstance.put(`/location/${id}`, data),
   delete: (id) => axiosInstance.delete(`/location/${id}`),
+  getLatestByBus: (busId) => axiosInstance.get(`/location/bus/${busId}/latest`),
 };
 
 export const routeAPI = {
@@ -32,6 +33,7 @@ export const routeAPI = {
   delete: (id) => axiosInstance.delete(`/routes/${id}`),
 };
 
+
 export const scheduleAPI = {
   getAll: () => axiosInstance.get("/schedules"),
   getById: (id) => axiosInstance.get(`/schedules/${id}`),
@@ -39,14 +41,6 @@ export const scheduleAPI = {
   update: (id, data) => axiosInstance.put(`/schedules/${id}`, data),
   delete: (id) => axiosInstance.delete(`/schedules/${id}`),
   getByDriver: (driverId) => axiosInstance.get(`/schedules/driver/${driverId}`),
-  getStopStudents: (scheduleId, stopIndex) =>
-    axios.get(`${API_URL}/schedules/${scheduleId}/stops/${stopIndex}/students`),
-
-  updateStop: (scheduleId, stopIndex, data) =>
-    axios.patch(`${API_URL}/schedules/${scheduleId}/stops/${stopIndex}`, data),
-
-  updateStudentStatus: (scheduleId, stopIndex, studentId, data) =>
-    axios.patch(`${API_URL}/schedules/${scheduleId}/stops/${stopIndex}/students/${studentId}`, data),
 };
 
 export const studentAPI = {
@@ -74,11 +68,11 @@ export const notificationAPI = {
 
   getEmergency: () => axiosInstance.get("/notifications/incidents"),
   createIncident: (data) =>
-  axiosInstance.post("/notifications/incident", data, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  }),
+    axiosInstance.post("/notifications/incident", data, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }),
 };
 
 export const userAPI = {
@@ -110,3 +104,10 @@ export const authAPI = {
     axiosInstance.get("/auth/me"),
 
 }
+
+export const stopAssignmentAPI = {
+  getStudentsByStop: (scheduleId, stopIndex) =>
+    axiosInstance.get(`/schedules/${scheduleId}/stops/${stopIndex}/students`),
+  updateStudentStatus: (scheduleId, stopIndex, studentId, data) =>
+    axiosInstance.patch(`/schedules/${scheduleId}/stops/${stopIndex}/students/${studentId}`, data),
+};
