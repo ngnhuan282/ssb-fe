@@ -20,18 +20,23 @@ const getInitials = (name) => {
 };
 
 const StudentItem = ({ student, onStatusChange }) => {
-  const { name, status } = student;
+  const { name, status, type} = student;
 
   const handleStatusClick = (newStatus) => {
-    onStatusChange(student.id, newStatus);
+    onStatusChange(newStatus);
   };
 
+
+  if (type === 'pickup') {
+    const isBoarded = status === 'boarded';
+    const isAbsent = status === 'absent';
+    const isWaiting = status === 'waiting';
   return (
     <Box
       sx={{
         display: 'flex',
         alignItems: 'center',
-        gap: 1.5,
+        gap: 1,
         mb: 2,
         pl: 2, // Thụt vào so với tiêu đề điểm đón
       }}
@@ -40,8 +45,8 @@ const StudentItem = ({ student, onStatusChange }) => {
         sx={{
           width: 36,
           height: 36,
-          bgcolor: '#e0e7ff',
-          color: '#4f46e5',
+          bgcolor: isBoarded ? '#dbeafe' : (isAbsent ? '#f3f4f6' : '#e0e7ff'),
+          color: isBoarded ? '#2563eb' : (isAbsent ? '#9ca3af' : '#4f46e5'),
           fontSize: '0.875rem',
         }}
       >
@@ -49,15 +54,15 @@ const StudentItem = ({ student, onStatusChange }) => {
       </Avatar>
       <Typography
         variant="body2"
-        sx={{ fontWeight: 500, color: '#374151', flex: 1 }}
+        sx={{ fontWeight: 500, color: isWaiting ? '#374151' : '#9ca3af', flex: 1 }}
       >
         {name}
       </Typography>
       
       {/* Nút hành động */}
       <Button
-        variant={status === 'picked_up' ? 'contained' : 'outlined'}
-        onClick={() => handleStatusClick('picked_up')}
+        variant={isBoarded ? 'contained' : 'outlined'}
+        onClick={() => handleStatusClick('boarded')}
         size="small"
         sx={{
           textTransform: 'none',
@@ -69,27 +74,86 @@ const StudentItem = ({ student, onStatusChange }) => {
         Đã đón
       </Button>
       <Button
-        variant={status === 'absent' ? 'contained' : 'outlined'}
+        variant={isAbsent ? 'contained' : 'outlined'}
         onClick={() => handleStatusClick('absent')}
         size="small"
+        color="inherit"
         sx={{
           textTransform: 'none',
           fontSize: '0.75rem',
           borderRadius: 1.5,
           fontWeight: 600,
-          color: status === 'absent' ? '#fff' : '#6b7280',
+          color: isAbsent ? '#fff' : '#6b7280',
           borderColor: '#e5e7eb',
-          bgcolor: status === 'absent' ? '#6b7280' : 'transparent',
+          bgcolor: isAbsent ? '#6b7280' : 'transparent',
           '&:hover': {
             borderColor: '#d1d5db',
-            bgcolor: status === 'absent' ? '#4b5563' : '#f9fafb',
+            bgcolor: isAbsent ? '#4b5563' : '#f9fafb',
           },
         }}
       >
         Vắng mặt
       </Button>
     </Box>
-  );
+    );
+  };
+
+  if (type === 'dropoff') {
+    const isDroppedOff = status === 'dropped_off';
+    const isWaiting = status === 'waiting'; // Trạng thái 'chờ trả'
+
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1.5,
+          mb: 2,
+          pl: 2,
+        }}
+      >
+        <Avatar
+          sx={{
+            width: 36,
+            height: 36,
+            bgcolor: isDroppedOff ? '#d1fae5' : '#dcfce7', // Màu xanh lá nhạt
+            color: isDroppedOff ? '#065f46' : '#16a34a',
+            fontSize: '0.875rem',
+          }}
+        >
+         {getInitials(name)}
+        </Avatar>
+        <Typography
+          variant="body2"
+          sx={{ 
+            fontWeight: 500, 
+            color: isWaiting ? '#374151' : '#9ca3af', // Mờ đi nếu đã xử lý
+            flex: 1 
+          }}
+        >
+          {name}
+        </Typography>
+        
+        <Button
+          variant={isDroppedOff ? 'contained' : 'outlined'}
+          onClick={() => handleStatusClick('dropped_off')}
+          disabled={!isWaiting} // Vô hiệu hóa nếu không phải 'waiting'
+          size="small"
+          color="success" // Dùng màu success của MUI
+          sx={{
+            textTransform: 'none',
+            fontSize: '0.75rem',
+            borderRadius: 1.5,
+            fontWeight: 600,
+          }}
+        >
+          Đã Trả
+        </Button>
+      </Box>
+    );
+  }
+
+  return null;
 };
 
 export default StudentItem;
