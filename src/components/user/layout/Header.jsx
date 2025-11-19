@@ -162,7 +162,7 @@ const Header = ({ onMenuClick }) => {
                 border: "1px solid #e0e0e0",
               }}
             >
-              {user?.username?.[0]?.toUpperCase() || "A"}
+              {(user?.username?.[0] || "A").toUpperCase()}
             </Avatar>
             <Box sx={{ display: { xs: "none", sm: "block" } }}>
               <Typography
