@@ -3,14 +3,13 @@ import React from 'react';
 import { Box, Typography, Paper, Divider } from '@mui/material';
 import PickupPointItem from './PickupPointItem';
 
-const PickupSidebar = ({ points, onStudentStatusChange, onPickupAll, onDropoffAll,isStillPickingUp, onNavigate }) => {
+const PickupSidebar = ({ points, onStudentStatusChange, onPickupAll }) => {
   return (
     <Paper
       elevation={0}
       sx={{
         width: 400,
-        ml: 1,
-        height: 'calc(100vh - 100px)',
+        height: '100vh',
         display: 'flex',
         flexDirection: 'column',
         borderLeft: '1px solid #e5e7eb',
@@ -19,7 +18,7 @@ const PickupSidebar = ({ points, onStudentStatusChange, onPickupAll, onDropoffAl
     >
       <Box sx={{ p: 2, pt: 3 }}>
         <Typography variant="h5" sx={{ fontWeight: 700, color: '#111827' }}>
-          Danh Sách Điểm Dừng
+          Danh sách điểm đón
         </Typography>
       </Box>
       <Divider />
@@ -37,10 +36,7 @@ const PickupSidebar = ({ points, onStudentStatusChange, onPickupAll, onDropoffAl
             key={point.id}
             point={point}
             onStudentStatusChange={onStudentStatusChange}
-            onDropoffAll={onDropoffAll}
             onPickupAll={onPickupAll}
-            isStillPickingUp={isStillPickingUp}
-            onNavigate={onNavigate}
           />
         ))}
       </Box>
