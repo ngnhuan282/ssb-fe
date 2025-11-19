@@ -16,6 +16,7 @@ export const AuthProvider = ({ children }) => {
 
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [driverId, setDriverId] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);  // ĐÃ SỬA DÒNG NÀY
   const [redirectAfterLogin, setRedirectAfterLogin] = useState(null);
 
@@ -23,6 +24,7 @@ export const AuthProvider = ({ children }) => {
   const handleSocialCallback = async (idToken) => {
     try {
       localStorage.removeItem('user');
+      localStorage.removeItem('driverId');
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
 
@@ -41,12 +43,22 @@ export const AuthProvider = ({ children }) => {
       setUser(userData);
       setIsAuthenticated(true);
 
+      //driver id
+      if (userData.role === 'driver') {
+        const dId = apiUser.driverId || response.data.data.driverId || userData._id;
+        if (dId) {
+          setDriverId(dId);
+          localStorage.setItem('driverId', dId);
+        }
+      }
+
       const redirectTo = userData.role === 'admin' ? '/admin' : '/';
       setRedirectAfterLogin(redirectTo);
     } catch (error) {
       console.error('Social callback failed:', error);
       localStorage.clear();
       setIsAuthenticated(false);
+      setDriverId(null);
       setRedirectAfterLogin('/login');
     }
   };
@@ -55,6 +67,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       localStorage.removeItem('user');
+      localStorage.removeItem('driverId');
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
 
@@ -72,6 +85,14 @@ export const AuthProvider = ({ children }) => {
 
       setUser(userData);
       setIsAuthenticated(true);
+
+      if (userData.role === 'driver') {
+        const dId = apiUser.driverId || response.data.data.driverId || userData._id;
+        if (dId) {
+          setDriverId(dId);
+          localStorage.setItem('driverId', dId);
+        }
+      }
 
       const redirectTo = userData.role === 'admin' ? '/admin' : '/';
       setRedirectAfterLogin(redirectTo);
@@ -98,6 +119,7 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     // XÓA NGAY LẬP TỨC STATE + LOCALSTORAGE TRƯỚC KHI AUTH0 REDIRECT
     setUser(null);
+    setDriverId(null);
     setIsAuthenticated(false);
     setRedirectAfterLogin(null);
     localStorage.clear();
@@ -153,6 +175,14 @@ export const AuthProvider = ({ children }) => {
           setUser(parsedUser);
           setIsAuthenticated(true);
 
+          //driver id 
+          if (parsedUser.role === 'driver') {
+            const storedDriverId = localStorage.getItem('driverId');
+            if (storedDriverId) {
+              setDriverId(storedDriverId);
+            }
+          }
+
           if (['/login', '/register'].includes(window.location.pathname)) {
             const redirectTo = parsedUser.role === 'admin' ? '/admin' : '/';
             setRedirectAfterLogin(redirectTo);
@@ -172,6 +202,7 @@ export const AuthProvider = ({ children }) => {
     <AuthContext.Provider value={{
       user,
       loading,
+      driverId,
       isAuthenticated,
       login,
       logout,
