@@ -39,14 +39,18 @@ export const scheduleAPI = {
   update: (id, data) => axiosInstance.put(`/schedules/${id}`, data),
   delete: (id) => axiosInstance.delete(`/schedules/${id}`),
   getByDriver: (driverId) => axiosInstance.get(`/schedules/driver/${driverId}`),
+
   getStopStudents: (scheduleId, stopIndex) =>
-    axios.get(`${API_URL}/schedules/${scheduleId}/stops/${stopIndex}/students`),
+    axiosInstance.get(`/schedules/${scheduleId}/stops/${stopIndex}/students`),
 
   updateStop: (scheduleId, stopIndex, data) =>
-    axios.patch(`${API_URL}/schedules/${scheduleId}/stops/${stopIndex}`, data),
+    axiosInstance.patch(`/schedules/${scheduleId}/stops/${stopIndex}`, data),
 
   updateStudentStatus: (scheduleId, stopIndex, studentId, data) =>
-    axios.patch(`${API_URL}/schedules/${scheduleId}/stops/${stopIndex}/students/${studentId}`, data),
+    axiosInstance.patch(
+      `/schedules/${scheduleId}/stops/${stopIndex}/students/${studentId}`,
+      data
+    ),
 };
 
 export const studentAPI = {
@@ -73,12 +77,18 @@ export const notificationAPI = {
   delete: (id) => axiosInstance.delete(`/notifications/${id}`),
 
   getEmergency: () => axiosInstance.get("/notifications/incidents"),
+
   createIncident: (data) =>
-  axiosInstance.post("/notifications/incident", data, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  }),
+    axiosInstance.post("/notifications/incident", data, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }),
+
+  getMyNotifications: (userId) =>
+    axiosInstance.get("/notifications/my-notifications", {
+      params: { userId },
+    }),
 };
 
 export const userAPI = {
@@ -90,23 +100,9 @@ export const userAPI = {
 };
 
 export const authAPI = {
-  // Đăng nhập
-  login: (credentials) =>
-    axiosInstance.post("/auth/login", credentials),
-
-  register: (data) =>
-    axiosInstance.post("/auth/register", data),
-
-  // Đăng xuất
-  logout: () =>
-    axiosInstance.post("/auth/logout"),
-
-  // Refresh token
-  refreshToken: () =>
-    axiosInstance.post("/auth/refresh-token"),
-
-  // Lấy thông tin user hiện tại
-  getCurrentUser: () =>
-    axiosInstance.get("/auth/me"),
-
-}
+  login: (credentials) => axiosInstance.post("/auth/login", credentials),
+  register: (data) => axiosInstance.post("/auth/register", data),
+  logout: () => axiosInstance.post("/auth/logout"),
+  refreshToken: () => axiosInstance.post("/auth/refresh-token"),
+  getCurrentUser: () => axiosInstance.get("/auth/me"),
+};

@@ -80,7 +80,7 @@ const menuItems = [
     text: "Thông báo",
     icon: <Notifications />,
     path: "/notification",
-    allowedRoles: ["parent", "driver"],
+    allowedRoles: ["parent"],
   },
   {
     text: "Cài đặt",
@@ -129,7 +129,7 @@ const Sidebar = ({ onToggle }) => {
       onToggle(newState);
     }
   };
-  
+
   // --- THÊM HÀM XỬ LÝ ĐĂNG XUẤT ---
   const handleLogout = async () => {
     await logout();
@@ -250,7 +250,11 @@ const Sidebar = ({ onToggle }) => {
               transition: "all 0.2s",
             }}
           >
-            {open ? <ChevronLeft fontSize="small" /> : <ChevronRight fontSize="small" />}
+            {open ? (
+              <ChevronLeft fontSize="small" />
+            ) : (
+              <ChevronRight fontSize="small" />
+            )}
           </IconButton>
         </Box>
 
@@ -283,7 +287,7 @@ const Sidebar = ({ onToggle }) => {
         <List sx={{ px: 2, py: 0 }}>
           {/* Nút Cài đặt */}
           {showSettings && renderListItem(settingsItemConfig, "settings")}
-          
+
           {/* Nút Đăng xuất */}
           <ListItem key="logout" disablePadding sx={{ mb: 0.5 }}>
             <ListItemButton
