@@ -1,10 +1,10 @@
 import { Navigate } from "react-router-dom";
 import { Box, CircularProgress, Typography, Paper } from "@mui/material";
 import { useAuth } from "../context/AuthContext";
-
+import { useTranslation } from "react-i18next";
 const ProtectedRoute = ({ children, allowedRoles = [] }) => {
   const { user, loading } = useAuth();
-
+  const { t } = useTranslation();
   if (loading) {
     return (
       <Box
@@ -48,10 +48,10 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
           }}
         >
           <Typography variant="h5" color="error" gutterBottom fontWeight="bold">
-            🚫 Truy cập bị từ chối
+            {t("auth.accessDenied")}
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            Bạn không có quyền truy cập trang này
+            {t("auth.noAccess")}
           </Typography>
         </Paper>
       </Box>

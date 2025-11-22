@@ -16,6 +16,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  CircularProgress
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
@@ -42,6 +43,7 @@ export default function RoutePage() {
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
   const [stopListOpen, setStopListOpen] = useState(false);// state cho xem diem dung table
   const [currentStops, setCurrentStops] = useState([]);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     const fetchAllData = async () => {
@@ -133,7 +135,7 @@ export default function RoutePage() {
       const invalidStop = formData.stops.some(
         (stop) => !stop.location.trim() || !stop.time
       );
-      if (invalidStop) newErrors.stops = "Vui lòng nhập đầy đủ thông tin điểm dừng";
+      if (invalidStop) newErrors.stops = "Vui lòng nhập đủ địa chỉ và thời gian cho tất cả điểm dừng";
     }
     return newErrors;
   };
@@ -146,12 +148,32 @@ export default function RoutePage() {
       return;
     }
 
+    setIsSaving(true);
+    const geocodedStops = [];
+
     try {
-      const cleanedStopsID = formData.stops.map(({ _id, ...stop }) => stop);
-      const cleanedFormData = { ...formData, stops: cleanedStopsID };
+      for (const [index, stop] of formData.stops.entries()) {
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(stop.location)}&format=json&limit=1`
+        );
+        const data = await response.json();
+
+        if (data && data.length > 0) {
+          geocodedStops.push({
+            location: stop.location,
+            time: stop.time,
+            latitude: parseFloat(data[0].lat),
+            longitude: parseFloat(data[0].lon),
+          });
+        } else {
+          throw new Error(`Không tìm thấy tọa độ cho điểm dừng ${index + 1}: "${stop.location}"`);
+        }
+      }
+
+      const cleanedFormData = { ...formData, stops: geocodedStops };
 
       let updatedRoutes;
-      console.log("Form data gửi lên:", cleanedFormData)
+      console.log("Form data gửi lên (ĐÃ DỊCH):", cleanedFormData);
       if (editingRoute) {
         const res = await routeAPI.update(editingRoute._id, cleanedFormData);
         updatedRoutes = routes.map((r) => (r._id === editingRoute._id ? res.data.data : r));
@@ -161,15 +183,17 @@ export default function RoutePage() {
       }
       setRoutes(updatedRoutes);
       handleCloseForm();
-      //snackbar
+      
       if (editingRoute) {
-        showNotification('Cập nhật tuyến đường thành công!', 'success')
+        showNotification('Cập nhật tuyến đường thành công!', 'success');
       } else {
-        showNotification('Thêm tuyến đường thành công!', 'success')
+        showNotification('Thêm tuyến đường thành công!', 'success');
       }
     } catch (err) {
       console.error("Save route error:", err);
-      showNotification('Lưu tuyến đường thất bại!', 'error')
+      setErrors({ stops: err.message });
+    }finally {  
+      setIsSaving(false);
     }
   }
 
@@ -263,8 +287,13 @@ export default function RoutePage() {
           />
           <DialogActions sx={{ px: 3, pb: 2 }}>
             <Button onClick={handleCloseForm}>Hủy</Button>
-            <Button type="submit" variant="contained" sx={{ background: "linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%)" }}>
-              {editingRoute ? "Cập nhật" : "Thêm"}
+            <Button 
+              type="submit" 
+              variant="contained" 
+              sx={{ background: "linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%)" }}
+              disabled={isSaving} // Vô hiệu hóa khi đang lưu
+            >
+              {isSaving ? <CircularProgress size={24} color="inherit" /> : (editingRoute ? "Cập nhật" : "Thêm")}
             </Button>
           </DialogActions>
         </form>

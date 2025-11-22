@@ -13,10 +13,16 @@ import CloseIcon from "@mui/icons-material/Close";
 import { busAPI } from "../../services/api";
 import { driverAPI } from "../../services/api";
 import { routeAPI } from "../../services/api";
+import { locationAPI } from "../../services/api";
 import BusTable from "../../components/admin/buses/BusTable";
 import BusForm from "../../components/admin/buses/BusForm";
 import BusDeleteDialog from "../../components/admin/buses/BusDeleteDialog";
 import Notification from "../../components/admin/layout/AdminNotification";
+
+const DEFAULT_LOCATION = {
+  latitude: 10.7599,  
+  longitude: 106.6822
+};
 
 export default function BusPage() {
   const [buses, setBuses] = useState([])
@@ -141,6 +147,17 @@ export default function BusPage() {
         )
       } else {
         const res = await busAPI.create(formData)
+        //add location cho bus vua dc tao
+        const newBus = res.data.data
+        try {
+          await locationAPI.create({
+            busId: newBus._id, // <-- Dùng ID từ xe buýt vừa tạo
+            latitude: DEFAULT_LOCATION.latitude,
+            longitude: DEFAULT_LOCATION.longitude
+          });
+        } catch (locationError) {
+          console.error("Lỗi khi tạo vị trí ban đầu:", locationError);
+        }
         updatedBuses = [...buses, res.data.data]
       }
       setBuses(updatedBuses)

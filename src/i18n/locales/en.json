@@ -1,0 +1,187 @@
+{
+  "app": {
+    "title": "SSB 1.0",
+    "subtitle": "Smart School Bus"
+  },
+  "header": {
+    "notifications": "Notifications",
+    "profile": "Profile",
+    "logout": "Logout"
+  },
+  "sidebar": {
+    "mainMenu": "Main Menu",
+    "dashboard": "Dashboard",
+    "busTracking": "Bus Tracking",
+    "studentList": "Student List",
+    "schedule": "Schedule",
+    "pickupPoints": "Pickup/Drop-off Points",
+    "tripHistory": "Trip History",
+    "incident": "Incident Alerts",
+    "notifications": "Notifications",
+    "settings": "Settings",
+    "logout": "Logout"
+  },
+  "auth": {
+    "accessDenied": "Access Denied",
+    "noPermission": "You don't have permission to access this page"
+  },
+  "common": {
+    "loading": "Loading...",
+    "login": "Login",
+    "register": "Register"
+  },
+  "studentList": {
+    "title": "Student List",
+    "searchPlaceholder": "Search students...",
+    "tabs": {
+      "all": "All",
+      "pending": "Pending",
+      "picked_up": "Picked Up",
+      "dropped_off": "Dropped Off"
+    },
+    "noResults": "No students found",
+    "loadingData": "Loading data...",
+    "retry": "Retry",
+    "errors": {
+      "dbConnection": "Database connection error",
+      "loadFailed": "Failed to load data"
+    },
+    "warnings": {
+      "noPhone": "No phone number available"
+    }
+  },
+  "studentCard": {
+    "noName": "No name",
+    "noClass": "No class",
+    "noPickup": "No pickup point",
+    "call": "Call",
+    "status": {
+      "pending": "Pending",
+      "picked_up": "Picked Up",
+      "dropped_off": "Dropped Off"
+    }
+  },
+  "schedule": {
+    "title": "Schedule",
+    "subtitle": "View your monthly and weekly schedules.",
+    "loading": "Loading schedule...",
+    "noSchedule": "No schedule available. Please contact admin to create one.",
+    "selectDate": "Select a date to view details",
+    "views": {
+      "month": "Month View",
+      "week": "Week View"
+    },
+    "table": {
+      "date": "Date",
+      "morning": "Morning",
+      "afternoon": "Afternoon",
+      "status": "Status"
+    }
+  },
+  "routeStops": {
+    "title": "List of Stops",
+    "noStops": "No stop information",
+    "noTime": "No time set",
+    "infoTitle": "ROUTE INFORMATION",
+    "distance": "Total distance",
+    "estimatedTime": "Estimated time",
+    "types": {
+      "pickup": "Pick up",
+      "dropoff": "Drop off",
+      "unknown": "Stop"
+    },
+    "students": "students",
+    "minutes": "min",
+    "km": "km"
+  },
+  "calendar": {
+    "months": [
+      "January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December"
+    ],
+    "days": ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"]
+  },
+  "weeklySchedule": {
+    "title": "Weekly Schedule",
+    "status": {
+      "completed": "Completed",
+      "in_progress": "In Progress",
+      "delayed": "Delayed",
+      "scheduled": "Scheduled"
+    }
+  },
+  "todaySchedule": {
+    "noRoute": "No route assigned",
+    "busPlate": "License plate"
+  },
+
+  "incident": {
+    "pageTitle": "Incident Report",
+    "tabNew": "New Report",
+    "tabHistory": "Report History",
+
+    "form": {
+      "title": "Create Incident Report",
+      "typeLabel": "Incident Type",
+      "typePlaceholder": "Select incident type",
+      "types": {
+        "traffic_delay": "Traffic Delay",
+        "student_misconduct": "Student Misconduct",
+        "bus_breakdown": "Bus Breakdown",
+        "minor_accident": "Minor Accident",
+        "other": "Other",
+        "emergency_stop": "Emergency Stop",
+        "flat_tire": "Flat Tire",
+        "vehicle_stuck": "Vehicle Stuck",
+        "accident": "Accident"
+      },
+      "dateTimeLabel": "Time of Incident",
+      "locationLabel": "Location",
+      "descriptionLabel": "Detailed Description",
+      "descriptionPlaceholder": "Describe the incident in detail...",
+      "uploadLabel": "Upload incident photo (optional)",
+      "uploadHint": "PNG, JPG up to 10MB",
+      "uploadDrag": "Upload a file or drag and drop",
+      "btnNormal": "Submit Report",
+      "btnEmergency": "Submit Emergency Report"
+    },
+
+    "filter": {
+      "type": "Incident Type",
+      "status": "Status",
+      "timeRange": "Time Range",
+      "today": "Today",
+      "last7days": "Last 7 days",
+      "last30days": "Last 30 days",
+      "clearFilters": "Clear Filters"
+    },
+
+    "table": {
+      "reportId": "Report ID",
+      "type": "Incident Type",
+      "content": "Content",
+      "date": "Submitted Date",
+      "status": "Status",
+      "action": "Action",
+      "viewDetails": "View Details",
+      "noIncidents": "No incidents recorded."
+    },
+
+    "detail": {
+      "title": "Incident Report Details",
+      "reportId": "Report ID",
+      "type": "Incident Type",
+      "dateTime": "Incident Time",
+      "location": "Location",
+      "description": "Description",
+      "status": "Status",
+      "createdAt": "Submitted On",
+      "delete": "Delete",
+      "markResolved": "Mark as Resolved",
+      "resolved": "Resolved",
+      "statusResolved": "Resolved",
+      "pending": "Pending",
+      "urgent": "Urgent"
+    }
+  }
+}

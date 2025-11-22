@@ -9,9 +9,11 @@ import {
   Grid,
 } from '@mui/material';
 import { ChevronLeft, ChevronRight, Circle } from '@mui/icons-material';
+import { useTranslation } from 'react-i18next';
 
 const ScheduleCalendar = ({ schedules = [], onDateSelect, selectedSchedule }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const { t } = useTranslation();
 
   // Tạo 42 ô (6 hàng x 7 cột) để luôn hiển thị 6 hàng
   const getCalendarGrid = (date) => {
@@ -54,9 +56,8 @@ const ScheduleCalendar = ({ schedules = [], onDateSelect, selectedSchedule }) =>
     });
   };
 
-  const monthNames = ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
-                     'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'];
-  const dayNames = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+  const monthNames = t("calendar.months", { returnObjects: true });
+  const dayNames = t("calendar.days", { returnObjects: true });
   const days = getCalendarGrid(currentDate);
   const today = new Date();
 
@@ -79,10 +80,8 @@ const ScheduleCalendar = ({ schedules = [], onDateSelect, selectedSchedule }) =>
         </Box>
 
         {/* Day Headers */}
-        {/* *** THÊM columns={7} VÀO ĐÂY *** */}
         <Grid container spacing={0.5} sx={{ mb: 1 }} columns={7}>
           {dayNames.map(day => (
-            // *** ĐỔI xs={12/7} THÀNH xs={1} ***
             <Grid item xs={1} key={day}>
               <Typography variant="caption" sx={{ fontWeight: 600, color: '#64748b', fontSize: '0.75rem', textAlign: 'center', display: 'block' }}>
                 {day}
@@ -92,7 +91,6 @@ const ScheduleCalendar = ({ schedules = [], onDateSelect, selectedSchedule }) =>
         </Grid>
 
         {/* Calendar Grid - Luôn 6 hàng */}
-        {/* *** THÊM columns={7} VÀO ĐÂY *** */}
         <Grid container spacing={0.5} columns={7}>
           {days.map((date, i) => {
             const schedule = hasSchedule(date);
@@ -101,10 +99,13 @@ const ScheduleCalendar = ({ schedules = [], onDateSelect, selectedSchedule }) =>
               new Date(selectedSchedule.date).toDateString() === date.toDateString();
 
             return (
-              // *** ĐỔI xs={12/7} THÀNH xs={1} ***
               <Grid item xs={1} key={i}>
                 <Box
-                  onClick={() => date && onDateSelect(date, schedule)}
+                  onClick={() => {
+                    if (date) {
+                      onDateSelect(date, schedule); // Gọi với schedule (có thể là null)
+                    }
+                  }}
                   sx={{
                     minHeight: 48,
                     borderRadius: 2,
@@ -116,10 +117,11 @@ const ScheduleCalendar = ({ schedules = [], onDateSelect, selectedSchedule }) =>
                     alignItems: 'center',
                     justifyContent: 'center',
                     transition: 'all 0.2s',
-                    '&:hover': {
-                      bgcolor: date && !isSelected ? '#f1f5f9' : undefined,
-                      borderColor: date ? '#94a3b8' : '#e2e8f0' // Sửa: chỉ hiện border hover khi có date
-                    },
+                    '&:hover': date ? {
+                      bgcolor: isSelected ? '#dbeafe' : '#f1f5f9',
+                      borderColor: '#94a3b8',
+                      transform: 'scale(1.02)',
+                    } : {},
                     p: 0.5
                   }}
                 >

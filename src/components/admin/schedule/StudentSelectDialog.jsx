@@ -12,13 +12,14 @@ import {
 export default function StudentSelectDialog({
     open,
     students,
+    routeName,
     selectedStudents,
     onToggleStudent,
     onClose,
 }) {
     return (
         <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-            <DialogTitle>Chọn học sinh</DialogTitle>
+            <DialogTitle>Chọn học sinh của {routeName}</DialogTitle>
             <DialogContent>
                 <Stack spacing={1}>
                     {students.map((st) => (

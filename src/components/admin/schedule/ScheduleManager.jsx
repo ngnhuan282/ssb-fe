@@ -298,7 +298,8 @@ export default function ScheduleManager() {
             />
             <StudentSelectDialog
                 open={studentDialogOpen}
-                students={students}
+                students={students.filter(s => s.route?._id === form.route)}
+                routeName={routes.find(r => r._id === form.route)?.name || ""}
                 selectedStudents={selectedStudents}
                 onToggleStudent={(id) =>
                     setSelectedStudents((prev) =>

@@ -15,7 +15,7 @@ import StudentListFilter from '../../components/user/student/StudentListFilter';
 import StudentCard from '../../components/user/student/StudentCard';
 import { studentAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
-
+import { useTranslation } from "react-i18next";
 const ITEMS_PER_PAGE = 5; // Số học sinh trên mỗi trang
 
 const DriverStudentListPage = () => {
@@ -27,7 +27,7 @@ const DriverStudentListPage = () => {
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
+  const { t } = useTranslation();
   // --- THÊM STATE CHO PHÂN TRANG ---
   const [page, setPage] = useState(1);
   const [pageCount, setPageCount] = useState(0);
@@ -68,8 +68,8 @@ const DriverStudentListPage = () => {
       const data = response.data.data;
       setStudents(data);
     } catch (err) {
-      setError('Lỗi kết nối DB');
-      setSnackbar({ open: true, message: 'Không tải được', severity: 'error' });
+      setError(t("studentList.errors.dbConnection")); 
+      setSnackbar({ open: true, message: t("studentList.errors.loadFailed"), severity: 'error' });
     } finally {
       setLoading(false);
     }
@@ -81,7 +81,7 @@ const DriverStudentListPage = () => {
     if (phone) {
       window.location.href = `tel:${phone}`;
     } else {
-      setSnackbar({ open: true, message: 'Không có số điện thoại', severity: 'warning' });
+      setSnackbar({ open: true, message: t("studentList.warnings.noPhone"), severity: 'warning' });
     }
   };
 
@@ -100,7 +100,7 @@ const DriverStudentListPage = () => {
   if (loading && students.length === 0) {
     return (
       <Box sx={{ p: 3, textAlign: 'center' }}>
-        <Typography>Đang tải dữ liệu...</Typography>
+        <Typography>{t("studentList.loadingData")}</Typography>
         <LinearProgress />
       </Box>
     );
@@ -110,7 +110,7 @@ const DriverStudentListPage = () => {
     return (
       <Box sx={{ p: 3, textAlign: 'center' }}>
         <Typography color="error">{error}</Typography>
-        <Button variant="contained" onClick={fetchStudents} sx={{ mt: 2 }}>Thử lại</Button>
+        <Button variant="contained" onClick={fetchStudents} sx={{ mt: 2 }}>{t("studentList.retry")}</Button>
       </Box>
     );
   }
@@ -120,7 +120,7 @@ const DriverStudentListPage = () => {
       <Container maxWidth="xl">
         
         <Typography variant="h4" sx={{ fontWeight: 700, color: '#111827', mb: 3 }}>
-          Danh sách học sinh
+          {t("studentList.title")}
         </Typography>
 
         <StudentListFilter
@@ -140,7 +140,7 @@ const DriverStudentListPage = () => {
         {filteredStudents.length === 0 ? (
           <Paper sx={{ p: 6, textAlign: 'center', borderRadius: 3, border: '1px solid #e5e7eb', bgcolor: '#fff' }}>
             <Typography variant="body1" color="textSecondary">
-              Không tìm thấy học sinh nào
+              {t("studentList.noResults")}
             </Typography>
           </Paper>
         ) : (

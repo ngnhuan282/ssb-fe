@@ -87,7 +87,7 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: "trip-detail",
+        path: "trip-history/:id",
         element: (
           <ProtectedRoute allowedRoles={["driver"]}>
             <TripDetailPage />
