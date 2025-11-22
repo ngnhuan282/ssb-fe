@@ -105,7 +105,7 @@ export const router = createBrowserRouter([
       {
         path: "notification",
         element: (
-          <ProtectedRoute allowedRoles={["parent", "driver"]}>
+          <ProtectedRoute allowedRoles={["parent"]}>
             <NotificationPage />
           </ProtectedRoute>
         ),
