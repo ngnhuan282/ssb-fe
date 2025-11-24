@@ -22,7 +22,6 @@ export const locationAPI = {
   create: (data) => axiosInstance.post("/location", data),
   update: (id, data) => axiosInstance.put(`/location/${id}`, data),
   delete: (id) => axiosInstance.delete(`/location/${id}`),
-  getLatestByBus: (busId) => axiosInstance.get(`/location/bus/${busId}/latest`),
 };
 
 export const routeAPI = {
@@ -33,7 +32,6 @@ export const routeAPI = {
   delete: (id) => axiosInstance.delete(`/routes/${id}`),
 };
 
-
 export const scheduleAPI = {
   getAll: () => axiosInstance.get("/schedules"),
   getById: (id) => axiosInstance.get(`/schedules/${id}`),
@@ -41,6 +39,19 @@ export const scheduleAPI = {
   update: (id, data) => axiosInstance.put(`/schedules/${id}`, data),
   delete: (id) => axiosInstance.delete(`/schedules/${id}`),
   getByDriver: (driverId) => axiosInstance.get(`/schedules/driver/${driverId}`),
+
+  // Các hàm custom khác nếu bạn có dùng
+  getStopStudents: (scheduleId, stopIndex) =>
+    axiosInstance.get(`/schedules/${scheduleId}/stops/${stopIndex}/students`),
+
+  updateStop: (scheduleId, stopIndex, data) =>
+    axiosInstance.patch(`/schedules/${scheduleId}/stops/${stopIndex}`, data),
+
+  updateStudentStatus: (scheduleId, stopIndex, studentId, data) =>
+    axiosInstance.patch(
+      `/schedules/${scheduleId}/stops/${stopIndex}/students/${studentId}`,
+      data
+    ),
 };
 
 export const studentAPI = {
@@ -66,12 +77,21 @@ export const notificationAPI = {
   update: (id, data) => axiosInstance.put(`/notifications/${id}`, data),
   delete: (id) => axiosInstance.delete(`/notifications/${id}`),
 
+  // API lấy danh sách sự cố khẩn cấp (cho admin/tài xế xem)
   getEmergency: () => axiosInstance.get("/notifications/incidents"),
+
+  // API tạo sự cố (có upload ảnh)
   createIncident: (data) =>
     axiosInstance.post("/notifications/incident", data, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
+    }),
+
+  // [QUAN TRỌNG] API lấy thông báo cho phụ huynh
+  getMyNotifications: (userId) =>
+    axiosInstance.get("/notifications/my-notifications", {
+      params: { userId },
     }),
 };
 
@@ -84,30 +104,18 @@ export const userAPI = {
 };
 
 export const authAPI = {
-  // Đăng nhập
-  login: (credentials) =>
-    axiosInstance.post("/auth/login", credentials),
-
-  register: (data) =>
-    axiosInstance.post("/auth/register", data),
-
-  // Đăng xuất
-  logout: () =>
-    axiosInstance.post("/auth/logout"),
-
-  // Refresh token
-  refreshToken: () =>
-    axiosInstance.post("/auth/refresh-token"),
-
-  // Lấy thông tin user hiện tại
-  getCurrentUser: () =>
-    axiosInstance.get("/auth/me"),
-
-}
-
+  login: (credentials) => axiosInstance.post("/auth/login", credentials),
+  register: (data) => axiosInstance.post("/auth/register", data),
+  logout: () => axiosInstance.post("/auth/logout"),
+  refreshToken: () => axiosInstance.post("/auth/refresh-token"),
+  getCurrentUser: () => axiosInstance.get("/auth/me"),
+};
 export const stopAssignmentAPI = {
   getStudentsByStop: (scheduleId, stopIndex) =>
     axiosInstance.get(`/schedules/${scheduleId}/stops/${stopIndex}/students`),
   updateStudentStatus: (scheduleId, stopIndex, studentId, data) =>
-    axiosInstance.patch(`/schedules/${scheduleId}/stops/${stopIndex}/students/${studentId}`, data),
+    axiosInstance.patch(
+      `/schedules/${scheduleId}/stops/${stopIndex}/students/${studentId}`,
+      data
+    ),
 };

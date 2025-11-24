@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Typography,
@@ -10,136 +10,206 @@ import {
   ListItemAvatar,
   Avatar,
   Divider,
+  CircularProgress,
+  Chip,
 } from "@mui/material";
-import { Warning, Schedule, Info, CheckCircle } from "@mui/icons-material";
-
-// Dữ liệu giả cho thông báo
-const mockNotifications = [
-  {
-    id: 1,
-    type: "incident",
-    icon: <Warning />,
-    color: "error", // Sẽ khớp với màu đỏ/cam
-    title: "Sự cố được báo cáo: Tai nạn",
-    description: "Tài xế Nguyễn Văn A (Xe 51A-12345) đã báo cáo sự cố.",
-    time: "5 phút trước",
-    unread: true,
-  },
-  {
-    id: 2,
-    type: "delay",
-    icon: <Schedule />,
-    color: "warning", // Sẽ khớp với màu vàng
-    title: "Xe buýt đến trễ (Tuyến 02)",
-    description: "Xe 51B-67890 dự kiến trễ 15 phút do tắc đường.",
-    time: "1 giờ trước",
-    unread: true,
-  },
-  {
-    id: 3,
-    type: "info",
-    icon: <Info />,
-    color: "primary", // Sẽ khớp với màu xanh dương
-    title: "Cập nhật lịch trình",
-    description: "Lịch trình cho tuần sau đã được cập nhật.",
-    time: "Hôm qua lúc 15:30",
-    unread: false,
-  },
-  {
-    id: 4,
-    type: "success",
-    icon: <CheckCircle />,
-    color: "success", // Sẽ khớp với màu xanh lá
-    title: "Học sinh đã lên xe",
-    description: "Bé Nguyễn Minh Khang đã được đón lên xe 51B-67890 an toàn.",
-    time: "Hôm qua lúc 07:15",
-    unread: false,
-  },
-];
+import {
+  Warning,
+  Schedule,
+  Info,
+  CheckCircle,
+  NotificationsActive,
+} from "@mui/icons-material";
+import { notificationAPI } from "../../services/api"; // Sửa đường dẫn import tùy folder của bạn
+import { formatDistanceToNow } from "date-fns";
+import { vi } from "date-fns/locale";
 
 const NotificationPage = () => {
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const currentUserId = "6910388ff1c1fce244797451";
+
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const res = await notificationAPI.getMyNotifications(currentUserId);
+        if (res.data && res.data.data) {
+          setNotifications(res.data.data);
+        }
+      } catch (error) {
+        console.error("Lỗi tải thông báo:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchNotifications();
+  }, [currentUserId]);
+
+  const getNotificationStyle = (noti) => {
+    const type = noti.type;
+    if (type === "emergency" || type === "urgent") {
+      return {
+        icon: <Warning />,
+        color: "error",
+        titlePrefix: noti.emergency_type || "Cảnh báo khẩn cấp",
+      };
+    }
+    if (type === "delay") {
+      return {
+        icon: <Schedule />,
+        color: "warning",
+        titlePrefix: "Thông báo trễ chuyến",
+      };
+    }
+    if (["arrival", "boarded", "offboard"].includes(type)) {
+      return {
+        icon: <CheckCircle />,
+        color: "success",
+        titlePrefix: "Cập nhật hành trình",
+      };
+    }
+    return { icon: <Info />, color: "info", titlePrefix: "Thông tin chung" };
+  };
+
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          Thông báo
+      <Box sx={{ mb: 3, display: "flex", alignItems: "center", gap: 2 }}>
+        <Typography variant="h4" component="h1">
+          Thông báo của bạn
         </Typography>
+        <Chip
+          label={`${notifications.length} tin mới`}
+          color="primary"
+          size="small"
+        />
       </Box>
 
       <Paper
-        sx={{
-          p: 0, // Đặt p=0 để List chiếm trọn Paper
-          display: "flex",
-          flexDirection: "column",
-        }}
+        sx={{ p: 0, display: "flex", flexDirection: "column", minHeight: 300 }}
       >
-        {mockNotifications.length === 0 ? (
-          <Box sx={{ p: 3, textAlign: "center" }}>
+        {loading ? (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              flexGrow: 1,
+              p: 5,
+            }}
+          >
+            <CircularProgress />
+          </Box>
+        ) : notifications.length === 0 ? (
+          <Box
+            sx={{
+              p: 5,
+              textAlign: "center",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+            }}
+          >
+            <NotificationsActive
+              sx={{ fontSize: 60, color: "#e0e0e0", mb: 2 }}
+            />
             <Typography variant="body1" color="text.secondary">
               Hiện tại chưa có thông báo nào.
             </Typography>
           </Box>
         ) : (
           <List sx={{ width: "100%", padding: 0 }}>
-            {mockNotifications.map((noti, index) => (
-              <React.Fragment key={noti.id}>
-                <ListItem
-                  alignItems="flex-start"
-                  sx={{
-                    // Dùng màu nền nhẹ để phân biệt thông báo CHƯA ĐỌC
-                    bgcolor: noti.unread ? "action.hover" : "transparent",
-                    py: 2,
-                    px: 3,
-                  }}
-                >
-                  <ListItemAvatar sx={{ mt: 0.5 }}>
-                    <Avatar
-                      sx={{
-                        // Dùng màu .light để làm nền
-                        bgcolor: `${noti.color}.light`,
-                        // Dùng màu .main để làm màu icon
-                        color: `${noti.color}.main`,
-                      }}
-                    >
-                      {noti.icon}
-                    </Avatar>
-                  </ListItemAvatar>
-                  <ListItemText
-                    primary={
-                      <Typography
-                        variant="body1"
-                        fontWeight={noti.unread ? 600 : 500} // In đậm title nếu chưa đọc
+            {notifications.map((noti, index) => {
+              const style = getNotificationStyle(noti);
+              return (
+                <React.Fragment key={noti._id}>
+                  <ListItem
+                    alignItems="flex-start"
+                    sx={{
+                      bgcolor: !noti.read
+                        ? "rgba(25, 118, 210, 0.04)"
+                        : "transparent",
+                      transition: "0.3s",
+                      "&:hover": { bgcolor: "rgba(0,0,0,0.02)" },
+                      py: 2,
+                      px: 3,
+                    }}
+                  >
+                    <ListItemAvatar sx={{ mt: 0.5 }}>
+                      <Avatar
+                        sx={{
+                          bgcolor: `${style.color}.light`,
+                          color: `${style.color}.main`,
+                        }}
                       >
-                        {noti.title}
-                      </Typography>
-                    }
-                    secondary={
-                      <>
+                        {style.icon}
+                      </Avatar>
+                    </ListItemAvatar>
+                    <ListItemText
+                      primary={
                         <Typography
-                          component="span"
-                          variant="body2"
-                          color="text.primary"
-                          sx={{ display: "block" }}
+                          variant="body1"
+                          fontWeight={!noti.read ? 600 : 500}
                         >
-                          {noti.description}
+                          {style.titlePrefix}
+                          {noti.busId && (
+                            <Typography
+                              component="span"
+                              variant="caption"
+                              sx={{
+                                ml: 1,
+                                bgcolor: "#eee",
+                                px: 1,
+                                borderRadius: 1,
+                              }}
+                            >
+                              Xe: {noti.busId?.licensePlate || "Bus"}
+                            </Typography>
+                          )}
                         </Typography>
-                        <Typography
-                          component="span"
-                          variant="caption"
-                          color="text.secondary"
-                        >
-                          {noti.time}
-                        </Typography>
-                      </>
-                    }
-                  />
-                </ListItem>
-                {/* Thêm đường phân cách, trừ item cuối cùng */}
-                {index < mockNotifications.length - 1 && (
-                  <Divider component="li" />
-                )}
-              </React.Fragment>
-            ))}
+                      }
+                      secondary={
+                        <Box sx={{ mt: 0.5 }}>
+                          <Typography
+                            component="span"
+                            variant="body2"
+                            color="text.primary"
+                            sx={{ display: "block", mb: 0.5 }}
+                          >
+                            {noti.message}
+                          </Typography>
+                          {noti.location && (
+                            <Typography
+                              variant="caption"
+                              display="block"
+                              color="text.secondary"
+                            >
+                              📍 {noti.location}
+                            </Typography>
+                          )}
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ fontStyle: "italic" }}
+                          >
+                            {noti.createdAt
+                              ? formatDistanceToNow(new Date(noti.createdAt), {
+                                  addSuffix: true,
+                                  locale: vi,
+                                })
+                              : "Vừa xong"}
+                          </Typography>
+                        </Box>
+                      }
+                    />
+                  </ListItem>
+                  {index < notifications.length - 1 && (
+                    <Divider component="li" />
+                  )}
+                </React.Fragment>
+              );
+            })}
           </List>
         )}
       </Paper>

@@ -31,6 +31,71 @@ import {
 } from "@mui/icons-material";
 import { useAuth } from "../../../context/AuthContext";
 
+// Menu items với allowedRoles
+const menuItems = [
+  // ... (Giữ nguyên mảng menuItems) ...
+  {
+    text: "Tổng quan",
+    icon: <Dashboard />,
+    path: "/",
+    allowedRoles: ["parent", "driver"],
+  },
+  {
+    text: "Theo dõi xe buýt",
+    icon: <DirectionsBus />,
+    path: "/bus",
+    allowedRoles: ["parent"],
+  },
+  {
+    text: "Danh sách học sinh",
+    icon: <Person />,
+    path: "/students",
+    allowedRoles: ["driver"],
+  },
+  {
+    text: "Lịch làm việc",
+    icon: <Schedule />,
+    path: "/schedule",
+    allowedRoles: ["driver"],
+  },
+  {
+    text: "Điểm đón/trả",
+    icon: <LocationOn />,
+    path: "/pickup-points",
+    allowedRoles: ["driver"],
+  },
+  {
+    text: "Lịch sử chuyến đi",
+    icon: <Assessment />,
+    path: "/trip-history",
+    allowedRoles: ["driver"],
+  },
+  {
+    text: "Cảnh báo sự cố",
+    icon: <Warning />,
+    path: "/incident",
+    allowedRoles: ["driver"],
+  },
+  {
+    text: "Thông báo",
+    icon: <Notifications />,
+    path: "/notification",
+    allowedRoles: ["parent"],
+  },
+  {
+    text: "Cài đặt",
+    icon: <Settings />,
+    path: "/profile",
+    allowedRoles: ["parent", "driver"],
+  },
+];
+
+// Tách menu chính và menu cài đặt
+const mainMenuItemsConfig = menuItems.filter(
+  (item) => item.path !== "/profile"
+);
+const settingsItemConfig = menuItems.find((item) => item.path === "/profile");
+
 const drawerWidthOpen = 260;
 const drawerWidthClosed = 72;
 
@@ -219,7 +284,11 @@ const Sidebar = ({ onToggle }) => {
               "&:hover": { bgcolor: "#e5e7eb", color: "#1f2937" },
             }}
           >
-            {open ? <ChevronLeft fontSize="small" /> : <ChevronRight fontSize="small" />}
+            {open ? (
+              <ChevronLeft fontSize="small" />
+            ) : (
+              <ChevronRight fontSize="small" />
+            )}
           </IconButton>
         </Box>
 
@@ -249,7 +318,9 @@ const Sidebar = ({ onToggle }) => {
         <Divider sx={{ my: 1, mx: 3 }} />
         <List sx={{ px: 2, py: 0 }}>
           {showSettings && renderListItem(settingsItemConfig, "settings")}
-          <ListItem disablePadding sx={{ mb: 0.5 }}>
+
+          {/* Nút Đăng xuất */}
+          <ListItem key="logout" disablePadding sx={{ mb: 0.5 }}>
             <ListItemButton
               onClick={handleLogout}
               sx={{
