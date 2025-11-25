@@ -1,7 +1,7 @@
 // src/components/user/layout/Sidebar.jsx
 import React, { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom"; // Import Link nếu cần
 import {
   Drawer,
   List,
@@ -31,153 +31,15 @@ import {
 } from "@mui/icons-material";
 import { useAuth } from "../../../context/AuthContext";
 
-// Menu items với allowedRoles
-const menuItems = [
-  // ... (Giữ nguyên mảng menuItems) ...
-  {
-    text: "Tổng quan",
-    icon: <Dashboard />,
-    path: "/",
-    allowedRoles: ["parent", "driver"],
-  },
-  {
-    text: "Theo dõi xe buýt",
-    icon: <DirectionsBus />,
-    path: "/bus",
-    allowedRoles: ["parent"],
-  },
-  {
-    text: "Danh sách học sinh",
-    icon: <Person />,
-    path: "/students",
-    allowedRoles: ["driver"],
-  },
-  {
-    text: "Lịch làm việc",
-    icon: <Schedule />,
-    path: "/schedule",
-    allowedRoles: ["driver"],
-  },
-  {
-    text: "Điểm đón/trả",
-    icon: <LocationOn />,
-    path: "/pickup-points",
-    allowedRoles: ["driver"],
-  },
-  {
-    text: "Lịch sử chuyến đi",
-    icon: <Assessment />,
-    path: "/trip-history",
-    allowedRoles: ["driver"],
-  },
-  {
-    text: "Cảnh báo sự cố",
-    icon: <Warning />,
-    path: "/incident",
-    allowedRoles: ["driver"],
-  },
-  {
-    text: "Thông báo",
-    icon: <Notifications />,
-    path: "/notification",
-    allowedRoles: ["parent"],
-  },
-  {
-    text: "Cài đặt",
-    icon: <Settings />,
-    path: "/profile",
-    allowedRoles: ["parent", "driver"],
-  },
-];
-
-// Tách menu chính và menu cài đặt
-const mainMenuItemsConfig = menuItems.filter(
-  (item) => item.path !== "/profile"
-);
-const settingsItemConfig = menuItems.find((item) => item.path === "/profile");
-
 const drawerWidthOpen = 260;
 const drawerWidthClosed = 72;
 
 const Sidebar = ({ onToggle }) => {
-  const { t } = useTranslation(); // Dùng ở đây
+  const { t } = useTranslation();
   const { user, loading, logout } = useAuth();
   const [open, setOpen] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
-
-  // ĐỔI: Đưa menuItems vào trong component
-  const menuItems = [
-    {
-      text: t("sidebar.dashboard"),
-      icon: <Dashboard />,
-      path: "/",
-      allowedRoles: ["parent", "driver"],
-    },
-    {
-      text: t("sidebar.busTracking"),
-      icon: <DirectionsBus />,
-      path: "/bus",
-      allowedRoles: ["parent"],
-    },
-    {
-      text: t("sidebar.studentList"),
-      icon: <Person />,
-      path: "/students",
-      allowedRoles: ["driver"],
-    },
-    {
-      text: t("sidebar.schedule"),
-      icon: <Schedule />,
-      path: "/schedule",
-      allowedRoles: ["driver"],
-    },
-    {
-      text: t("sidebar.pickupPoints"),
-      icon: <LocationOn />,
-      path: "/pickup-points",
-      allowedRoles: ["driver"],
-    },
-    {
-      text: t("sidebar.tripHistory"),
-      icon: <Assessment />,
-      path: "/trip-history",
-      allowedRoles: ["driver"],
-    },
-    {
-      text: t("sidebar.incident"),
-      icon: <Warning />,
-      path: "/incident",
-      allowedRoles: ["driver"],
-    },
-    {
-      text: t("sidebar.notifications"),
-      icon: <Notifications />,
-      path: "/notification",
-      allowedRoles: ["parent", "driver"],
-    },
-    {
-      text: t("sidebar.settings"),
-      icon: <Settings />,
-      path: "/profile",
-      allowedRoles: ["parent", "driver"],
-    },
-  ];
-
-  const mainMenuItemsConfig = menuItems.filter((item) => item.path !== "/profile");
-  const settingsItemConfig = menuItems.find((item) => item.path === "/profile");
-
-  const filteredMainMenuItems = useMemo(() => {
-    if (!user || !user.role) return [];
-    return mainMenuItemsConfig.filter((item) =>
-      item.allowedRoles.includes(user.role)
-    );
-  }, [user, mainMenuItemsConfig]);
-
-  const showSettings = useMemo(() => {
-    if (!user || !user.role || !settingsItemConfig) return false;
-    return settingsItemConfig.allowedRoles.includes(user.role);
-  }, [user, settingsItemConfig]);
 
   const handleToggle = () => {
     const newState = !open;
@@ -190,6 +52,86 @@ const Sidebar = ({ onToggle }) => {
     navigate("/login");
   };
 
+  // --- LOGIC MỚI: TẠO MENU DYNAMIC THEO ROLE ---
+  const menuConfig = useMemo(() => {
+    if (!user || !user.role) return { main: [], settings: null };
+
+    // 1. Xác định prefix dựa trên role
+    let prefix = "";
+    if (user.role === "driver") prefix = "/driver";
+    else if (user.role === "parent") prefix = "/parent";
+    // Nếu là admin hoặc role khác thì xử lý tùy ý, ở đây mình tập trung driver/parent
+
+    // 2. Định nghĩa danh sách menu gốc (chưa có prefix)
+    const items = [
+      {
+        text: t("sidebar.dashboard"),
+        icon: <Dashboard />,
+        path: prefix, // Trang chủ là /driver hoặc /parent
+        allowedRoles: ["parent", "driver"],
+      },
+      {
+        text: t("sidebar.busTracking"),
+        icon: <DirectionsBus />,
+        path: `${prefix}/bus`, // -> /parent/bus
+        allowedRoles: ["parent"],
+      },
+      {
+        text: t("sidebar.studentList"),
+        icon: <Person />,
+        path: `${prefix}/students`, // -> /driver/students
+        allowedRoles: ["driver"],
+      },
+      {
+        text: t("sidebar.schedule"),
+        icon: <Schedule />,
+        path: `${prefix}/schedule`,
+        allowedRoles: ["driver"],
+      },
+      {
+        text: t("sidebar.pickupPoints"),
+        icon: <LocationOn />,
+        path: `${prefix}/pickup-points`,
+        allowedRoles: ["driver"],
+      },
+      {
+        text: t("sidebar.tripHistory"),
+        icon: <Assessment />,
+        path: `${prefix}/trip-history`,
+        allowedRoles: ["driver"],
+      },
+      {
+        text: t("sidebar.incident"),
+        icon: <Warning />,
+        path: `${prefix}/incident`,
+        allowedRoles: ["driver"],
+      },
+      {
+        text: t("sidebar.notifications"),
+        icon: <Notifications />,
+        path: `${prefix}/notification`,
+        allowedRoles: ["parent", "parent"], // Chỉnh lại allowedRoles nếu cần
+      },
+      {
+        text: t("sidebar.settings"),
+        icon: <Settings />,
+        path: `${prefix}/profile`,
+        allowedRoles: ["parent", "driver"],
+      },
+    ];
+
+    // 3. Lọc theo role của user
+    const allowedItems = items.filter((item) =>
+      item.allowedRoles.includes(user.role)
+    );
+
+    // 4. Tách settings ra riêng như code cũ của bạn
+    const main = allowedItems.filter((item) => !item.path.includes("profile"));
+    const settings = allowedItems.find((item) => item.path.includes("profile"));
+
+    return { main, settings };
+  }, [user, t]);
+
   if (loading) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", p: 3 }}>
@@ -200,12 +142,17 @@ const Sidebar = ({ onToggle }) => {
 
   if (!user) return null;
 
+  // Hàm kiểm tra active (đã sửa để khớp chính xác hơn)
   const isActive = (path) => {
-    if (path === "/") return location.pathname === "/";
+    // Nếu path là root role (vd: /driver), chỉ active khi pathname khớp chính xác
+    if (path === "/driver" || path === "/parent") {
+      return location.pathname === path || location.pathname === path + "/";
+    }
     return location.pathname.startsWith(path);
   };
 
   const renderListItem = (item, index) => {
+    if (!item) return null;
     const active = isActive(item.path);
     return (
       <ListItem key={index} disablePadding sx={{ mb: 0.5 }}>
@@ -284,11 +231,7 @@ const Sidebar = ({ onToggle }) => {
               "&:hover": { bgcolor: "#e5e7eb", color: "#1f2937" },
             }}
           >
-            {open ? (
-              <ChevronLeft fontSize="small" />
-            ) : (
-              <ChevronRight fontSize="small" />
-            )}
+            {open ? <ChevronLeft fontSize="small" /> : <ChevronRight fontSize="small" />}
           </IconButton>
         </Box>
 
@@ -310,16 +253,16 @@ const Sidebar = ({ onToggle }) => {
         )}
 
         <List sx={{ px: 2, py: 0 }}>
-          {filteredMainMenuItems.map(renderListItem)}
+          {menuConfig.main.map(renderListItem)}
         </List>
       </Box>
 
       <Box sx={{ mb: 2 }}>
         <Divider sx={{ my: 1, mx: 3 }} />
         <List sx={{ px: 2, py: 0 }}>
-          {showSettings && renderListItem(settingsItemConfig, "settings")}
-
-          {/* Nút Đăng xuất */}
+          {renderListItem(menuConfig.settings, "settings")}
+          
+          {/* Nút Logout giữ nguyên */}
           <ListItem key="logout" disablePadding sx={{ mb: 0.5 }}>
             <ListItemButton
               onClick={handleLogout}

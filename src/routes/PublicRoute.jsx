@@ -1,3 +1,4 @@
+// src/routes/PublicRoute.jsx
 import { Navigate } from "react-router-dom";
 import { Box, CircularProgress } from "@mui/material";
 import { useAuth } from "../context/AuthContext";
@@ -18,9 +19,13 @@ const PublicRoute = ({ children }) => {
     );
   }
 
-  // CHỈ redirect nếu đã authenticated VÀ không có pending redirect
   if (isAuthenticated) {
-    const redirectTo = user?.role === 'admin' ? '/admin' : '/';
+    // LOGIC MỚI: Redirect dựa trên role cụ thể
+    let redirectTo = "/";
+    if (user?.role === "admin") redirectTo = "/admin";
+    else if (user?.role === "driver") redirectTo = "/driver";
+    else if (user?.role === "parent") redirectTo = "/parent";
+    
     return <Navigate to={redirectTo} replace />;
   }
 

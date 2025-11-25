@@ -25,102 +25,55 @@ import TripDetailPage from "../pages/user/TripDetailPage";
 import NotificationPage from "../pages/user/NotificationPage";
 
 export const router = createBrowserRouter([
+  // 1. Route cơ bản (Root redirect)
   {
     path: "/",
-    element: <App />,
+    element: <PublicRoute><LoginPage /></PublicRoute>, // Mặc định vào Login nếu chưa có gì
+    errorElement: <ErrorPage />,
+  },
+
+  // 2. DRIVER ROUTES (/driver/...)
+  {
+    path: "/driver",
+    element: (
+      <ProtectedRoute allowedRoles={["driver"]}>
+        <App /> 
+      </ProtectedRoute>
+    ),
     errorElement: <ErrorPage />,
     children: [
-      {
-        index: true,
-        element: (
-          <ProtectedRoute allowedRoles={["parent", "driver"]}>
-            <UserDashboardPage />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "bus",
-        element: (
-          <ProtectedRoute allowedRoles={["parent"]}>
-            <MapPage />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "schedule",
-        element: (
-          <ProtectedRoute allowedRoles={["driver"]}>
-            <DriverSchedulePage />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "pickup-points",
-        element: (
-          <ProtectedRoute allowedRoles={["driver"]}>
-            <DriverPickupPointsPage />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "incident",
-        element: (
-          <ProtectedRoute allowedRoles={["driver"]}>
-            <DriverIncidentReportPage />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "incident-detail/:id",
-        element: (
-          <ProtectedRoute allowedRoles={["driver"]}>
-            <IncidentDetailPage />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "trip-history",
-        element: (
-          <ProtectedRoute allowedRoles={["driver"]}>
-            <TripHistoryPage />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "trip-history/:id",
-        element: (
-          <ProtectedRoute allowedRoles={["driver"]}>
-            <TripDetailPage />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "students",
-        element: (
-          <ProtectedRoute allowedRoles={["driver"]}>
-            <DriverStudentListPage />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "notification",
-        element: (
-          <ProtectedRoute allowedRoles={["parent"]}>
-            <NotificationPage />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "profile",
-        element: (
-          <ProtectedRoute allowedRoles={["parent", "driver"]}>
-            <ProfilePage />
-          </ProtectedRoute>
-        ),
-      },
-      { path: "parent", element: <ParentPage /> },
+      { index: true, element: <UserDashboardPage /> }, // localhost:5173/driver/
+      { path: "schedule", element: <DriverSchedulePage /> },
+      { path: "pickup-points", element: <DriverPickupPointsPage /> },
+      { path: "incident", element: <DriverIncidentReportPage /> },
+      { path: "incident-detail/:id", element: <IncidentDetailPage /> },
+      { path: "trip-history", element: <TripHistoryPage /> },
+      { path: "trip-history/:id", element: <TripDetailPage /> },
+      { path: "students", element: <DriverStudentListPage /> },
+      { path: "profile", element: <ProfilePage /> },
+      // Mình thấy có path "parent" ở code cũ, nếu nó dành cho driver xem thông tin phụ huynh:
+      { path: "parent-info", element: <ParentPage /> }, 
     ],
   },
+
+  // 3. PARENT ROUTES (/parent/...)
+  {
+    path: "/parent",
+    element: (
+      <ProtectedRoute allowedRoles={["parent"]}>
+        <App />
+      </ProtectedRoute>
+    ),
+    errorElement: <ErrorPage />,
+    children: [
+      { index: true, element: <UserDashboardPage /> }, // localhost:5173/parent/
+      { path: "bus", element: <MapPage /> }, // Xem bản đồ xe
+      { path: "notification", element: <NotificationPage /> },
+      { path: "profile", element: <ProfilePage /> },
+    ],
+  },
+
+  // 4. AUTH ROUTES
   {
     path: "/login",
     element: (
@@ -138,5 +91,6 @@ export const router = createBrowserRouter([
     ),
   },
 
+  // 5. ADMIN ROUTES
   ...adminRoutes,
 ]);

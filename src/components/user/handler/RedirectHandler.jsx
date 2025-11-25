@@ -8,9 +8,13 @@ const RedirectHandler = () => {
   const location = useLocation();
 
   useEffect(() => {
+    // Chỉ redirect khi pendingRedirect có giá trị và KHÁC với url hiện tại
     if (pendingRedirect && pendingRedirect !== location.pathname) {
-      console.log('🚀 Redirecting to:', pendingRedirect);
+      console.log(`🚀 RedirectHandler: Moving from ${location.pathname} to ${pendingRedirect}`);
+      
       navigate(pendingRedirect, { replace: true });
+      
+      // Quan trọng: Xóa trạng thái redirect ngay lập tức
       clearPendingRedirect();
     }
   }, [pendingRedirect, navigate, clearPendingRedirect, location.pathname]);
