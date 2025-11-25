@@ -136,6 +136,10 @@ const MapContainer = ({
 
         {/* Hiển thị các điểm đón */}
         {pickupPoints.map((point) => {
+          if (!point || !point.position || typeof point.position.lat !== 'number' || typeof point.position.lng !== 'number') {
+            console.warn(`Điểm dừng ${point?.name || 'không tên'} bị lỗi tọa độ, bỏ qua.`);
+            return null;
+          }
           let distanceStr = "Chưa có vị trí xe";
           if (busLocation) {
             try {
