@@ -14,6 +14,7 @@ import {
 import { ArrowBack, Delete, CheckCircle } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
 import { notificationAPI } from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 
 // Component con cho chip trạng thái
 const StatusChip = ({ status }) => {
@@ -44,6 +45,10 @@ const IncidentDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [openImage, setOpenImage] = useState(null);
+  const { user } = useAuth();
+
+  // Tạo biến prefix dùng chung
+  const rolePrefix = user?.role === 'driver' ? '/driver' : '/parent';
 
   // Hàm xác định status
   const getStatus = (item) => {
@@ -73,7 +78,7 @@ const IncidentDetailPage = () => {
     try {
       await notificationAPI.delete(id);
       alert('Đã xóa báo cáo!');
-      navigate('/incident', { state: { tab: 'history' } });
+      navigate(`${rolePrefix}/incident`, { state: { tab: 'history' } });
     } catch (err) {
       console.error(err);
       alert('Xóa không thành công!');
@@ -122,7 +127,7 @@ const handleMarkResolved = async () => {
       {/* Nút quay lại */}
       <Link
         component="button"
-        onClick={() => navigate('/incident', { state: { tab: 'history' } })}
+        onClick={() => navigate(`${rolePrefix}/incident`, { state: { tab: 'history' } })}
         sx={{
           display: 'flex',
           alignItems: 'center',

@@ -10,6 +10,7 @@ import IncidentFilter from './IncidentFilter';
 import IncidentTable from './IncidentTable';
 import { notificationAPI } from "../../../services/api";
 import { useTranslation } from 'react-i18next';
+import { useAuth } from "../../../context/AuthContext";
 
 const IncidentHistory = () => {
   const { t } = useTranslation();
@@ -17,6 +18,7 @@ const IncidentHistory = () => {
   const [filters, setFilters] = useState({ type: '', status: '', time: '' });
   const [incidents, setIncidents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -39,7 +41,8 @@ const IncidentHistory = () => {
   const handleClearFilters = () => setFilters({ type: '', status: '', time: '' });
 
   const handleViewDetails = (id) => {
-    navigate(`/incident-detail/${id}`);
+    const rolePrefix = user?.role === 'driver' ? '/driver' : '/parent';
+    navigate(`${rolePrefix}/incident-detail/${id}`);
   };
 
   const filteredIncidents = incidents.filter(item => {

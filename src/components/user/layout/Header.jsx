@@ -34,7 +34,8 @@ const Header = ({ onMenuClick }) => {
   const handleClose = () => setAnchorEl(null);
   const handleProfile = () => {
     handleClose();
-    navigate("/profile");
+    const rolePrefix = user?.role === 'driver' ? '/driver' : '/parent'; 
+    navigate(`${rolePrefix}/profile`);
   };
   const handleLogout = async () => {
     handleClose();
