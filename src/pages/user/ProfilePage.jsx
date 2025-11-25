@@ -1,4 +1,4 @@
-// src/pages/user/Profile.jsx
+// src/pages/user/ProfilePage.jsx
 import React, { useState } from "react";
 import {
   Box,
@@ -12,7 +12,7 @@ import {
   Alert,
   Grid,
 } from "@mui/material";
-import { Edit, PhotoCamera } from "@mui/icons-material";
+import { Edit } from "@mui/icons-material";
 import { useAuth } from "../../context/AuthContext";
 
 const Profile = () => {
@@ -53,6 +53,7 @@ const Profile = () => {
   };
 
   const handleSave = async () => {
+    // Logic lưu mật khẩu
     if (passwordData.newPassword || passwordData.confirmPassword) {
       if (passwordData.newPassword !== passwordData.confirmPassword) {
         setSnackbar({
@@ -72,6 +73,8 @@ const Profile = () => {
       }
       console.log("Đang đổi mật khẩu:", passwordData);
     }
+
+    // Logic lưu thông tin profile
     try {
       console.log("Đang lưu thông tin:", profileData);
       setSnackbar({
@@ -102,7 +105,6 @@ const Profile = () => {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        // Cập nhật avatar nếu cần (hiện tại chỉ log)
         console.log("Avatar mới:", reader.result);
       };
       reader.readAsDataURL(file);
@@ -122,7 +124,7 @@ const Profile = () => {
       {/* Header */}
       <Box sx={{ mb: 3 }}>
         <Typography variant="h4" sx={{ fontWeight: 700, color: "#111827" }}>
-          Chỉnh sửa hồ sơ cá nhân
+          Hồ sơ cá nhân
         </Typography>
       </Box>
 
@@ -171,25 +173,52 @@ const Profile = () => {
               {profileData.username}
             </Typography>
             <Typography variant="body2" sx={{ color: "#6b7280", mb: 3 }}>
-              {profileData.email}
+              {user?.role === 'driver' ? "Tài xế" : user?.role === 'parent' ? "Phụ huynh" : "Người dùng"}
             </Typography>
 
+            {/* Username - DISABLED */}
             <TextField
               fullWidth
+              disabled
               label="Tên tài khoản"
               name="username"
               value={profileData.username}
-              onChange={handleProfileChange}
               variant="outlined"
-              sx={{ mb: 2 }}
+              sx={{ 
+                mb: 2,
+                bgcolor: "#f3f4f6", // Nền màu xám nhạt
+                  "& .MuiOutlinedInput-root": {
+                  "&.Mui-disabled fieldset": {
+                  borderColor: "#e5e7eb", // Viền màu xám nhạt hơn
+                  },
+                    },
+                    "& .MuiInputBase-input.Mui-disabled": {
+                  WebkitTextFillColor: "#6b7280", // Màu chữ xám trung tính (dễ đọc nhưng vẫn biết là disabled)
+                    fontWeight: 500,
+                }
+              }}
             />
+            
+            {/* Email - DISABLED */}
             <TextField
               fullWidth
+              disabled
               label="Email"
               name="email"
               value={profileData.email}
-              onChange={handleProfileChange}
               variant="outlined"
+              sx={{
+                bgcolor: "#f3f4f6", // Nền màu xám nhạt
+                    "& .MuiOutlinedInput-root": {
+                      "&.Mui-disabled fieldset": {
+                        borderColor: "#e5e7eb",
+                      },
+                  },
+                    "& .MuiInputBase-input.Mui-disabled": {
+                        WebkitTextFillColor: "#6b7280",
+                        fontWeight: 500,
+                  }
+              }}
             />
           </Paper>
         </Grid>
@@ -271,7 +300,7 @@ const Profile = () => {
             </Grid>
           </Paper>
 
-          {/* Save Button - Đẩy xuống dưới cùng */}
+          {/* Save Button */}
           <Box sx={{ display: "flex", justifyContent: "flex-end", mt: "auto", pt: 3 }}>
             <Button
               variant="contained"
@@ -294,7 +323,7 @@ const Profile = () => {
         </Grid>
       </Grid>
 
-      {/* Snackbar for notifications */}
+      {/* Snackbar */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={3000}
