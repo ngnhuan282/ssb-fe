@@ -114,12 +114,10 @@
     "noRoute": "No route assigned",
     "busPlate": "License plate"
   },
-
   "incident": {
     "pageTitle": "Incident Report",
     "tabNew": "New Report",
     "tabHistory": "Report History",
-
     "form": {
       "title": "Create Incident Report",
       "typeLabel": "Incident Type",
@@ -145,7 +143,6 @@
       "btnNormal": "Submit Report",
       "btnEmergency": "Submit Emergency Report"
     },
-
     "filter": {
       "type": "Incident Type",
       "status": "Status",
@@ -155,7 +152,6 @@
       "last30days": "Last 30 days",
       "clearFilters": "Clear Filters"
     },
-
     "table": {
       "reportId": "Report ID",
       "type": "Incident Type",
@@ -166,7 +162,6 @@
       "viewDetails": "View Details",
       "noIncidents": "No incidents recorded."
     },
-
     "detail": {
       "title": "Incident Report Details",
       "reportId": "Report ID",
@@ -182,6 +177,34 @@
       "statusResolved": "Resolved",
       "pending": "Pending",
       "urgent": "Urgent"
+    }
+  },
+  "profile": {
+    "title": "My Profile",
+    "roles": {
+      "driver": "Driver",
+      "parent": "Parent",
+      "user": "User"
+    },
+    "contactInfo": "Contact Information",
+    "changePassword": "Change Password",
+    "fields": {
+      "username": "Username",
+      "email": "Email",
+      "phone": "Phone Number",
+      "address": "Address",
+      "currentPassword": "Current Password",
+      "newPassword": "New Password",
+      "confirmPassword": "Confirm New Password"
+    },
+    "buttons": {
+      "save": "Save Changes"
+    },
+    "messages": {
+      "passwordMismatch": "New passwords do not match!",
+      "currentPasswordRequired": "Current password is required!",
+      "updateSuccess": "Profile updated successfully!",
+      "error": "An error occurred, please try again!"
     }
   }
 }

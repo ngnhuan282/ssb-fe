@@ -1,5 +1,6 @@
 // src/pages/user/ProfilePage.jsx
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next"; // 1. Import hook
 import {
   Box,
   Paper,
@@ -16,6 +17,7 @@ import { Edit } from "@mui/icons-material";
 import { useAuth } from "../../context/AuthContext";
 
 const Profile = () => {
+  const { t } = useTranslation(); // 2. Khởi tạo hook
   const { user } = useAuth();
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -58,7 +60,7 @@ const Profile = () => {
       if (passwordData.newPassword !== passwordData.confirmPassword) {
         setSnackbar({
           open: true,
-          message: "Mật khẩu mới không khớp!",
+          message: t("profile.messages.passwordMismatch"), // Dùng i18n
           severity: "error",
         });
         return;
@@ -66,7 +68,7 @@ const Profile = () => {
       if (!passwordData.currentPassword) {
         setSnackbar({
           open: true,
-          message: "Vui lòng nhập mật khẩu hiện tại!",
+          message: t("profile.messages.currentPasswordRequired"), // Dùng i18n
           severity: "error",
         });
         return;
@@ -79,7 +81,7 @@ const Profile = () => {
       console.log("Đang lưu thông tin:", profileData);
       setSnackbar({
         open: true,
-        message: "Cập nhật thông tin thành công!",
+        message: t("profile.messages.updateSuccess"), // Dùng i18n
         severity: "success",
       });
       setPasswordData({
@@ -90,7 +92,7 @@ const Profile = () => {
     } catch (error) {
       setSnackbar({
         open: true,
-        message: "Có lỗi xảy ra, vui lòng thử lại!",
+        message: t("profile.messages.error"), // Dùng i18n
         severity: "error",
       });
     }
@@ -111,6 +113,13 @@ const Profile = () => {
     }
   };
 
+  // Helper để lấy tên Role hiển thị
+  const getRoleLabel = () => {
+    if (user?.role === 'driver') return t("profile.roles.driver");
+    if (user?.role === 'parent') return t("profile.roles.parent");
+    return t("profile.roles.user");
+  };
+
   const cardStyles = {
     p: 3,
     borderRadius: 3,
@@ -124,7 +133,7 @@ const Profile = () => {
       {/* Header */}
       <Box sx={{ mb: 3 }}>
         <Typography variant="h4" sx={{ fontWeight: 700, color: "#111827" }}>
-          Hồ sơ cá nhân
+          {t("profile.title")}
         </Typography>
       </Box>
 
@@ -173,28 +182,28 @@ const Profile = () => {
               {profileData.username}
             </Typography>
             <Typography variant="body2" sx={{ color: "#6b7280", mb: 3 }}>
-              {user?.role === 'driver' ? "Tài xế" : user?.role === 'parent' ? "Phụ huynh" : "Người dùng"}
+              {getRoleLabel()}
             </Typography>
 
             {/* Username - DISABLED */}
             <TextField
               fullWidth
               disabled
-              label="Tên tài khoản"
+              label={t("profile.fields.username")}
               name="username"
               value={profileData.username}
               variant="outlined"
               sx={{ 
                 mb: 2,
-                bgcolor: "#f3f4f6", // Nền màu xám nhạt
-                  "& .MuiOutlinedInput-root": {
+                bgcolor: "#f3f4f6",
+                "& .MuiOutlinedInput-root": {
                   "&.Mui-disabled fieldset": {
-                  borderColor: "#e5e7eb", // Viền màu xám nhạt hơn
+                    borderColor: "#e5e7eb",
                   },
-                    },
-                    "& .MuiInputBase-input.Mui-disabled": {
-                  WebkitTextFillColor: "#6b7280", // Màu chữ xám trung tính (dễ đọc nhưng vẫn biết là disabled)
-                    fontWeight: 500,
+                },
+                "& .MuiInputBase-input.Mui-disabled": {
+                  WebkitTextFillColor: "#6b7280",
+                  fontWeight: 500,
                 }
               }}
             />
@@ -203,21 +212,21 @@ const Profile = () => {
             <TextField
               fullWidth
               disabled
-              label="Email"
+              label={t("profile.fields.email")}
               name="email"
               value={profileData.email}
               variant="outlined"
               sx={{
-                bgcolor: "#f3f4f6", // Nền màu xám nhạt
-                    "& .MuiOutlinedInput-root": {
-                      "&.Mui-disabled fieldset": {
-                        borderColor: "#e5e7eb",
-                      },
+                bgcolor: "#f3f4f6",
+                "& .MuiOutlinedInput-root": {
+                  "&.Mui-disabled fieldset": {
+                    borderColor: "#e5e7eb",
                   },
-                    "& .MuiInputBase-input.Mui-disabled": {
-                        WebkitTextFillColor: "#6b7280",
-                        fontWeight: 500,
-                  }
+                },
+                "& .MuiInputBase-input.Mui-disabled": {
+                  WebkitTextFillColor: "#6b7280",
+                  fontWeight: 500,
+                }
               }}
             />
           </Paper>
@@ -233,13 +242,13 @@ const Profile = () => {
           {/* Contact Info Card */}
           <Paper sx={cardStyles}>
             <Typography variant="h6" sx={{ fontWeight: 600, mb: 2.5 }}>
-              Thông tin liên hệ
+              {t("profile.contactInfo")}
             </Typography>
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
-                  label="Số điện thoại"
+                  label={t("profile.fields.phone")}
                   name="phone"
                   value={profileData.phone}
                   onChange={handleProfileChange}
@@ -249,7 +258,7 @@ const Profile = () => {
               <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
-                  label="Địa chỉ"
+                  label={t("profile.fields.address")}
                   name="address"
                   value={profileData.address}
                   onChange={handleProfileChange}
@@ -262,11 +271,11 @@ const Profile = () => {
           {/* Change Password Card */}
           <Paper sx={{ ...cardStyles, mt: 3 }}>
             <Typography variant="h6" sx={{ fontWeight: 600, mb: 2.5 }}>
-              Thay đổi mật khẩu
+              {t("profile.changePassword")}
             </Typography>
             <TextField
               fullWidth
-              label="Mật khẩu hiện tại"
+              label={t("profile.fields.currentPassword")}
               name="currentPassword"
               type="password"
               value={passwordData.currentPassword}
@@ -278,7 +287,7 @@ const Profile = () => {
               <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
-                  label="Mật khẩu mới"
+                  label={t("profile.fields.newPassword")}
                   name="newPassword"
                   type="password"
                   value={passwordData.newPassword}
@@ -289,7 +298,7 @@ const Profile = () => {
               <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
-                  label="Xác nhận mật khẩu mới"
+                  label={t("profile.fields.confirmPassword")}
                   name="confirmPassword"
                   type="password"
                   value={passwordData.confirmPassword}
@@ -317,7 +326,7 @@ const Profile = () => {
                 },
               }}
             >
-              Lưu thay đổi
+              {t("profile.buttons.save")}
             </Button>
           </Box>
         </Grid>
