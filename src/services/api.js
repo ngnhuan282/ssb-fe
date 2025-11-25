@@ -22,6 +22,7 @@ export const locationAPI = {
   create: (data) => axiosInstance.post("/location", data),
   update: (id, data) => axiosInstance.put(`/location/${id}`, data),
   delete: (id) => axiosInstance.delete(`/location/${id}`),
+  getLatestByBus: (busId) => axiosInstance.get(`/location/bus/${busId}/latest`),
 };
 
 export const routeAPI = {
