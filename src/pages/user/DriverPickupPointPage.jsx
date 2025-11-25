@@ -1,12 +1,18 @@
 // src/pages/driver/PickupPointPage.jsx
 import React, { useEffect, useState, useRef, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Box, 
   CircularProgress, 
   Typography,
   Snackbar,
   GlobalStyles,
-  Alert  } from '@mui/material';
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button  } from '@mui/material';
 import MapContainer from '../../components/user/pickup/MapContainer';
 import PickupSidebar from '../../components/user/pickup/PickupSidebar';
 import { useAuth } from '../../context/AuthContext';
@@ -38,6 +44,10 @@ import { io } from "socket.io-client";
 
     //SOCKET (state de giu ket noi socket)
     const [socket, setSocket] = useState(null);
+
+    //dialog hoan thanh 
+    const navigate = useNavigate();
+    const [showFinishDialog, setShowFinishDialog] = useState(false);
 
     useEffect(()=>{
       
@@ -398,6 +408,47 @@ import { io } from "socket.io-client";
     };
   }, [routeCoordinates, simulationIndex, socket, schedule]);
 
+  //Ket thuc
+  const checkScheduleCompletion = (currentPoints) => {
+      if (!currentPoints || currentPoints.length === 0) return false;
+      
+      for (const point of currentPoints) {
+        for (const student of point.students) {
+          if (student.status === 'waiting' || student.status === 'pending') {
+            return false; 
+          }
+        }
+      }
+      return true; 
+    };
+
+    const confirmFinishTrip = async () => {
+      try {
+          setIsLoading(true);
+          await scheduleAPI.update(schedule._id, { status: 'completed' });
+          
+          showNotification("Chúc mừng! Bạn đã hoàn thành chuyến đi.", "success");
+          
+          setShowFinishDialog(false);
+          navigate('/driver/trip-history');
+          
+      } catch (err) {
+          console.error("Finish trip error:", err);
+          showNotification("Lỗi khi kết thúc chuyến đi", "error");
+          setIsLoading(false);
+          setShowFinishDialog(false);
+      }
+    };
+
+    useEffect(() => {
+      if (points.length > 0 && checkScheduleCompletion(points)) {
+        if (!showFinishDialog) {
+          setShowFinishDialog(true);
+        }
+      }
+    }, [points]);
+    
+
     if (isLoading) {
       return (
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
@@ -463,6 +514,32 @@ import { io } from "socket.io-client";
         {snackbar.message}
       </Alert>
     </Snackbar>
+
+    <Dialog 
+        open={showFinishDialog} 
+        onClose={() => setShowFinishDialog(false)}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {"🎉 Chuyến đi hoàn tất!"}
+        </DialogTitle>
+        <DialogContent>
+          <Typography id="alert-dialog-description">
+            Tất cả học sinh trong danh sách đã được xử lý (Đón/Trả/Vắng). 
+            <br/><br/>
+            Bạn có muốn <b>kết thúc chuyến đi</b> và đóng lộ trình này không?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowFinishDialog(false)} color="inherit">
+            Xem lại
+          </Button>
+          <Button onClick={confirmFinishTrip} variant="contained" color="primary" autoFocus>
+            Xác nhận kết thúc
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
