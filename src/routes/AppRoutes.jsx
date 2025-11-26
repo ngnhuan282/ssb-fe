@@ -37,7 +37,7 @@ export const router = createBrowserRouter([
     path: "/driver",
     element: (
       <ProtectedRoute allowedRoles={["driver"]}>
-        <App /> 
+        <App />
       </ProtectedRoute>
     ),
     errorElement: <ErrorPage />,
@@ -52,7 +52,7 @@ export const router = createBrowserRouter([
       { path: "students", element: <DriverStudentListPage /> },
       { path: "profile", element: <ProfilePage /> },
       // Mình thấy có path "parent" ở code cũ, nếu nó dành cho driver xem thông tin phụ huynh:
-      { path: "parent-info", element: <ParentPage /> }, 
+      { path: "parent-info", element: <ParentPage /> },
     ],
   },
 

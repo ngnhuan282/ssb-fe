@@ -92,7 +92,7 @@ const TripHistoryPage = () => {
 
   const handleViewDetails = (tripId) => {
     // Chuyển hướng đến trang chi tiết
-    navigate(`/trip-history/${tripId}`);
+    navigate(`/driver/trip-history/${tripId}`);
   };
 
 
