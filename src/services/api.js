@@ -94,6 +94,10 @@ export const notificationAPI = {
     axiosInstance.get("/notifications/my-notifications", {
       params: { userId },
     }),
+    
+  createNotificationForOneUser: (data) => axiosInstance.post("/notifications/one-user", data),
+  createNotificationsForUsers: (data) => axiosInstance.post("/notifications/users", data),
+
 };
 
 export const userAPI = {

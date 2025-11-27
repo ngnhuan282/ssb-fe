@@ -43,8 +43,13 @@ export const adminRoutes = [
       },
       {
         path: "notifications",
-        element: <NotificationPage />,
+        element: (
+          <ProtectedRoute allowedRoles={['admin']}>
+            <NotificationPage />
+          </ProtectedRoute>
+        ),
       },
+
     ],
   },
 ];
