@@ -4,11 +4,13 @@ class BusSimulationService {
   constructor() {
     this.simulations = new Map();
     this.SPEED_KMH = 40;
-    this.CHECKPOINT_DISTANCE = 20;
+    // Tăng khoảng cách check-in lên 80m để đảm bảo bắt được trạm dù GPS lệch
+    this.CHECKPOINT_DISTANCE = 80;
   }
 
+  // Hàm tính khoảng cách giữa 2 tọa độ (Haversine formula)
   calculateDistance(lat1, lon1, lat2, lon2) {
-    const R = 6371e3;
+    const R = 6371e3; // Bán kính trái đất (mét)
     const φ1 = (lat1 * Math.PI) / 180;
     const φ2 = (lat2 * Math.PI) / 180;
     const Δφ = ((lat2 - lat1) * Math.PI) / 180;
@@ -22,6 +24,7 @@ class BusSimulationService {
     return R * c;
   }
 
+  // Gọi API OSRM để lấy đường đi thực tế
   async getRoute(startLat, startLng, endLat, endLng) {
     try {
       const url = `https://router.project-osrm.org/route/v1/driving/${startLng},${startLat};${endLng},${endLat}?overview=full&geometries=geojson`;
@@ -35,6 +38,7 @@ class BusSimulationService {
         }));
       }
 
+      // Fallback: Nếu lỗi thì trả về đường chim bay
       return [
         { lat: startLat, lng: startLng },
         { lat: endLat, lng: endLng },
@@ -48,6 +52,7 @@ class BusSimulationService {
     }
   }
 
+  // Xây dựng lộ trình đầy đủ qua tất cả các điểm dừng
   async buildFullRoute(stops) {
     const fullPath = [];
 
@@ -62,17 +67,17 @@ class BusSimulationService {
         end.lng
       );
 
-      // Thêm segment, bỏ qua điểm đầu nếu không phải segment đầu tiên
       if (i === 0) {
         fullPath.push(...segment);
       } else {
-        fullPath.push(...segment.slice(1));
+        fullPath.push(...segment.slice(1)); // Tránh trùng điểm nối
       }
     }
 
     return fullPath;
   }
 
+  // Nội suy vị trí giữa 2 điểm tọa độ
   interpolate(start, end, fraction) {
     return {
       lat: start.lat + (end.lat - start.lat) * fraction,
@@ -81,10 +86,8 @@ class BusSimulationService {
   }
 
   async startSimulation(busId, stops, onUpdate) {
-    // Dừng simulation cũ nếu có
     this.stopSimulation(busId);
 
-    // Tạo route đầy đủ
     const fullPath = await this.buildFullRoute(stops);
 
     if (fullPath.length < 2) {
@@ -92,11 +95,9 @@ class BusSimulationService {
       return;
     }
 
-    // ✨ Tốc độ khởi đầu random 30-50 km/h
-    let currentSpeed = Math.floor(Math.random() * 21) + 30;
-    console.log(`🚌 Xe ${busId} bắt đầu với tốc độ: ${currentSpeed} km/h`);
+    let currentSpeed = Math.floor(Math.random() * 21) + 30; // 30-50 km/h
 
-    // Tính tổng khoảng cách của route
+    // Tính tổng quãng đường
     let totalDistance = 0;
     for (let i = 0; i < fullPath.length - 1; i++) {
       totalDistance += this.calculateDistance(
@@ -107,47 +108,41 @@ class BusSimulationService {
       );
     }
 
-    // Tính thời gian trung bình (dùng tốc độ 40km/h làm chuẩn)
-    const avgSpeed = 50;
-    const totalTimeSeconds = (totalDistance / 1000 / avgSpeed) * 3600;
-
-    // Cập nhật mỗi 1 giây
-    const updateInterval = 1000; // ms
-    const totalSteps = Math.floor(totalTimeSeconds);
-
-    let currentStep = 0;
+    const updateInterval = 1000; // 1 giây cập nhật 1 lần
     let currentStopIndex = 0;
     let distanceCovered = 0;
 
+    // Reset trạng thái cảnh báo của các trạm
+    stops.forEach((stop) => {
+      stop.alertedApproaching = false;
+      stop.alertedLate = false;
+    });
+
     const intervalId = setInterval(() => {
-      // ✨ THAY ĐỔI TỐC ĐỘ MỖI 2-5 GIÂY (random interval)
-      const shouldChangeSpeed = Math.random() < 0.3; // 30% khả năng đổi tốc độ mỗi giây
-
-      if (shouldChangeSpeed) {
-        // Random thay đổi tốc độ: tăng/giảm 5-15 km/h
-        const speedChange = Math.floor(Math.random() * 11) - 5; // -5 đến +5
-        const newSpeed = currentSpeed + speedChange;
-
-        // Giới hạn trong khoảng 20-60 km/h
-        currentSpeed = Math.max(20, Math.min(60, newSpeed));
-
-        // Log để debug
-        console.log(
-          `⚡ Giây ${currentStep}: Tốc độ mới = ${currentSpeed} km/h`
-        );
+      // 1. Giả lập thay đổi tốc độ ngẫu nhiên
+      if (Math.random() < 0.3) {
+        const change = Math.floor(Math.random() * 11) - 5;
+        currentSpeed = Math.max(20, Math.min(60, currentSpeed + change));
       }
 
       const distancePerSecond = (currentSpeed * 1000) / 3600;
       distanceCovered += distancePerSecond;
 
-      // Kiểm tra đã đến đích chưa
+      // 2. Kiểm tra kết thúc hành trình
       if (distanceCovered >= totalDistance) {
         this.stopSimulation(busId);
-        console.log(`✅ Xe ${busId} đã hoàn thành hành trình!`);
+        onUpdate({
+          busId,
+          position: fullPath[fullPath.length - 1],
+          progress: 100,
+          speed: 0,
+          alerts: [],
+          stops: stops.map((s) => ({ ...s, status: "completed" })),
+        });
         return;
       }
 
-      // Tìm vị trí hiện tại trên route
+      // 3. Tìm vị trí hiện tại trên line đường (Project to path)
       let accumulatedDistance = 0;
       let currentPosition = fullPath[0];
 
@@ -160,7 +155,6 @@ class BusSimulationService {
         );
 
         if (accumulatedDistance + segmentDistance >= distanceCovered) {
-          // Nội suy trong segment này
           const segmentProgress =
             (distanceCovered - accumulatedDistance) / segmentDistance;
           currentPosition = this.interpolate(
@@ -170,16 +164,18 @@ class BusSimulationService {
           );
           break;
         }
-
         accumulatedDistance += segmentDistance;
       }
 
-      // Kiểm tra và cập nhật trạng thái các điểm đón
+      // 4. XỬ LÝ LOGIC TRẠM & CẢNH BÁO
+      const alerts = [];
       const updatedStops = stops.map((stop, index) => {
+        // Trạm đã đi qua
         if (index < currentStopIndex) {
           return { ...stop, status: "completed" };
         }
 
+        // Trạm hiện tại đang hướng tới
         if (index === currentStopIndex) {
           const distanceToStop = this.calculateDistance(
             currentPosition.lat,
@@ -188,43 +184,87 @@ class BusSimulationService {
             stop.position.lng
           );
 
-          // Nếu xe đến gần điểm đón (trong vòng 100m)
+          // --- LOGIC A: CẢNH BÁO SẮP ĐẾN (150m) ---
+          // Báo trước khi vào vùng checkpoint để người dùng kịp chuẩn bị
+          if (!stop.alertedApproaching && distanceToStop <= 150) {
+            stop.alertedApproaching = true;
+            currentSpeed = 25; // Giảm tốc độ để người dùng dễ quan sát
+
+            alerts.push({
+              type: "approaching",
+              title: "Xe sắp đến điểm đón",
+              message: `Xe sắp đến trạm "${stop.name}" (cách ~${Math.round(
+                distanceToStop
+              )}m)`,
+              stopName: stop.name,
+              distance: Math.round(distanceToStop),
+              estimatedMinutes: 1,
+            });
+          }
+
+          // --- LOGIC B: ĐÃ ĐẾN TRẠM (80m) ---
+          // Dùng 80m thay vì 20m để khắc phục lỗi xe chạy lướt qua trạm
           if (distanceToStop <= this.CHECKPOINT_DISTANCE) {
-            currentStopIndex++;
-            console.log(`✅ Xe ${busId} đã qua: ${stop.name}`);
+            currentStopIndex++; // Chuyển sang trạm tiếp theo
+            currentSpeed = 15; // Xe đi rất chậm khi qua trạm
 
-            // ✨ Giảm tốc khi đến điểm đón (mô phỏng dừng/chậm lại)
-            currentSpeed = Math.max(15, currentSpeed - 10);
-            console.log(
-              `🛑 Xe giảm tốc xuống ${currentSpeed} km/h tại ${stop.name}`
-            );
-
+            // Nếu chưa kịp báo sắp đến mà đã đến luôn thì báo "Đã đến"
+            if (!stop.alertedApproaching) {
+              alerts.push({
+                type: "approaching",
+                title: "Xe đã đến điểm đón",
+                message: `Xe đã đến trạm "${stop.name}"`,
+                stopName: stop.name,
+                distance: 0,
+                estimatedMinutes: 0,
+              });
+              stop.alertedApproaching = true;
+            }
             return { ...stop, status: "completed" };
           }
+
+          // --- LOGIC C: CẢNH BÁO TRỄ GIỜ ---
+          if (stop.expectedTime && !stop.alertedLate) {
+            const expectedTime = new Date(stop.expectedTime).getTime();
+            const now = Date.now();
+            const delayMinutes = Math.floor((now - expectedTime) / 60000);
+
+            // Nếu trễ > 0 phút là báo ngay
+            if (delayMinutes > 0) {
+              stop.alertedLate = true;
+              alerts.push({
+                type: "late",
+                title: "Cảnh báo trễ giờ",
+                message: `Xe trễ ${delayMinutes} phút tại "${stop.name}"`,
+                stopName: stop.name,
+                delayMinutes,
+              });
+            }
+          }
+
           return { ...stop, status: "current" };
         }
 
+        // Các trạm chưa tới
         return { ...stop, status: "pending" };
       });
 
-      // Tính phần trăm hoàn thành
       const progress = Math.min(
         100,
         Math.round((distanceCovered / totalDistance) * 100)
       );
 
+      // Gửi dữ liệu cập nhật về UI
       onUpdate({
         busId,
         position: currentPosition,
         stops: updatedStops,
-        progress: progress,
-        speed: currentSpeed,
+        progress,
+        speed: Math.round(currentSpeed),
+        alerts,
       });
-
-      currentStep++;
     }, updateInterval);
 
-    // Lưu simulation info
     this.simulations.set(busId, {
       intervalId,
       stops,
