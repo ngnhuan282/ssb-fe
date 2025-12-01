@@ -1,3 +1,4 @@
+// src/components/admin/layout/AdminSidebar.jsx
 import React, { useState } from "react";
 import {
   Drawer,
@@ -21,7 +22,7 @@ import {
   Message,
   Settings,
   HelpOutline,
-  Logout
+  Logout,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
@@ -48,9 +49,20 @@ const AdminSidebar = () => {
   const { user, logout } = useAuth();
 
   const handleNavigation = async (index, path) => {
-    setSelected(index);
-    if (path === "/login")
-      await logout();
+    // Nếu index là số thì mới set selected cho menu chính
+    if (typeof index === "number") {
+      setSelected(index);
+    }
+
+    // Nếu là logout thì gọi hàm logout trước
+    if (path === "/login") {
+      try {
+        await logout();
+      } catch (err) {
+        console.error("Logout error:", err);
+      }
+    }
+
     navigate(path);
   };
 
@@ -154,6 +166,7 @@ const AdminSidebar = () => {
           {supportMenu.map((item, index) => (
             <ListItem key={index} disablePadding>
               <ListItemButton
+                onClick={() => handleNavigation(null, item.path)}
                 sx={{
                   borderRadius: 2,
                   py: 1,
