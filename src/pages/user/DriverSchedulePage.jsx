@@ -20,20 +20,21 @@ import TodayScheduleCard from '../../components/user/schedule/TodayScheduleCard.
 import RouteStopsList from '../../components/user/schedule/RouteStopsList.jsx'; 
 
 // APIs
-import { scheduleAPI, driverAPI } from '../../services/api.js';
+import { scheduleAPI } from '../../services/api.js';
 import { useAuth } from '../../context/AuthContext';
 
 const DriverSchedulePage = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  // 1. Lấy driverId trực tiếp từ Context (quan trọng)
+  const { user, driverId } = useAuth();
   const { t, i18n } = useTranslation();
+  
   const [viewMode, setViewMode] = useState('month');
   const [selectedSchedule, setSelectedSchedule] = useState(null);
   const [monthSchedules, setMonthSchedules] = useState([]);
   const [weekSchedules, setWeekSchedules] = useState([]);
   const [currentWeekStart, setCurrentWeekStart] = useState(() => getMonday(new Date()));
   const [loadingSchedules, setLoadingSchedules] = useState(false);
-  const [driver, setDriver] = useState(null);
 
   function getMonday(d) {
     const date = new Date(d);
@@ -48,46 +49,45 @@ const DriverSchedulePage = () => {
     if (!user) navigate('/login');
   }, [user, navigate]);
 
-  const fetchDriver = async () => {
-    if (!user) return;
-    try {
-      const { data: { data: drivers } } = await driverAPI.getAll();
-      const myDriver = drivers.find(d => {
-        const driverUserId = d.user?._id?.toString() || d.user?.toString();
-        return driverUserId === user._id?.toString();
-      });
-      setDriver(myDriver);
-    } catch (err) {
-      console.error('Fetch driver error:', err);
-    }
-  };
-
-  useEffect(() => {
-    fetchDriver();
-  }, [user]);
-
+  // 2. Bỏ hàm fetchDriver thừa thãi, dùng driverId từ context để fetch lịch
   const fetchSchedulesByDriver = async () => {
-    if (!driver || !user) return;
+    // Nếu chưa có driverId (ví dụ đang load context), thì chưa gọi API
+    if (!driverId) return;
+    
     setLoadingSchedules(true);
     try {
-      const { data: { data: allSchedules } } = await scheduleAPI.getByDriver(user._id);
+      // 3. SỬA QUAN TRỌNG: Dùng driverId thay vì user._id
+      const { data: { data: allSchedules } } = await scheduleAPI.getByDriver(driverId);
+      
       allSchedules.sort((a, b) => new Date(b.date) - new Date(a.date));
       setMonthSchedules(allSchedules);
 
-      const today = new Date(); today.setHours(0, 0, 0, 0);
+      // Logic chọn lịch trình mặc định (Hôm nay hoặc cái đầu tiên)
+      const today = new Date(); 
+      today.setHours(0, 0, 0, 0);
+      
       const todaySch = allSchedules.find(s => {
-        const d = new Date(s.date); d.setHours(0, 0, 0, 0);
+        const d = new Date(s.date); 
+        d.setHours(0, 0, 0, 0);
         return d.getTime() === today.getTime();
       });
-      setSelectedSchedule(todaySch || allSchedules[0]);
+      
+      // Nếu không có lịch hôm nay, chọn cái mới nhất
+      if (!selectedSchedule) {
+          setSelectedSchedule(todaySch || allSchedules[0]);
+      }
 
+      // Logic lọc lịch cho tuần hiện tại
       const weekStart = currentWeekStart.getTime();
-      const weekEnd = new Date(currentWeekStart); weekEnd.setDate(weekEnd.getDate() + 7);
+      const weekEnd = new Date(currentWeekStart); 
+      weekEnd.setDate(weekEnd.getDate() + 7);
+      
       const weekSch = allSchedules.filter(s => {
         const d = new Date(s.date).getTime();
         return d >= weekStart && d < weekEnd.getTime();
       });
-      setWeekSchedules(weekSch.length > 0 ? weekSch : allSchedules.slice(0, 7));
+      setWeekSchedules(weekSch); // Sửa lại logic fallback
+
     } catch (err) {
       console.error('Fetch schedules error:', err);
     } finally {
@@ -95,9 +95,10 @@ const DriverSchedulePage = () => {
     }
   };
 
+  // 4. Thêm driverId vào dependency array
   useEffect(() => {
     fetchSchedulesByDriver();
-  }, [driver, currentWeekStart, user]);
+  }, [driverId, currentWeekStart]);
 
   const handleWeekChange = (direction) => {
     const newStart = new Date(currentWeekStart);
@@ -106,13 +107,13 @@ const DriverSchedulePage = () => {
   };
 
   const handleScheduleSelect = (date, schedule) => {
-  if (schedule) {
-    setSelectedSchedule(schedule);
-  } else {
-    // Xóa selection hoặc hiển thị thông báo không có lịch
-    setSelectedSchedule(null);
-  }
-};
+    // Nếu click vào ngày có lịch, chọn lịch đó. Nếu không, bỏ chọn hoặc giữ nguyên tùy ý
+    if (schedule) {
+      setSelectedSchedule(schedule);
+    } else {
+      setSelectedSchedule(null);
+    }
+  };
 
   const formatSelectedDate = (date) => {
     if (!date) return '';
@@ -128,7 +129,6 @@ const DriverSchedulePage = () => {
   return (
     <Box sx={{ bgcolor: '#f8fafc', minHeight: '100vh', py: 4 }}>
       <Container maxWidth="xl">
-        {/* Header */}
         <Box sx={{ mb: 4 }}>
           <Typography variant="h4" sx={{ fontWeight: 700, color: '#1e293b' }}>
             {t("schedule.title")}
@@ -138,24 +138,17 @@ const DriverSchedulePage = () => {
           </Typography>
         </Box>
 
-        {/* View Toggle */}
         <Box sx={{ mb: 4, display: 'flex', justifyContent: 'center' }}>
           <ToggleButtonGroup
             value={viewMode}
             exclusive
             onChange={(e, v) => v && setViewMode(v)}
-            sx={{
-              bgcolor: 'white',
-              border: '1px solid #e2e8f0',
-              borderRadius: 2,
-              overflow: 'hidden',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-            }}
+            sx={{ bgcolor: 'white', border: '1px solid #e2e8f0', borderRadius: 2 }}
           >
-            <ToggleButton value="month" sx={{ px: 3, py: 1.5, textTransform: 'none', fontWeight: 500 }}>
+            <ToggleButton value="month" sx={{ px: 3, py: 1.5, textTransform: 'none' }}>
               <CalendarMonth sx={{ mr: 1, fontSize: 18 }} /> {t("schedule.views.month")}
             </ToggleButton>
-            <ToggleButton value="week" sx={{ px: 3, py: 1.5, textTransform: 'none', fontWeight: 500 }}>
+            <ToggleButton value="week" sx={{ px: 3, py: 1.5, textTransform: 'none' }}>
               <ViewWeek sx={{ mr: 1, fontSize: 18 }} /> {t("schedule.views.week")}
             </ToggleButton>
           </ToggleButtonGroup>
@@ -168,9 +161,7 @@ const DriverSchedulePage = () => {
           </Paper>
         ) : monthSchedules.length === 0 ? (
           <Paper sx={{ p: 6, textAlign: 'center', borderRadius: 3, bgcolor: '#fff' }}>
-            <Typography color="text.secondary">
-              {t("schedule.noSchedule")}  
-            </Typography>
+            <Typography color="text.secondary">{t("schedule.noSchedule")}</Typography>
           </Paper>
         ) : (
           <Grid container spacing={3}>
@@ -197,32 +188,17 @@ const DriverSchedulePage = () => {
               <Box sx={{ position: 'sticky', top: 24 }}>
                 {selectedSchedule ? (
                   <>
-                    {/* Ngày lớn */}
-                    <Typography
-                      variant="h5"
-                      sx={{
-                        fontWeight: 600,
-                        color: '#1e293b',
-                        mb: 1,
-                        textAlign: { xs: 'center', lg: 'left' }
-                      }}
-                    >
+                    <Typography variant="h5" sx={{ fontWeight: 600, color: '#1e293b', mb: 1 }}>
                       {formatSelectedDate(new Date(selectedSchedule.date))}
                     </Typography>
-
-                    {/* Card chi tiết */}
                     <TodayScheduleCard schedule={selectedSchedule} />
-
-                    {/* Danh sách điểm dừng */}
                     <Box sx={{ mt: 3 }}>
                       <RouteStopsList route={selectedSchedule.route} />
                     </Box>
                   </>
                 ) : (
                   <Paper sx={{ p: 4, textAlign: 'center', borderRadius: 3 }}>
-                    <Typography color="text.secondary">
-                      {t("schedule.selectDate")}
-                    </Typography>
+                    <Typography color="text.secondary">{t("schedule.selectDate")}</Typography>
                   </Paper>
                 )}
               </Box>
