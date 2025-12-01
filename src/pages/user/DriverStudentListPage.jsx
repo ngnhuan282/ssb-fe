@@ -36,15 +36,33 @@ const DriverStudentListPage = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      // 1. Lấy lịch trình
+      // Lấy lịch trình
       const scheduleRes = await scheduleAPI.getByDriver(driverId);
       const schedules = scheduleRes.data?.data || [];
-      const activeSchedule = schedules.find(s => s.status === 'in_progress') || 
-                             schedules.find(s => s.status === 'scheduled') ||
-                             schedules[0];
 
+      // --- LOGIC MỚI: LỌC THEO NGÀY HÔM NAY ---
+      const today = new Date();
+      
+      // Hàm so sánh ngày (bỏ qua giờ phút)
+      const isSameDay = (d1, d2) => {
+        const date1 = new Date(d1);
+        const date2 = new Date(d2);
+        return date1.getDate() === date2.getDate() &&
+               date1.getMonth() === date2.getMonth() &&
+               date1.getFullYear() === date2.getFullYear();
+      };
+
+      // 1. Lọc ra các lịch trình CỦA HÔM NAY
+      const todaySchedules = schedules.filter(s => isSameDay(s.date, today));
+
+      // 2. Trong các lịch hôm nay, ưu tiên 'in_progress', sau đó đến 'scheduled'
+      const activeSchedule = todaySchedules.find(s => s.status === 'in_progress') || 
+                             todaySchedules.find(s => s.status === 'scheduled');
+
+      // Nếu không có lịch hôm nay thì hiển thị thông báo rỗng (activeSchedule là undefined)
       if (!activeSchedule) {
         setScheduleData([]);
+        setLoading(false); // Dừng loading
         return;
       }
 

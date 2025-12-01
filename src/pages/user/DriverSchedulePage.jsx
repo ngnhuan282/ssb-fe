@@ -10,7 +10,7 @@ import {
   Paper,
   CircularProgress,
 } from '@mui/material';
-import { CalendarMonth, ViewWeek } from '@mui/icons-material';
+import { CalendarMonth, ViewWeek, EventBusy } from '@mui/icons-material'; // Thêm icon EventBusy
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 // Components
@@ -25,12 +25,15 @@ import { useAuth } from '../../context/AuthContext';
 
 const DriverSchedulePage = () => {
   const navigate = useNavigate();
-  // 1. Lấy driverId trực tiếp từ Context (quan trọng)
   const { user, driverId } = useAuth();
   const { t, i18n } = useTranslation();
   
   const [viewMode, setViewMode] = useState('month');
   const [selectedSchedule, setSelectedSchedule] = useState(null);
+  
+  // 1. Thêm state để theo dõi ngày đang chọn (Mặc định là hôm nay)
+  const [selectedDate, setSelectedDate] = useState(new Date()); 
+
   const [monthSchedules, setMonthSchedules] = useState([]);
   const [weekSchedules, setWeekSchedules] = useState([]);
   const [currentWeekStart, setCurrentWeekStart] = useState(() => getMonday(new Date()));
@@ -49,20 +52,17 @@ const DriverSchedulePage = () => {
     if (!user) navigate('/login');
   }, [user, navigate]);
 
-  // 2. Bỏ hàm fetchDriver thừa thãi, dùng driverId từ context để fetch lịch
   const fetchSchedulesByDriver = async () => {
-    // Nếu chưa có driverId (ví dụ đang load context), thì chưa gọi API
     if (!driverId) return;
     
     setLoadingSchedules(true);
     try {
-      // 3. SỬA QUAN TRỌNG: Dùng driverId thay vì user._id
       const { data: { data: allSchedules } } = await scheduleAPI.getByDriver(driverId);
       
       allSchedules.sort((a, b) => new Date(b.date) - new Date(a.date));
       setMonthSchedules(allSchedules);
 
-      // Logic chọn lịch trình mặc định (Hôm nay hoặc cái đầu tiên)
+      // Logic chọn lịch trình mặc định (Hôm nay)
       const today = new Date(); 
       today.setHours(0, 0, 0, 0);
       
@@ -72,12 +72,14 @@ const DriverSchedulePage = () => {
         return d.getTime() === today.getTime();
       });
       
-      // Nếu không có lịch hôm nay, chọn cái mới nhất
+      // Nếu load lần đầu, ưu tiên chọn lịch hôm nay
       if (!selectedSchedule) {
-          setSelectedSchedule(todaySch || allSchedules[0]);
+          setSelectedSchedule(todaySch || null); 
+          // Lưu ý: Nếu hôm nay không có lịch, selectedSchedule sẽ là null,
+          // nhưng selectedDate mặc định đã là new Date() nên UI sẽ hiển thị đúng.
       }
 
-      // Logic lọc lịch cho tuần hiện tại
+      // Lọc lịch cho view tuần
       const weekStart = currentWeekStart.getTime();
       const weekEnd = new Date(currentWeekStart); 
       weekEnd.setDate(weekEnd.getDate() + 7);
@@ -86,7 +88,7 @@ const DriverSchedulePage = () => {
         const d = new Date(s.date).getTime();
         return d >= weekStart && d < weekEnd.getTime();
       });
-      setWeekSchedules(weekSch); // Sửa lại logic fallback
+      setWeekSchedules(weekSch);
 
     } catch (err) {
       console.error('Fetch schedules error:', err);
@@ -95,7 +97,6 @@ const DriverSchedulePage = () => {
     }
   };
 
-  // 4. Thêm driverId vào dependency array
   useEffect(() => {
     fetchSchedulesByDriver();
   }, [driverId, currentWeekStart]);
@@ -106,13 +107,10 @@ const DriverSchedulePage = () => {
     setCurrentWeekStart(newStart);
   };
 
+  // 2. Cập nhật hàm xử lý khi chọn ngày
   const handleScheduleSelect = (date, schedule) => {
-    // Nếu click vào ngày có lịch, chọn lịch đó. Nếu không, bỏ chọn hoặc giữ nguyên tùy ý
-    if (schedule) {
-      setSelectedSchedule(schedule);
-    } else {
-      setSelectedSchedule(null);
-    }
+    setSelectedDate(date); // Luôn cập nhật ngày được chọn
+    setSelectedSchedule(schedule || null); // Cập nhật lịch trình (có thể null)
   };
 
   const formatSelectedDate = (date) => {
@@ -159,10 +157,6 @@ const DriverSchedulePage = () => {
             <CircularProgress size={32} />
             <Typography mt={2} color="text.secondary">{t("schedule.loading")}</Typography>
           </Paper>
-        ) : monthSchedules.length === 0 ? (
-          <Paper sx={{ p: 6, textAlign: 'center', borderRadius: 3, bgcolor: '#fff' }}>
-            <Typography color="text.secondary">{t("schedule.noSchedule")}</Typography>
-          </Paper>
         ) : (
           <Grid container spacing={3}>
             {/* Left: Calendar / Week */}
@@ -178,7 +172,7 @@ const DriverSchedulePage = () => {
                   weekSchedules={weekSchedules}
                   weekStart={currentWeekStart}
                   onWeekChange={handleWeekChange}
-                  onScheduleClick={setSelectedSchedule}
+                  onScheduleClick={(sch) => handleScheduleSelect(new Date(sch.date), sch)}
                 />
               )}
             </Grid>
@@ -186,19 +180,37 @@ const DriverSchedulePage = () => {
             {/* Right: Schedule Details */}
             <Grid item xs={12} lg={4}>
               <Box sx={{ position: 'sticky', top: 24 }}>
+                {/* 3. Luôn hiển thị ngày đang chọn ở Header */}
+                <Typography variant="h5" sx={{ fontWeight: 600, color: '#1e293b', mb: 2 }}>
+                  {formatSelectedDate(selectedDate)}
+                </Typography>
+
+                {/* 4. Điều kiện hiển thị nội dung */}
                 {selectedSchedule ? (
                   <>
-                    <Typography variant="h5" sx={{ fontWeight: 600, color: '#1e293b', mb: 1 }}>
-                      {formatSelectedDate(new Date(selectedSchedule.date))}
-                    </Typography>
                     <TodayScheduleCard schedule={selectedSchedule} />
                     <Box sx={{ mt: 3 }}>
                       <RouteStopsList route={selectedSchedule.route} />
                     </Box>
                   </>
                 ) : (
-                  <Paper sx={{ p: 4, textAlign: 'center', borderRadius: 3 }}>
-                    <Typography color="text.secondary">{t("schedule.selectDate")}</Typography>
+                  // UI khi không có lịch trình
+                  <Paper 
+                    sx={{ 
+                      p: 4, 
+                      textAlign: 'center', 
+                      borderRadius: 3, 
+                      bgcolor: '#fff',
+                      border: '1px dashed #cbd5e1'
+                    }}
+                  >
+                    <EventBusy sx={{ fontSize: 48, color: '#94a3b8', mb: 1 }} />
+                    <Typography variant="h6" color="text.secondary" gutterBottom>
+                      Không có lịch làm việc
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Bạn không có lịch trình phân công nào trong ngày này.
+                    </Typography>
                   </Paper>
                 )}
               </Box>
