@@ -3,7 +3,7 @@ import React from 'react';
 import { Box, Typography, Paper, Divider } from '@mui/material';
 import PickupPointItem from './PickupPointItem';
 
-const PickupSidebar = ({ points, onStudentStatusChange, onPickupAll, onDropoffAll,isStillPickingUp, onNavigate }) => {
+const PickupSidebar = ({ points, onStudentStatusChange, onPickupAll, onDropoffAll,isStillPickingUp, onNavigate, onStudentClick }) => {
   return (
     <Paper
       elevation={0}
@@ -41,6 +41,7 @@ const PickupSidebar = ({ points, onStudentStatusChange, onPickupAll, onDropoffAl
             onPickupAll={onPickupAll}
             isStillPickingUp={isStillPickingUp}
             onNavigate={onNavigate}
+            onStudentClick={onStudentClick}
           />
         ))}
       </Box>

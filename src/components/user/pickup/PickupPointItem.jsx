@@ -16,7 +16,7 @@ import {
 } from '@mui/icons-material';
 import StudentItem from './StudentItem';
 
-const PickupPointItem = ({ point, onStudentStatusChange, onPickupAll,onDropoffAll,isStillPickingUp , onNavigate}) => {
+const PickupPointItem = ({ point, onStudentStatusChange, onPickupAll,onDropoffAll,isStillPickingUp , onNavigate,onStudentClick}) => {
   const [expanded, setExpanded] = useState(false); // Mặc định dong
   const { name, studentCount, students, status , stopIndex} = point;
   const isCompleted = status === 'completed';
@@ -143,6 +143,7 @@ const PickupPointItem = ({ point, onStudentStatusChange, onPickupAll,onDropoffAl
               onStatusChange={(newStatus) => 
                 onStudentStatusChange(stopIndex, student.id, newStatus)
               }
+              onStudentClick={onStudentClick}
             />
           ))}
         </Box>

@@ -12,7 +12,14 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Button  } from '@mui/material';
+  Button,
+  List, 
+  ListItem, 
+  ListItemIcon, 
+  ListItemText, 
+  Divider,
+  Avatar  } from '@mui/material';
+import { School, Phone, Person} from '@mui/icons-material';
 import MapContainer from '../../components/user/pickup/MapContainer';
 import PickupSidebar from '../../components/user/pickup/PickupSidebar';
 import { useAuth } from '../../context/AuthContext';
@@ -34,7 +41,7 @@ import { io } from "socket.io-client";
     const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
     const [busLocation, setBusLocation] = useState(null);
     const { user, driverId } = useAuth();
-
+    const [selectedStudent, setSelectedStudent] = useState(null);
     // State cho routing , running 
     const [routeStartPoint, setRouteStartPoint] = useState(null); 
     const [routeDestination, setRouteDestination] = useState(null);
@@ -106,12 +113,6 @@ import { io } from "socket.io-client";
             const assignments = studentResponses[index].data?.data || studentResponses[index].data; 
 
             const students = assignments.map(assign => {
-              // id: assign.student._id,
-              // assignmentId: assign._id,
-              // name: assign.student.fullName, 
-              // status: assign.status,
-              // type: assign.type,
-
               //dieu kien giup neu admin thay doi status hs thi cap nhap status stop luon
               let stopAssignmentStatus = assign.status;
               if ( assign.type === 'pickup' && stopAssignmentStatus === 'waiting' && assign.student.status === 'picked_up'){
@@ -130,10 +131,16 @@ import { io } from "socket.io-client";
               //khong can them || assign.student.status === 'pending' o dk 4 cung dc vi co dk 3 no se tim den diem dung truoc va phat hien admin chuyen ve pending
               // // nhung them de chac chan lo nhu diem tra no nam truoc diem dung (nhung ke ca vay cx k sai chi hop logic)
 
+              //Thong tin chi tiet
+              const parentPhone = assign.student.parent?.user?.phone || "Chưa cập nhật";
+              const studentClass = assign.student.class || "Chưa cập nhật";
+              
               return {
                 id: assign.student._id,
                 assignmentId: assign._id,
                 name: assign.student.fullName, 
+                phone: parentPhone,
+                class: studentClass,
                 status: stopAssignmentStatus,
                 type: assign.type,
               };
@@ -183,6 +190,10 @@ import { io } from "socket.io-client";
         socketConnection.disconnect();
       };
     }, [schedule]);
+
+    const handleStudentClick = (student) => {
+      setSelectedStudent(student);
+    };
 
     const showNotification = (message, severity = 'success') => {
       setSnackbar({ open: true, message, severity });
@@ -473,7 +484,17 @@ import { io } from "socket.io-client";
       (student) => student.type === 'pickup' && student.status === 'waiting'
       )
     );
-    
+     
+    const getInitials = (name) => {
+      if (!name) return '?';
+      return name
+        .trim()
+        .split(' ')
+        .map((word) => word[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2);
+    };
 
 
   return (
@@ -498,6 +519,7 @@ import { io } from "socket.io-client";
         onDropoffAll={handleDropoffAll}
         isStillPickingUp={isStillPickingUp}
         onNavigate={handleNavigate}
+        onStudentClick={handleStudentClick}
       />
       <Snackbar
         open={snackbar.open}
@@ -538,6 +560,54 @@ import { io } from "socket.io-client";
           <Button onClick={confirmFinishTrip} variant="contained" color="primary" autoFocus>
             Xác nhận kết thúc
           </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog 
+        open={!!selectedStudent} 
+        onClose={() => setSelectedStudent(null)}
+        fullWidth 
+        maxWidth="xs"
+      >
+        <DialogTitle sx={{ bgcolor: '#f3f4f6', display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Avatar sx={{ bgcolor: '#3b82f6', fontSize: '1rem' }}>
+            {getInitials(selectedStudent?.name)}
+          </Avatar>
+          <Typography variant="h6">{selectedStudent?.name}</Typography>
+        </DialogTitle>
+        <DialogContent sx={{ p: 0 }}>
+          <List>
+            <ListItem>
+              <ListItemIcon><School color="primary" /></ListItemIcon>
+              <ListItemText 
+                primary="Lớp học" 
+                secondary={selectedStudent?.class} 
+              />
+            </ListItem>
+            <Divider variant="inset" component="li" />
+            
+            <ListItem>
+              <ListItemIcon><Phone color="success" /></ListItemIcon>
+              <ListItemText 
+                primary="SĐT Phụ huynh " 
+                secondary={selectedStudent?.phone} 
+              />
+            </ListItem>
+            <Divider variant="inset" component="li" />
+          </List>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={() => setSelectedStudent(null)} color="inherit">Đóng</Button>
+          {selectedStudent?.phone && (
+            <Button 
+              variant="contained" 
+              color="success" 
+              href={`tel:${selectedStudent.phone}`}
+              startIcon={<Phone />}
+            >
+              Gọi ngay
+            </Button>
+          )}
         </DialogActions>
       </Dialog>
     </Box>

@@ -19,7 +19,7 @@ const getInitials = (name) => {
     .slice(0, 2);
 };
 
-const StudentItem = ({ student, onStatusChange }) => {
+const StudentItem = ({ student, onStatusChange, onStudentClick}) => {
   const { name, status, type} = student;
 
   const handleStatusClick = (newStatus) => {
@@ -52,13 +52,17 @@ const StudentItem = ({ student, onStatusChange }) => {
       >
         {getInitials(name)}
       </Avatar>
-      <Typography
-        variant="body2"
-        sx={{ fontWeight: 500, color: isWaiting ? '#374151' : '#9ca3af', flex: 1 }}
+      <Box 
+        sx={{ flex: 1, cursor: 'pointer' }} 
+        onClick={() => onStudentClick(student)}
       >
-        {name}
-      </Typography>
-      
+        <Typography
+          variant="body2"
+          sx={{ fontWeight: 500, color: isWaiting ? '#374151' : '#9ca3af', flex: 1 }}
+        > 
+          {name}
+        </Typography>
+      </Box>
       {/* Nút hành động */}
       <Button
         variant={isBoarded ? 'contained' : 'outlined'}
