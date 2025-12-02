@@ -246,6 +246,11 @@ const DriverPickupPointPage = () => {
           const mockHeading = getBearing(prevLocation.lat, prevLocation.lng, nextLocation.lat, nextLocation.lng);
 
           if (socket && schedule && schedule.bus) {
+            console.log("🚀 Đang gửi Socket:", {
+    license: schedule.bus.licensePlate,
+    route: schedule.route?.name,
+    speed: mockSpeed
+  });
             // Gửi đầy đủ thông tin cho Admin Map
             socket.emit('driver_update_location', {
               scheduleId: schedule._id,
