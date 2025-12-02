@@ -51,6 +51,7 @@ export const router = createBrowserRouter([
       { path: "trip-history/:id", element: <TripDetailPage /> },
       { path: "students", element: <DriverStudentListPage /> },
       { path: "profile", element: <ProfilePage /> },
+      { path: "notification", element: <NotificationPage /> },
       // Mình thấy có path "parent" ở code cũ, nếu nó dành cho driver xem thông tin phụ huynh:
       { path: "parent-info", element: <ParentPage /> },
     ],

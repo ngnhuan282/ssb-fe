@@ -31,13 +31,13 @@ const NotificationPage = () => {
   const { user } = useAuth();
   const currentUserId = "6910388ff1c1fce244797451";
 
- useEffect(() => {
+  useEffect(() => {
     const fetchCombinedNotifications = async () => {
       setLoading(true);
       try {
         const generalPromise = notificationAPI.getMyNotifications(currentUserId);
 
-        const personalPromise = (user && user._id) 
+        const personalPromise = (user && user._id)
           ? notificationAPI.getMyNotifications(user._id)
           : Promise.resolve({ data: { data: [] } });
 
@@ -49,7 +49,7 @@ const NotificationPage = () => {
         let combinedData = [...generalData];
 
         if (user && user._id !== currentUserId) {
-            combinedData = [...combinedData, ...personalData];
+          combinedData = [...combinedData, ...personalData];
         }
 
         combinedData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -79,7 +79,7 @@ const NotificationPage = () => {
         titlePrefix: "Thông báo trễ chuyến",
       };
     }
-    if (["arrival", "boarded", "offboard"].includes(type)) {
+    if (["arrival", "boarded", "offboard", 'schedule_update'].includes(type)) {
       return {
         icon: <CheckCircle />,
         color: "success",
@@ -211,9 +211,9 @@ const NotificationPage = () => {
                           >
                             {noti.createdAt
                               ? formatDistanceToNow(new Date(noti.createdAt), {
-                                  addSuffix: true,
-                                  locale: vi,
-                                })
+                                addSuffix: true,
+                                locale: vi,
+                              })
                               : "Vừa xong"}
                           </Typography>
                         </Box>

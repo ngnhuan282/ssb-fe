@@ -61,7 +61,7 @@ export default function ScheduleDialog({
                 }}
             >
                 <Typography variant="h6" fontWeight={600}>
-                    {editing ? "Cập nhật lịch trình" : "Thêm lịch trình mới"}
+                    {editing ? "Cập nhật lịch trình" : "Tạo lịch trình mới"}
                 </Typography>
                 <Button
                     onClick={onClose}

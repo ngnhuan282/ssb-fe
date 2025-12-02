@@ -87,6 +87,7 @@ export default function ScheduleManager() {
             setRoutes(route.data.data)
             setDrivers(driver.data.data)
             setStudents(student.data.data)
+            setSchedules
 
             const formatted = schedule.data.data.map((item) => ({
                 ...item,
@@ -187,7 +188,10 @@ export default function ScheduleManager() {
             status: form.status,
         };
 
-        console.log("Payload to save:", payload);
+        if (checkConflict(payload) && payload.status !== 'delayed') {
+            showNotification("Xe buýt hoặc tài xế đã có trong lịch trình khác trong khung giờ này!", "error");
+            return;
+        }
 
         if (editing) {
             await scheduleAPI.update(editing, payload)
@@ -213,10 +217,39 @@ export default function ScheduleManager() {
         showNotification("Xóa lịch trình thành công", "success");
     };
 
+    const checkConflict = (payload) => {
+        const date = moment(payload.date).format("YYYY-MM-DD");
+
+        const newStart = moment(payload.starttime).tz("Asia/Ho_Chi_Minh").format("HH:mm");
+        const newEnd = moment(payload.endtime).tz("Asia/Ho_Chi_Minh").format("HH:mm");
+
+        const conflictSchedules = schedules.filter((item) => {
+            if (editing && item._id === editing) return false;
+
+            if (item.status === "Hoàn thành" || item.status === "Bị trì hoãn") return false;
+
+            const itemDate = moment(item.date, ["DD-MM-YYYY"]).format("YYYY-MM-DD");
+            if (itemDate !== date) return false;
+
+            const foundBus = buses.find(b => b._id === payload.bus)
+            const foundDriver = drivers.find(d => d._id === payload.driver)
+
+            const sameBus = item.bus === foundBus?.licensePlate;
+            const sameDriver = item.driver === foundDriver?.user?.username;
+
+            if (!sameBus && !sameDriver) return false;
+            const itemStart = item.starttime;
+            const itemEnd = item.endtime;
+
+            const overlap = newStart <= itemEnd && newEnd >= itemStart;
+            return overlap;
+        });
+        return conflictSchedules.length > 0;
+    };
+
+
     const validateForm = (form) => {
         const newErrors = {};
-
-        console.log(form)
 
         if (!form.route) newErrors.route = "Vui lòng chọn tuyến đường.";
         if (!form.bus) newErrors.bus = "Vui lòng chọn xe buýt.";
@@ -235,9 +268,6 @@ export default function ScheduleManager() {
         if (!form.status) newErrors.status = "Vui lòng chọn trạng thái";
         if (!selectedStudents || selectedStudents.length === 0)
             newErrors.students = "Phải chọn ít nhất một học sinh.";
-
-        console.log("errors:", newErrors);
-
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -267,7 +297,7 @@ export default function ScheduleManager() {
                         },
                     }}
                 >
-                    Thêm lịch trình
+                    Tạo lịch trình
                 </Button>
 
 

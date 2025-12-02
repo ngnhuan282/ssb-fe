@@ -110,7 +110,7 @@ const Sidebar = ({ onToggle }) => {
         text: t("sidebar.notifications"),
         icon: <Notifications />,
         path: `${prefix}/notification`,
-        allowedRoles: ["parent", "parent"], // Chỉnh lại allowedRoles nếu cần
+        allowedRoles: ["parent", "driver"], // Chỉnh lại allowedRoles nếu cần
       },
       {
         text: t("sidebar.settings"),
@@ -261,7 +261,7 @@ const Sidebar = ({ onToggle }) => {
         <Divider sx={{ my: 1, mx: 3 }} />
         <List sx={{ px: 2, py: 0 }}>
           {renderListItem(menuConfig.settings, "settings")}
-          
+
           {/* Nút Logout giữ nguyên */}
           <ListItem key="logout" disablePadding sx={{ mb: 0.5 }}>
             <ListItemButton
