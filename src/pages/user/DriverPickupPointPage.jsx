@@ -41,7 +41,8 @@ const DriverPickupPointPage = () => {
   const [busLocation, setBusLocation] = useState(null);
   const { user, driverId } = useAuth();
   const [selectedStudent, setSelectedStudent] = useState(null);
-  
+  const [completedPointDialog, setCompletedPointDialog] = useState(null);
+
   // Routing & Simulation State
   const [routeStartPoint, setRouteStartPoint] = useState(null); 
   const [routeDestination, setRouteDestination] = useState(null);
@@ -137,6 +138,31 @@ const DriverPickupPointPage = () => {
     fetchDriverData();
   },[driverId, user]);
 
+  //dialog hoan thanh diem dung 
+  const confirmPointCompletion = () => {
+    if (!completedPointDialog) return;
+    setPoints(prevPoints => 
+      prevPoints.map(p => {
+        // Tìm đúng điểm đó và đổi status thật sự thành 'completed'
+        if (p.id === completedPointDialog.pointId) {
+          return { ...p, status: 'completed' }; 
+        }
+        return p;
+      })
+    );
+    
+    setCompletedPointDialog(null); // Đóng Dialog
+    showNotification(`Đã hoàn thành điểm dừng: ${completedPointDialog.pointName}`, 'success');
+  };
+  useEffect(() => {
+    const waitingPoint = points.find(p => p.status === 'waiting_confirm');
+    if (waitingPoint) {
+      setCompletedPointDialog({ 
+          pointId: waitingPoint.id, 
+          pointName: waitingPoint.name 
+      });
+    }
+  }, [points]);
   // 2. Socket Connection
   useEffect(() => {
     if (!schedule) return;
@@ -228,11 +254,25 @@ const DriverPickupPointPage = () => {
             if (newStatus === 'boarded' && s.id === studentId && s.type === 'dropoff') return { ...s, status: 'waiting' };
             return s;
           });
-          return { ...point, students: updatedStudents, status: checkPointCompletion(updatedStudents) ? 'completed' : 'pending' };
-        })
-      );
-      showNotification("Cập nhật trạng thái thành công!", "success");
-    } catch(err){ showNotification("Cập nhật thất bại!", "error"); }
+      const isDone = checkPointCompletion(updatedStudents);
+      let updatedPointStatus = point.status; 
+        if (isDone && point.status !== 'completed' && point.status !== 'waiting_confirm') {
+            updatedPointStatus = 'waiting_confirm';
+        } else if (!isDone && point.status === 'waiting_confirm') {
+            updatedPointStatus = 'pending';
+        }
+        return {
+          ...point,
+          students: updatedStudents,
+          status: updatedPointStatus
+        };
+      })
+    );
+    showNotification("Cập nhật trạng thái thành công!", "success");
+    }catch(err){
+      console.error("Update status error:", err);
+      showNotification("Cập nhật trạng thái thất bại!", "error");
+    }
   };
 
   const handlePickupAll = async (stopIndex) => {
@@ -243,7 +283,16 @@ const DriverPickupPointPage = () => {
     if (studentsToUpdate.length === 0) { showNotification("Không có học sinh nào chờ đón.", "info"); return; }
     try{
       await Promise.all(studentsToUpdate.map(s => stopAssignmentAPI.updateStudentStatus(schedule._id, stopIndex, s.id, {status: 'boarded'})));
-      setPoints(prev => prev.map(p => p.stopIndex === stopIndex ? { ...p, students: p.students.map(s => (s.status === 'waiting' && s.type === 'pickup') ? { ...s, status: 'boarded' } : s), status: 'completed' } : p));
+      setPoints(prev => prev.map(p => {
+        if (p.stopIndex !== stopIndex) return p;
+        const updatedStudents = p.students.map(s => (s.status === 'waiting' && s.type === 'pickup') ? { ...s, status: 'boarded' } : s);     
+        const isDone = checkPointCompletion(updatedStudents);
+        let nextPointStatus = p.status;
+        if (isDone && p.status !== 'completed') {
+             nextPointStatus = 'waiting_confirm';
+        }
+        return { ...p, students: updatedStudents, status: nextPointStatus };
+      }));
       showNotification(`Đã đón ${studentsToUpdate.length} học sinh!`, 'success');
     } catch (err) { showNotification("Lỗi đón tất cả!", "error"); }
   };
@@ -254,9 +303,18 @@ const DriverPickupPointPage = () => {
     if(!point) return;
     const studentsToUpdate = point.students.filter(s => s.status === 'waiting' && s.type === 'dropoff');
     if (studentsToUpdate.length === 0) { showNotification("Không có học sinh nào chờ trả.", "info"); return; }
-    try{
-      await Promise.all(studentsToUpdate.map(s => stopAssignmentAPI.updateStudentStatus(schedule._id, stopIndex, s.id, {status: 'dropped_off'})));
-      setPoints(prev => prev.map(p => p.stopIndex === stopIndex ? { ...p, students: p.students.map(s => (s.status === 'waiting' && s.type === 'dropoff') ? { ...s, status: 'dropped_off' } : s), status: 'completed' } : p));
+    try {
+      await Promise.all(studentsToUpdate.map(s => stopAssignmentAPI.updateStudentStatus(schedule._id, stopIndex, s.id, { status: 'dropped_off' })));
+      setPoints(prev => prev.map(p => {
+        if (p.stopIndex !== stopIndex) return p;
+        const updatedStudents = p.students.map(s => (s.status === 'waiting' && s.type === 'dropoff') ? { ...s, status: 'dropped_off' } : s);
+        const isDone = checkPointCompletion(updatedStudents);
+        let nextPointStatus = p.status;
+        if (isDone && p.status !== 'completed') {
+             nextPointStatus = 'waiting_confirm';
+        }
+        return { ...p, students: updatedStudents, status: nextPointStatus };
+      }));
       showNotification(`Đã trả ${studentsToUpdate.length} học sinh!`, 'success');
     } catch (err) { showNotification("Lỗi trả tất cả!", "error"); }
   };
@@ -339,6 +397,38 @@ const DriverPickupPointPage = () => {
         <DialogActions>
           <Button onClick={() => setSelectedStudent(null)}>Đóng</Button>
           {selectedStudent?.phone && <Button variant="contained" color="success" href={`tel:${selectedStudent.phone}`} startIcon={<Phone />}>Gọi</Button>}
+        </DialogActions>
+      </Dialog>
+
+      <Dialog 
+        open={!!completedPointDialog} 
+        onClose={() => setCompletedPointDialog(null)}
+      >
+        <DialogTitle sx={{ bgcolor: '#f0fdf4', color: '#166534' }}>
+          Xác nhận hoàn thành
+        </DialogTitle>
+        <DialogContent sx={{ pt: 2 }}>
+          <Typography>
+            Bạn đã xử lý xong tất cả học sinh tại điểm: 
+            <br/>
+            <strong>{completedPointDialog?.pointName}</strong>
+          </Typography>
+          <Typography variant="body2" sx={{ mt: 1, color: 'text.secondary' }}>
+            Xác nhận hoàn thành để đóng điểm này và tiếp tục di chuyển?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setCompletedPointDialog(null)} color="inherit">
+            Xem lại
+          </Button>
+          <Button 
+            onClick={confirmPointCompletion} 
+            variant="contained" 
+            color="success"
+            autoFocus
+          >
+            Đồng ý
+          </Button>
         </DialogActions>
       </Dialog>
     </Box>
