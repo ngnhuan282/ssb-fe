@@ -23,29 +23,45 @@ import {
 import { notificationAPI } from "../../services/api"; // Sửa đường dẫn import tùy folder của bạn
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
+import { useAuth } from '../../context/AuthContext';
 
 const NotificationPage = () => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
-
+  const { user } = useAuth();
   const currentUserId = "6910388ff1c1fce244797451";
 
-  useEffect(() => {
-    const fetchNotifications = async () => {
+ useEffect(() => {
+    const fetchCombinedNotifications = async () => {
+      setLoading(true);
       try {
-        const res = await notificationAPI.getMyNotifications(currentUserId);
-        if (res.data && res.data.data) {
-          setNotifications(res.data.data);
+        const generalPromise = notificationAPI.getMyNotifications(currentUserId);
+
+        const personalPromise = (user && user._id) 
+          ? notificationAPI.getMyNotifications(user._id)
+          : Promise.resolve({ data: { data: [] } });
+
+        const [generalRes, personalRes] = await Promise.all([generalPromise, personalPromise]);
+
+        const generalData = generalRes.data?.data || [];
+        const personalData = personalRes.data?.data || [];
+
+        let combinedData = [...generalData];
+
+        if (user && user._id !== currentUserId) {
+            combinedData = [...combinedData, ...personalData];
         }
+
+        combinedData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        setNotifications(combinedData);
       } catch (error) {
         console.error("Lỗi tải thông báo:", error);
       } finally {
         setLoading(false);
       }
     };
-
-    fetchNotifications();
-  }, [currentUserId]);
+    fetchCombinedNotifications();
+  }, [user]);
 
   const getNotificationStyle = (noti) => {
     const type = noti.type;
