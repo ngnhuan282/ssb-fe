@@ -9,6 +9,8 @@ import {
   InputAdornment,
   Button,
   Typography,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import { Description, LocationOn, Send } from "@mui/icons-material";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
@@ -24,12 +26,17 @@ const IncidentForm = () => {
   const [description, setDescription] = useState("");
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState(null);
+  const [snackbar, setSnackbar] = useState({
+  open: false,
+  message: "",
+  severity: "success",
+});
 
   const handleSubmit = async (isEmergency = false) => {
     try {
       const formData = new FormData();
       if (!incidentType) {
-        alert("Vui lòng chọn loại sự cố để tiếp tục.");
+        showNotification("Vui lòng chọn loại sự cố.", "error");
         return;
       }
 
@@ -52,10 +59,11 @@ const IncidentForm = () => {
       console.log("Đang gửi báo cáo...");
       await notificationAPI.createIncident(formData);
 
-      alert(
-        isEmergency
-          ? "Đã gửi báo cáo KHẨN CẤP thành công!"
-          : "Đã gửi báo cáo thường thành công!"
+      showNotification(
+      isEmergency
+        ? "Đã gửi báo cáo KHẨN CẤP thành công!"
+        : "Đã gửi báo cáo thường thành công!",
+      "success"
       );
 
       setDescription("");
@@ -67,14 +75,18 @@ const IncidentForm = () => {
 
     // ❗ Kiểm tra lỗi mạng
     if (error.message === "Network Error" || error.code === "ERR_NETWORK") {
-      alert("Không thể gửi báo cáo. Vui lòng thử lại.");
+      showNotification("Không thể gửi báo cáo. Vui lòng thử lại.", "error");
       return;
     }
 
-    alert("Gửi thất bại! Vui lòng kiểm tra lại.");
+    showNotification("Gửi thất bại! Vui lòng kiểm tra lại.", "error");
   }
   };
+  const showNotification = (message, severity = "success") => {
+  setSnackbar({ open: true, message, severity });
+};
 
+  
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -279,7 +291,22 @@ const IncidentForm = () => {
         >
           Gửi báo cáo khẩn cấp
         </Button>
+        
       </Box>
+      <Snackbar
+        open={snackbar.open}
+                autoHideDuration={3000}
+                onClose={() => setSnackbar({ ...snackbar, open: false })}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+              >
+                <Alert
+                  onClose={() => setSnackbar({ ...snackbar, open: false })}
+                  severity={snackbar.severity}
+                  sx={{ width: '100%' }}
+                >
+                  {snackbar.message}
+                </Alert>
+      </Snackbar>
     </Box>
   );
 };

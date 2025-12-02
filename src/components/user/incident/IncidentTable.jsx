@@ -61,7 +61,7 @@ const IncidentTable = ({ incidents = [], onViewDetails }) => {
     }
 
     // Khẩn cấp (có chữ "emergency" hoặc "urgent")
-    if (status.includes('emergency') || status.includes('urgent') || type.includes('emergency')) {
+    if (status.includes('emergency') || status.includes('urgent') || type === "emergency") {
       return { label: t('incident.detail.urgent'), bg: '#fee2e2', color: '#ef4444' };
     }
     // Mặc định: đang xử lý

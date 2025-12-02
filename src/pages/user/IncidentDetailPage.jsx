@@ -9,7 +9,9 @@ import {
   Link,
   CircularProgress,
   Button,
-  Modal
+  Modal,
+  Snackbar,
+  Alert,
 } from '@mui/material';
 import { ArrowBack, Delete, Send } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -46,6 +48,15 @@ const IncidentDetailPage = () => {
   const [error, setError] = useState('');
   const [openImage, setOpenImage] = useState(null);
   const { user } = useAuth();
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+
+  const showNotification = (message, severity = "success") => {
+  setSnackbar({ open: true, message, severity });
+};
 
   // Tạo biến prefix dùng chung
   const rolePrefix = user?.role === 'driver' ? '/driver' : '/parent';
@@ -77,11 +88,11 @@ const IncidentDetailPage = () => {
     if (!window.confirm('Bạn có chắc chắn muốn xóa báo cáo này?')) return;
     try {
       await notificationAPI.delete(id);
-      alert('Đã xóa báo cáo!');
+      showNotification('Xóa báo cáo thành công!', 'success');
       navigate(`${rolePrefix}/incident`, { state: { tab: 'history' } });
     } catch (err) {
       console.error(err);
-      alert('Xóa không thành công!');
+      showNotification('Xóa báo cáo thất bại! Vui lòng thử lại.', 'error');
     }
   };
 
@@ -107,10 +118,10 @@ const handleResendReport = async () => {
 
     await notificationAPI.createIncident(payload);
 
-    alert("Gửi lại báo cáo thành công!");
+    showNotification("Gửi lại thành công!", "success");
   } catch (err) {
     console.error(err);
-    alert("Gửi lại thất bại!");
+    showNotification("Gửi lại thất bại! Vui lòng thử lại.", "error");
   }
 };
 
@@ -301,6 +312,20 @@ const handleResendReport = async () => {
           />
         </Modal>
       </Paper>
+      <Snackbar
+              open={snackbar.open}
+                      autoHideDuration={3000}
+                      onClose={() => setSnackbar({ ...snackbar, open: false })}
+                      anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                    >
+                      <Alert
+                        onClose={() => setSnackbar({ ...snackbar, open: false })}
+                        severity={snackbar.severity}
+                        sx={{ width: '100%' }}
+                      >
+                        {snackbar.message}
+                      </Alert>
+            </Snackbar>
     </Box>
   );
 };
