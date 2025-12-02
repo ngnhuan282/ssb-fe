@@ -28,6 +28,10 @@ const IncidentForm = () => {
   const handleSubmit = async (isEmergency = false) => {
     try {
       const formData = new FormData();
+      if (!incidentType) {
+        alert("Vui lòng chọn loại sự cố để tiếp tục.");
+        return;
+      }
 
       formData.append("user", "6910388ff1c1fce244797451");
       formData.append("busId", "6910388ff1c1fce244797465");
@@ -59,9 +63,16 @@ const IncidentForm = () => {
       setImage(null);
       setPreview(null);
     } catch (error) {
-      console.error("Lỗi gửi sự cố:", error);
-      alert("Gửi thất bại! Vui lòng kiểm tra lại.");
+    console.error("Lỗi gửi sự cố:", error);
+
+    // ❗ Kiểm tra lỗi mạng
+    if (error.message === "Network Error" || error.code === "ERR_NETWORK") {
+      alert("Không thể gửi báo cáo. Vui lòng thử lại.");
+      return;
     }
+
+    alert("Gửi thất bại! Vui lòng kiểm tra lại.");
+  }
   };
 
   const handleFileChange = (e) => {

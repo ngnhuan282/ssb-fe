@@ -11,7 +11,7 @@ import {
   Button,
   Modal
 } from '@mui/material';
-import { ArrowBack, Delete, CheckCircle } from '@mui/icons-material';
+import { ArrowBack, Delete, Send } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
 import { notificationAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
@@ -85,22 +85,53 @@ const IncidentDetailPage = () => {
     }
   };
 
-// Thêm function đánh dấu hoàn thành
-const handleMarkResolved = async () => {
-  if (!report) return;
+  
+const handleResendReport = async () => {
   try {
-    await notificationAPI.update(report._id, {
-      status: 'resolved', // chỉ gửi status
-      type: 'resolved_emergency',
-    });
+    const payload = {
+      user: report.user?._id || report.user || "6910388ff1c1fce244797451",
+      busId: report.busId?._id || report.busId || "6910388ff1c1fce244797465",
+      scheduleId: report.scheduleId?._id || report.scheduleId || "6910388ff1c1fce2447974cc",
 
-    setReport(prev => ({ ...prev, status: 'resolved' }));
-    alert('Báo cáo đã được đánh dấu hoàn thành!');
+      type: report.type || "no_emergency",
+      emergency_type: report.emergency_type || "Khác",
+
+      message: report.message || report.description || "",
+      read: false,
+      location: report.location || "",
+      dateTime: new Date().toISOString(),
+
+      // 🚀 Gửi lại đường dẫn ảnh (nếu có)
+      images: report.images || [],
+    };
+
+    await notificationAPI.createIncident(payload);
+
+    alert("Gửi lại báo cáo thành công!");
   } catch (err) {
-    console.error('Lỗi đánh dấu hoàn thành:', err);
-    alert('Không thể đánh dấu hoàn thành!');
+    console.error(err);
+    alert("Gửi lại thất bại!");
   }
 };
+
+
+
+// Thêm function đánh dấu hoàn thành
+// const handleMarkResolved = async () => {
+//   if (!report) return;
+//   try {
+//     await notificationAPI.update(report._id, {
+//       status: 'resolved', // chỉ gửi status
+//       type: 'resolved_emergency',
+//     });
+
+//     setReport(prev => ({ ...prev, status: 'resolved' }));
+//     alert('Báo cáo đã được đánh dấu hoàn thành!');
+//   } catch (err) {
+//     console.error('Lỗi đánh dấu hoàn thành:', err);
+//     alert('Không thể đánh dấu hoàn thành!');
+//   }
+// };
 
 
 
@@ -202,32 +233,34 @@ const handleMarkResolved = async () => {
         </Box>
 
         {/* Hình ảnh */}
+        
         {report.images && report.images.length > 0 && (
-          <Box sx={{ pt: 3 }}>
-            <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: '#111827' }}>
-              Hình ảnh đính kèm
-            </Typography>
-            <Grid container spacing={2}>
-              {report.images.map((img, index) => (
-                <Grid item xs={12} sm={4} key={index}>
-                  <Box
-                    component="img"
-                    src={`http://localhost:5000${img}`}
-                    alt={`Incident image ${index + 1}`}
-                    sx={{
-                      width: '100%',
-                      height: 180,
-                      objectFit: 'cover',
-                      borderRadius: 2,
-                      cursor: 'pointer'
-                    }}
-                    onClick={() => setOpenImage(`http://localhost:5000${img}`)}
-                  />
-                </Grid>
-              ))}
-            </Grid>
-          </Box>
-        )}
+        <Box sx={{ pt: 3 }}>
+          <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: '#111827' }}>
+            Hình ảnh đính kèm
+          </Typography>
+          <Grid container spacing={2}>
+            {report.images.map((img, index) => (
+              <Grid item xs={12} sm={4} key={index}>
+                <Box
+                  component="img"
+                  src={`http://localhost:5000${img}`} // img bắt đầu bằng /uploads/...
+                  alt={`Incident image ${index + 1}`}
+                  sx={{
+                    width: '100%',
+                    height: 180,
+                    objectFit: 'cover',
+                    borderRadius: 2,
+                    cursor: 'pointer'
+                  }}
+                  onClick={() => setOpenImage(`http://localhost:5000${img}`)}
+                />
+              </Grid>
+            ))}
+          </Grid>
+        </Box>
+      )}
+
 
         {/* Nút hành động ở dưới cùng */}
         <Box sx={{ mt: 4, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
@@ -239,16 +272,14 @@ const handleMarkResolved = async () => {
           >
             Xóa
           </Button>
-          {getStatus(report) !== 'resolved' && (
-            <Button
-              variant="contained"
-              color="success"
-              startIcon={<CheckCircle />}
-              onClick={handleMarkResolved}
-            >
-              Hoàn thành
-            </Button>
-          )}
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<Send />}
+            onClick={handleResendReport}
+          >
+            Gửi lại
+          </Button>
         </Box>
 
         {/* Modal phóng to ảnh */}
