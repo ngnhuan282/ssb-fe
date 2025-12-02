@@ -68,8 +68,7 @@ const DriverPickupPointPage = () => {
       setIsLoading(true);
       try{
         const scheduleRes = await scheduleAPI.getByDriver(driverId);
-        const activeSchedule = (scheduleRes.data?.data || scheduleRes.data).find((s) => s.status === 'in_progress') || 
-                               (scheduleRes.data?.data || scheduleRes.data).find((s) => s.status === 'scheduled');
+        const activeSchedule = (scheduleRes.data?.data || scheduleRes.data).find((s) => s.status === 'in_progress')
         
         if (!activeSchedule) throw new Error("Không tìm thấy lịch trình nào được gán.");
 
