@@ -24,6 +24,7 @@ import {
   HelpOutline,
   Logout,
 } from "@mui/icons-material";
+import { Map } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
 
@@ -37,6 +38,7 @@ const mainMenu = [
   { text: "Tuyến đường", icon: <Route />, path: "/admin/routes" },
   { text: "Lịch trình", icon: <Schedule />, path: "/admin/schedule" },
   { text: "Thông báo", icon: <Message />, path: "/admin/notifications" },
+  { text: "Theo dõi xe buýt", icon: <Map />, path: "/admin/tracking" },
 ];
 
 const supportMenu = [

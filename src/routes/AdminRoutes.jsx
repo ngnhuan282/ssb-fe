@@ -7,6 +7,7 @@ import DriverPage from "../pages/admin/DriverPage";
 import BusPage from "../pages/admin/BusPage";
 import RoutePage from "../pages/admin/RoutePage";
 import NotificationPage from "../pages/admin/NotificationPage";
+import AdminTrackingPage from "../pages/admin/AdminTrackingPage";
 
 export const adminRoutes = [
   {
@@ -48,6 +49,10 @@ export const adminRoutes = [
             <NotificationPage />
           </ProtectedRoute>
         ),
+      },
+      {
+        path: "tracking",
+        element: <AdminTrackingPage />,
       },
 
     ],
