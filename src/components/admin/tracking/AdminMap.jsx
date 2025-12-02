@@ -9,6 +9,21 @@ import { DirectionsBus, Speed, AccessTime } from '@mui/icons-material';
 
 // URL Socket server (phải khớp với file .env của bạn)
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000';
+const FlyToBus = ({ location }) => {
+  const map = useMap();
+
+  useEffect(() => {
+    if (location) {
+      // Bay đến vị trí mới với mức zoom 16
+      map.flyTo([location.lat, location.lng], 16, {
+        animate: true,
+        duration: 1.5 // Thời gian bay (giây)
+      });
+    }
+  }, [location, map]);
+
+  return null;
+};
 
 // Custom Icon cho xe buýt
 const busIcon = new L.Icon({
@@ -33,7 +48,7 @@ const MapAdjuster = ({ buses }) => {
   return null;
 };
 
-const AdminMap = ({ onBusUpdate }) => {
+const AdminMap = ({ onBusUpdate, focusedLocation }) => {
   const [buses, setBuses] = useState({}); // Dùng Object để dễ update theo ID
 
   useEffect(() => {
@@ -82,7 +97,8 @@ const AdminMap = ({ onBusUpdate }) => {
         center={[10.762622, 106.660172]} // Mặc định TP.HCM
         zoom={13} 
         style={{ height: '100%', width: '100%' }}
-      >
+      > 
+      <FlyToBus location={focusedLocation} />
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; OpenStreetMap contributors'

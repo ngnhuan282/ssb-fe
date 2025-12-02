@@ -6,9 +6,17 @@ import AdminMap from '../../components/admin/tracking/AdminMap';
 
 const AdminTrackingPage = () => {
   const [activeBuses, setActiveBuses] = useState([]);
-
+  const [selectedBusLocation, setSelectedBusLocation] = useState(null);
   const handleBusUpdate = (busesList) => {
     setActiveBuses(busesList);
+  };
+  const handleBusClick = (bus) => {
+    // Lấy tọa độ (ưu tiên lấy từ location object, nếu không có thì lấy lat/lng thẳng)
+    const location = bus.location || { lat: bus.lat, lng: bus.lng };
+    
+    if (location && location.lat && location.lng) {
+      setSelectedBusLocation(location);
+    }
   };
 
   return (
